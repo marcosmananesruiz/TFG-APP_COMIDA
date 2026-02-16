@@ -39,13 +39,11 @@ public class GeneralActivity extends AppCompatActivity {
 
         // Listener de items del menú lateral
         navigationView.setNavigationItemSelectedListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.nav_home:
-                    // Aquí cargarías tu fragment "Inicio"
-                    break;
-                case R.id.nav_settings:
-                    // Aquí cargarías tu fragment "Configuración"
-                    break;
+            int itemId = item.getItemId();
+            if (itemId == R.id.nav_home) {
+                // Aquí cargarías tu fragment "Inicio"
+            } else if (itemId == R.id.nav_settings) {
+                // Aquí cargarías tu fragment "Configuración"
             }
             drawerLayout.closeDrawers();
             return true;
