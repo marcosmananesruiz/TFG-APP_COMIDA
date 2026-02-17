@@ -8,4 +8,13 @@
     <item
         android:id="@+id/nav_misbombos"
         android:title="Mis bombos" />
+    <item
+        android:id="@+id/nav_historialDeBombos"
+        android:title="Historial de bombos" />
+    <item
+        android:id="@+id/nav_notificaciones"
+        android:title="Notificaciones" />
+    <item
+        android:id="@+id/nav_configuracion"
+        android:title="Configuracion" />
 </menu>
