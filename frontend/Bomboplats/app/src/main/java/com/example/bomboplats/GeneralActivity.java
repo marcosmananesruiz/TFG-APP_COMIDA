@@ -4,7 +4,12 @@ import android.os.Bundle;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.example.bomboplats.ui.general.GeneralFragment;
 import com.google.android.material.navigation.NavigationView;
 
 public class GeneralActivity extends AppCompatActivity {
@@ -41,12 +46,24 @@ public class GeneralActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_home) {
-                // Aquí cargarías tu fragment "Inicio"
+                loadFragment(new GeneralFragment());
             } else if (itemId == R.id.nav_settings) {
                 // Aquí cargarías tu fragment "Configuración"
             }
-            drawerLayout.closeDrawers();
+            drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+
+        // Cargar el fragmento inicial y seleccionar el item del menú
+        if (savedInstanceState == null) {
+            loadFragment(new GeneralFragment());
+            navigationView.setCheckedItem(R.id.nav_home);
+        }
+    }
+
+    private void loadFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, fragment);
+        transaction.commit();
     }
 }
