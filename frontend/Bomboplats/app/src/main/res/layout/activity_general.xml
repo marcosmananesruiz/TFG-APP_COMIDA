@@ -52,7 +52,7 @@
             android:layout_weight="1"
             app:menu="@menu/drawer_menu"
             app:itemTextAppearance="@style/NavItemText"
-            app:itemVerticalPadding="10dp"/>
+            app:itemVerticalPadding="25dp"/>
 
         <View
             android:layout_width="match_parent"
