@@ -10,7 +10,7 @@ description = 'BomboplatsServer'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -38,6 +38,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-data-r2dbc-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    implementation fileTree(dir: 'lib', include: ['*.jar'])
 }
 
 tasks.named('test') {
