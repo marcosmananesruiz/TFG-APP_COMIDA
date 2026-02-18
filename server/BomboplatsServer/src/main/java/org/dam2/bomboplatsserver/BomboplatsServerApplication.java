@@ -9,6 +9,7 @@ public class BomboplatsServerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(BomboplatsServerApplication.class, args);
+
     }
 
 }
