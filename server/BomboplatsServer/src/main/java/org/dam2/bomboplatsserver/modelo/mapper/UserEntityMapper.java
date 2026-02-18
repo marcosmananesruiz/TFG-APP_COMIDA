@@ -1,0 +1,46 @@
+package org.dam2.bomboplatsserver.modelo.mapper;
+
+import org.dam2.bomboplats.api.User;
+import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
+import org.dam2.bomboplatsserver.service.IDireccionService;
+import org.dam2.bomboplatsserver.service.IUserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Mono;
+
+import java.util.stream.Collectors;
+
+public class UserEntityMapper implements EntityMapper<UserEntity, User> {
+
+    @Autowired private IUserService userService;
+    @Autowired private IDireccionService direccionService;
+    @Autowired private DireccionEntityMapper direccionMapper;
+
+    @Override
+    public Mono<UserEntity> map(Mono<User> o) {
+        return o.map(user -> {
+            UserEntity userEntity = new UserEntity();
+            this.userService.getPassword(user.getId() + "") // TODO: CAMBIAR EN LA API A QUE LAS ID SEAN STRINGS
+                    .doOnNext(password -> {
+                        userEntity.setId(user.getId() + ""); // TODO: CAMBIAR EN LA API A QUE LAS ID SEAN STRINGS
+                        userEntity.setNickname(user.getNickname());
+                        userEntity.setEmail(user.getEmail());
+                        userEntity.setPassword(password);
+                        userEntity.setIconUrl(user.getIconUrl());
+                    });
+            return userEntity;
+        });
+    }
+
+    @Override
+    public Mono<User> unmap(Mono<UserEntity> o) {
+        return o.flatMap(userEntity -> this.direccionMapper.mapFlux(this.direccionService.getDireccionesOfUser(userEntity))
+                .collect(Collectors.toSet())
+                .map(direcciones -> User.builder()
+                        .id(0) // TODO: CAMBIAR EN LA API A QUE LAS ID SEAN STRINGS
+                        .nickname(userEntity.getNickname())
+                        .email(userEntity.getEmail())
+                        .iconUrl(userEntity.getIconUrl())
+                        .direcciones(direcciones)
+                        .build()));
+    }
+}

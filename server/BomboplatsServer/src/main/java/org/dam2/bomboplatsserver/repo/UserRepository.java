@@ -1,4 +1,17 @@
 package org.dam2.bomboplatsserver.repo;
 
-public interface UserRepository {
+import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
+
+@Repository
+public interface UserRepository extends ReactiveCrudRepository<UserEntity, String> {
+
+    @Query("SELECT passwrod FROM USUARIOS WHERE ID = :id")
+    Mono<String> findPasswordById(String id);
+
+    @Query("SELECT nextval('user_seq')")
+    Mono<Long> getNextID();
 }
