@@ -2,6 +2,12 @@ package com.example.bomboplats;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Toast;
+
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -25,6 +31,9 @@ public class GeneralActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private NavigationView navigationViewBottom;
     private Toolbar toolbar;
+    private long backPressedTime;
+    private Toast backToast;
+    private EditText searchEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +43,23 @@ public class GeneralActivity extends AppCompatActivity {
         // Toolbar
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Muestra el botón de navegación (hamburguesa)
+        }
+
+        // Botón del carrito en la Toolbar
+        ImageView cartButton = findViewById(R.id.toolbar_shopping_cart);
+        cartButton.setOnClickListener(v -> loadFragment(new MisBombosFragment()));
+
+        // Barra de búsqueda
+        searchEditText = findViewById(R.id.search_edit_text);
+        ImageView searchIcon = findViewById(R.id.search_icon);
+        searchIcon.setOnClickListener(v -> {
+            String searchText = searchEditText.getText().toString();
+            Toast.makeText(GeneralActivity.this, "Buscando: " + searchText, Toast.LENGTH_SHORT).show();
+            // Aquí iría la lógica para realizar la búsqueda
+        });
 
         // DrawerLayout y NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
@@ -86,6 +112,25 @@ public class GeneralActivity extends AppCompatActivity {
             loadFragment(new GeneralFragment());
             navigationView.setCheckedItem(R.id.nav_home);
         }
+
+        // Manejar el botón de "atrás" con el nuevo dispatcher
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                } else if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                    if (backToast != null) {
+                        backToast.cancel();
+                    }
+                    finishAffinity();
+                } else {
+                    backToast = Toast.makeText(GeneralActivity.this, "Pulsa otra vez para salir", Toast.LENGTH_SHORT);
+                    backToast.show();
+                    backPressedTime = System.currentTimeMillis();
+                }
+            }
+        });
     }
 
     private void loadFragment(Fragment fragment) {
@@ -93,4 +138,6 @@ public class GeneralActivity extends AppCompatActivity {
         transaction.replace(R.id.container, fragment);
         transaction.commit();
     }
+
+    // El método onBackPressed() ha sido reemplazado por el OnBackPressedDispatcher en onCreate
 }

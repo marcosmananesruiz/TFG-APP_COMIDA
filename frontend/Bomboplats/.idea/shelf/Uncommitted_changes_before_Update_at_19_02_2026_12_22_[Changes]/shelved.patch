@@ -1,0 +1,40 @@
+Index: app/src/main/java/com/example/bomboplats/GeneralActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.example.bomboplats;\r\n\r\nimport android.os.Bundle;\r\nimport android.widget.Toast;\r\nimport androidx.appcompat.app.ActionBarDrawerToggle;\r\nimport androidx.appcompat.app.AppCompatActivity;\r\nimport androidx.appcompat.widget.Toolbar;\r\nimport androidx.core.view.GravityCompat;\r\nimport androidx.drawerlayout.widget.DrawerLayout;\r\nimport androidx.fragment.app.Fragment;\r\nimport androidx.fragment.app.FragmentTransaction;\r\n\r\nimport com.example.bomboplats.ui.general.GeneralFragment;\r\nimport com.google.android.material.navigation.NavigationView;\r\n\r\npublic class GeneralActivity extends AppCompatActivity {\r\n\r\n    private DrawerLayout drawerLayout;\r\n    private NavigationView navigationView;\r\n    private NavigationView navigationViewBottom;\r\n    private Toolbar toolbar;\r\n\r\n    @Override\r\n    protected void onCreate(Bundle savedInstanceState) {\r\n        super.onCreate(savedInstanceState);\r\n        setContentView(R.layout.activity_general);\r\n\r\n        // Toolbar\r\n        toolbar = findViewById(R.id.toolbar);\r\n        setSupportActionBar(toolbar);\r\n\r\n        // DrawerLayout y NavigationViews\r\n        drawerLayout = findViewById(R.id.drawer_layout);\r\n        navigationView = findViewById(R.id.navigation_view);\r\n        navigationViewBottom = findViewById(R.id.navigation_view_bottom);\r\n\r\n        // Toggle (icono de hamburguesa)\r\n        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(\r\n                this,\r\n                drawerLayout,\r\n                toolbar,\r\n                R.string.drawer_open,\r\n                R.string.drawer_close\r\n        );\r\n        drawerLayout.addDrawerListener(toggle);\r\n        toggle.syncState();\r\n\r\n        // Listener de items del menú principal\r\n        navigationView.setNavigationItemSelectedListener(item -> {\r\n            int itemId = item.getItemId();\r\n            if (itemId == R.id.nav_home) {\r\n                loadFragment(new GeneralFragment());\r\n            } else if (itemId == R.id.nav_settings) {\r\n                // Aquí cargarías tu fragment \"Configuración\"\r\n            } else if (itemId == R.id.nav_misbombos) {\r\n                // ...\r\n            }\r\n            // Deseleccionar items del menú inferior si se selecciona algo arriba\r\n            navigationViewBottom.getMenu().findItem(R.id.nav_cerrarSesion).setChecked(false);\r\n            \r\n            drawerLayout.closeDrawer(GravityCompat.START);\r\n            return true;\r\n        });\r\n\r\n        // Listener para el menú inferior (Cerrar sesión)\r\n        navigationViewBottom.setNavigationItemSelectedListener(item -> {\r\n            int itemId = item.getItemId();\r\n            if (itemId == R.id.nav_cerrarSesion) {\r\n                Toast.makeText(this, \"Cerrando sesión...\", Toast.LENGTH_SHORT).show();\r\n                // Aquí iría tu lógica de logout\r\n                finish(); \r\n            }\r\n            \r\n            // Deseleccionar items del menú superior si se selecciona algo abajo\r\n            int size = navigationView.getMenu().size();\r\n            for (int i = 0; i < size; i++) {\r\n                navigationView.getMenu().getItem(i).setChecked(false);\r\n            }\r\n\r\n            drawerLayout.closeDrawer(GravityCompat.START);\r\n            return true;\r\n        });\r\n\r\n        // Cargar el fragmento inicial y seleccionar el item del menú\r\n        if (savedInstanceState == null) {\r\n            loadFragment(new GeneralFragment());\r\n            navigationView.setCheckedItem(R.id.nav_home);\r\n        }\r\n    }\r\n\r\n    private void loadFragment(Fragment fragment) {\r\n        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();\r\n        transaction.replace(R.id.container, fragment);\r\n        transaction.commit();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/bomboplats/GeneralActivity.java b/app/src/main/java/com/example/bomboplats/GeneralActivity.java
+--- a/app/src/main/java/com/example/bomboplats/GeneralActivity.java	(revision 2836ad692e54b586c8d019bffea910b9f47d3120)
++++ b/app/src/main/java/com/example/bomboplats/GeneralActivity.java	(date 1771499024403)
+@@ -50,7 +50,7 @@
+             int itemId = item.getItemId();
+             if (itemId == R.id.nav_home) {
+                 loadFragment(new GeneralFragment());
+-            } else if (itemId == R.id.nav_settings) {
++            } else if (itemId == R.id.nav_configuracion) {
+                 // Aquí cargarías tu fragment "Configuración"
+             } else if (itemId == R.id.nav_misbombos) {
+                 // ...
+Index: app/src/main/res/menu/drawer_menu.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><menu xmlns:android=\"http://schemas.android.com/apk/res/android\">\r\n    <item\r\n        android:id=\"@+id/nav_home\"\r\n        android:title=\"Inicio\" />\r\n    <item\r\n        android:id=\"@+id/nav_settings\"\r\n        android:title=\"Configuración\" />\r\n    <item\r\n        android:id=\"@+id/nav_misbombos\"\r\n        android:title=\"Mis bombos\" />\r\n    <item\r\n        android:id=\"@+id/nav_historialDeBombos\"\r\n        android:title=\"Historial de bombos\" />\r\n    <item\r\n        android:id=\"@+id/nav_notificaciones\"\r\n        android:title=\"Notificaciones\" />\r\n    <item\r\n        android:id=\"@+id/nav_configuracion\"\r\n        android:title=\"Configuracion\" />\r\n</menu>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/res/menu/drawer_menu.xml b/app/src/main/res/menu/drawer_menu.xml
+--- a/app/src/main/res/menu/drawer_menu.xml	(revision 2836ad692e54b586c8d019bffea910b9f47d3120)
++++ b/app/src/main/res/menu/drawer_menu.xml	(date 1771338144607)
+@@ -3,8 +3,8 @@
+         android:id="@+id/nav_home"
+         android:title="Inicio" />
+     <item
+-        android:id="@+id/nav_settings"
+-        android:title="Configuración" />
++        android:id="@+id/nav_account"
++        android:title="Cuenta" />
+     <item
+         android:id="@+id/nav_misbombos"
+         android:title="Mis bombos" />

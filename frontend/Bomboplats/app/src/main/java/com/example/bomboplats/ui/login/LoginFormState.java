@@ -5,19 +5,20 @@ import androidx.annotation.Nullable;
 /**
  * Data validation state of the login form.
  */
-class LoginFormState {
+class LoginFormState { // Comprueba que los datos sean válidos.
     @Nullable
     private Integer usernameError;
     @Nullable
     private Integer passwordError;
     private boolean isDataValid;
 
+    // Guarda el id del usuario y de su contraseña en caso de que haya error
     LoginFormState(@Nullable Integer usernameError, @Nullable Integer passwordError) {
         this.usernameError = usernameError;
         this.passwordError = passwordError;
         this.isDataValid = false;
     }
-
+    // Cuando los datos son válidos, nullea los campos
     LoginFormState(boolean isDataValid) {
         this.usernameError = null;
         this.passwordError = null;
