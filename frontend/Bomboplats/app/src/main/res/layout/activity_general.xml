@@ -61,7 +61,7 @@
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:background="@null"
-                        android:hint="Buscar..."
+                        android:hint="Buscar bomboplats..."
                         android:imeOptions="actionSearch"
                         android:inputType="text"
                         android:paddingStart="16dp"
