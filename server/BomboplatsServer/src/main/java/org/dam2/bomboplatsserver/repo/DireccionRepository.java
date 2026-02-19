@@ -10,8 +10,10 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface DireccionRepository extends ReactiveCrudRepository<DireccionEntity, String> {
 
-    @Query("SELECT * FROM DIRECCIONES WHERE idResidente = :userId")
+    @Query("SELECT * FROM DIRECCIONES WHERE idResidente = :user_id")
     Flux<DireccionEntity> findDireccionByResidentId(String userId);
+
+    Mono<String> findIdResidenteById(String id);
 
     @Query("SELECT nextval('dir_seq')")
     Mono<Long> getNextID();

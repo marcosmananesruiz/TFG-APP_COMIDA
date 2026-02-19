@@ -25,6 +25,11 @@ public class DireccionServiceImpl implements IDireccionService {
     }
 
     @Override
+    public Flux<DireccionEntity> findAll() {
+        return this.repo.findAll();
+    }
+
+    @Override
     public Mono<Boolean> register(DireccionEntity direccionEntity) {
         return this.repo.existsById(direccionEntity.getId())
                 .flatMap(exists -> { // .map() funcionaria pero puede pasar que el elemento sea una lista, mejor usar flatmap
@@ -34,7 +39,7 @@ public class DireccionServiceImpl implements IDireccionService {
                             this.repo.save(direccionEntity).doOnNext(savedEntity -> {
                                 // Como quiero mostrar información de la entidad que se acaba de registrar,
                                 // me suscribo al observable para que consuma el dato en cuanto llegue
-                                LOGGER.info("User saved with id {}", savedEntity.getId());
+                                LOGGER.info("Direccion saved with id {}", savedEntity.getId());
                             });
                         });
                     }
@@ -70,6 +75,11 @@ public class DireccionServiceImpl implements IDireccionService {
                     }
                     return Mono.just(exists);
                 });
+    }
+
+    @Override
+    public Mono<String> getIdResidente(String id) {
+        return this.repo.findIdResidenteById(id);
     }
 
     @Override

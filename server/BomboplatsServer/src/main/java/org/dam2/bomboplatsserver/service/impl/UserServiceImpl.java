@@ -1,5 +1,6 @@
 package org.dam2.bomboplatsserver.service.impl;
 
+import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.repo.UserRepository;
 import org.dam2.bomboplatsserver.service.IUserService;
@@ -7,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -20,6 +22,11 @@ public class UserServiceImpl implements IUserService {
     @Override
     public Mono<UserEntity> findByID(String id) {
         return this.repo.findById(id);
+    }
+
+    @Override
+    public Flux<UserEntity> findAll() {
+        return this.repo.findAll();
     }
 
     @Override
@@ -79,7 +86,10 @@ public class UserServiceImpl implements IUserService {
         return this.repo.findPasswordById(id);
     }
 
-
+    @Override
+    public Mono<UserEntity> findByEmail(String email) {
+        return this.repo.findUserEntityByEmail(email);
+    }
 
 
 }

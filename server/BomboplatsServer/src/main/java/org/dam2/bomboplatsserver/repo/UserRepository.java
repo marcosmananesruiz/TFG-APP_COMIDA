@@ -14,4 +14,6 @@ public interface UserRepository extends ReactiveCrudRepository<UserEntity, Strin
 
     @Query("SELECT nextval('user_seq')")
     Mono<Long> getNextID();
+
+    Mono<UserEntity> findUserEntityByEmail(String email);
 }

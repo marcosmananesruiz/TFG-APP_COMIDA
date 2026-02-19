@@ -4,6 +4,8 @@ import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class ServerConfig {
@@ -16,5 +18,10 @@ public class ServerConfig {
     @Bean
     public DireccionEntityMapper direccionEntityMapper() {
         return new DireccionEntityMapper();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(10);
     }
 }

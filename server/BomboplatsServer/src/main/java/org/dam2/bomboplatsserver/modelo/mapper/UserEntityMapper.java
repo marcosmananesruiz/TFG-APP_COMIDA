@@ -5,6 +5,7 @@ import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.dam2.bomboplatsserver.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.stream.Collectors;
@@ -19,9 +20,9 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
     public Mono<UserEntity> map(Mono<User> o) {
         return o.map(user -> {
             UserEntity userEntity = new UserEntity();
-            this.userService.getPassword(user.getId() + "") // TODO: CAMBIAR EN LA API A QUE LAS ID SEAN STRINGS
+            this.userService.getPassword(user.getId())
                     .doOnNext(password -> {
-                        userEntity.setId(user.getId() + ""); // TODO: CAMBIAR EN LA API A QUE LAS ID SEAN STRINGS
+                        userEntity.setId(user.getId());
                         userEntity.setNickname(user.getNickname());
                         userEntity.setEmail(user.getEmail());
                         userEntity.setPassword(password);
@@ -36,7 +37,20 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
         return o.flatMap(userEntity -> this.direccionMapper.mapFlux(this.direccionService.getDireccionesOfUser(userEntity))
                 .collect(Collectors.toSet())
                 .map(direcciones -> User.builder()
-                        .id(0) // TODO: CAMBIAR EN LA API A QUE LAS ID SEAN STRINGS
+                        .id(userEntity.getId())
+                        .nickname(userEntity.getNickname())
+                        .email(userEntity.getEmail())
+                        .iconUrl(userEntity.getIconUrl())
+                        .direcciones(direcciones)
+                        .build()));
+    }
+
+    @Override
+    public Flux<User> mapFlux(Flux<UserEntity> o) {
+        return o.flatMap(userEntity -> this.direccionMapper.mapFlux(this.direccionService.getDireccionesOfUser(userEntity))
+                .collect(Collectors.toSet())
+                .map(direcciones -> User.builder()
+                        .id(userEntity.getId())
                         .nickname(userEntity.getNickname())
                         .email(userEntity.getEmail())
                         .iconUrl(userEntity.getIconUrl())
