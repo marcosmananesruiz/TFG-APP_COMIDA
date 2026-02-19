@@ -4,7 +4,7 @@
         android:title="Inicio" />
     <item
         android:id="@+id/nav_settings"
-        android:title="Configuración" />
+        android:title="Cuenta" />
     <item
         android:id="@+id/nav_misbombos"
         android:title="Mis bombos" />
