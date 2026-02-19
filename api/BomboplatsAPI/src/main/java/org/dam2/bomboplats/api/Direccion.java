@@ -7,9 +7,11 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@EqualsAndHashCode
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Direccion {
 
+    @EqualsAndHashCode.Include
+    private String id;
     private String poblacion;
     private String codigoPostal;
     private String calle;
@@ -18,6 +20,6 @@ public class Direccion {
 
 
     public static Direccion testDirecccion() {
-        return new Direccion("Test", "00001", "Calle Testeo", 0, "1ºA");
+        return new Direccion("D00000","Test", "00001", "Calle Testeo", 0, "1ºA");
     }
 }

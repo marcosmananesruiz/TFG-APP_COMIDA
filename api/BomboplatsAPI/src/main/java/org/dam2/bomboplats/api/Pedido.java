@@ -14,13 +14,17 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Pedido {
 
-    private long id;
+    @EqualsAndHashCode.Include
+    private String id;
     private Plato plato;
     private User user;
     private List<String> modifications;
     private Estado estado;
     private LocalDateTime entrega;
 
+    public boolean estaEntrgado() {
+        return this.entrega.isBefore(LocalDateTime.now());
+    }
 
     public enum Estado {
         PREPARING,

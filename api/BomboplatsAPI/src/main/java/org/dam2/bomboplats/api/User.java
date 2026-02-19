@@ -11,8 +11,9 @@ import java.util.Set;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class User {
+
     @EqualsAndHashCode.Include
-    private long id;
+    private String id;
     private String nickname;
     private String email;
     private String iconUrl;
@@ -20,7 +21,7 @@ public class User {
 
 
     public static User testUser() {
-        return new User(0, "Usuario Test", "test@bomboplats.es", "icon/fail", Set.of(Direccion.testDirecccion()));
+        return new User("U00000", "Usuario Test", "test@bomboplats.es", "icon/fail", Set.of(Direccion.testDirecccion()));
     }
 
 }
