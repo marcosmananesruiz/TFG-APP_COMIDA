@@ -12,7 +12,7 @@ import java.util.List;
 public class Plato {
 
     @EqualsAndHashCode.Include
-    private long id;
+    private String id;
     private String nombre;
     private String description;
     private String iconUrl;

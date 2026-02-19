@@ -14,7 +14,7 @@ import java.util.Set;
 public class Restaurante {
 
     @EqualsAndHashCode.Include
-    private long id;
+    private String id;
     private String nombre;
     private String description;
     private String iconUrl;
