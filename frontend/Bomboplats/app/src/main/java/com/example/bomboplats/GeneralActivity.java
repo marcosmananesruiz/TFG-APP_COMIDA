@@ -1,5 +1,6 @@
 package com.example.bomboplats;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import com.example.bomboplats.ui.configuracion.ConfiguracionFragment;
 import com.example.bomboplats.ui.cuenta.CuentaFragment;
 import com.example.bomboplats.ui.general.GeneralFragment;
 import com.example.bomboplats.ui.historial.HistorialFragment;
+import com.example.bomboplats.ui.login.LoginActivity;
 import com.example.bomboplats.ui.misbombos.MisBombosFragment;
 import com.example.bomboplats.ui.notificaciones.NotificacionesFragment;
 import com.google.android.material.navigation.NavigationView;
@@ -21,6 +23,7 @@ public class GeneralActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private NavigationView navigationViewBottom;
     private Toolbar toolbar;
 
     @Override
@@ -35,6 +38,7 @@ public class GeneralActivity extends AppCompatActivity {
         // DrawerLayout y NavigationView
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
+        navigationViewBottom = findViewById(R.id.navigation_view_bottom);
 
         // Toggle (icono de hamburguesa)
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -64,6 +68,16 @@ public class GeneralActivity extends AppCompatActivity {
                 loadFragment(new ConfiguracionFragment());
             }
             drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+
+        // Listener para el menú inferior (Cerrar Sesión)
+        navigationViewBottom.setNavigationItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.nav_cerrarSesion) {
+                Intent intent = new Intent(GeneralActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
             return true;
         });
 
