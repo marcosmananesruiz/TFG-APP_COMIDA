@@ -28,6 +28,7 @@ public class PlatoEntity {
 
     private String idRestaurante; //relacion con RestauranteEntity, Length = 8. Borrar los platos no borrara los restaurantes.
 
+    private String polla;
 
 
 }
