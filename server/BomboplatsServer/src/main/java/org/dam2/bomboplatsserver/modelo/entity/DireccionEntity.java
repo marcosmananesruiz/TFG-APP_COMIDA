@@ -29,5 +29,5 @@ public class DireccionEntity {
 
     // Esto si tenemos dudas, se lo pasamos a la IA y que haga como se verian las relaciones
 
-    private String idResidente; // Relacion con UserEntity y RestauranteEntity, Length = 8. Borrar las direcciones no borrara los usuarios ni restaurantes
+    private String idResidente; // Relacion con UserEntity y RestauranteEntity, Length = 8. Borrar las direcciones  no borrara los usuarios ni restaurantes
 }
