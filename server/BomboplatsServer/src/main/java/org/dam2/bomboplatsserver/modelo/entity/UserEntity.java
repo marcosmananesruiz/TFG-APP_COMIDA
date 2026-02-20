@@ -18,11 +18,11 @@ public class UserEntity {
     @EqualsAndHashCode.Include
     // Parece que no hay que poner @GeneratedValue :)
     @Id
-    private String id;
-    private String nickname;
-    private String email;
-    private String password;
-    private String iconUrl;
+    private String id; // Length = 8
+    private String nickname; // Length = 32
+    private String email; // Length = 254
+    private String password; // Length = 60
+    private String iconUrl; // Length = 32
 
     // Por usar reactividad, no estamos usando el JPA que conocemos por lo que hemos perdido
     // las anotaciones @OneToOne, @ManyToOne...

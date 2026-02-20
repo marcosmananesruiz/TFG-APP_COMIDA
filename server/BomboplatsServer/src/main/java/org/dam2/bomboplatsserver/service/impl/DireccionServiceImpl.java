@@ -7,6 +7,8 @@ import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,6 +17,8 @@ import reactor.core.publisher.Mono;
 public class DireccionServiceImpl implements IDireccionService {
 
     @Autowired private DireccionRepository repo;
+    @Autowired private R2dbcEntityTemplate template;
+
     public static final Logger LOGGER = LoggerFactory.getLogger(DireccionServiceImpl.class);
 
     private final String UNIQUE_CHAR = "D";
@@ -31,33 +35,25 @@ public class DireccionServiceImpl implements IDireccionService {
 
     @Override
     public Mono<Boolean> register(DireccionEntity direccionEntity) {
-        return this.repo.existsById(direccionEntity.getId())
-                .flatMap(exists -> { // .map() funcionaria pero puede pasar que el elemento sea una lista, mejor usar flatmap
-                    if (!exists) {
-                        this.repo.getNextID().doOnNext(idNumber -> {
-                            direccionEntity.setId(this.UNIQUE_CHAR + idNumber);
-                            this.repo.save(direccionEntity).doOnNext(savedEntity -> {
-                                // Como quiero mostrar información de la entidad que se acaba de registrar,
-                                // me suscribo al observable para que consuma el dato en cuanto llegue
-                                LOGGER.info("Direccion saved with id {}", savedEntity.getId());
-                            });
-                        });
-                    }
-                    return Mono.just(!exists);
+        return this.repo.getNextID()
+                .map(idNumber -> this.UNIQUE_CHAR + idNumber)
+                .flatMap(id -> {
+                    direccionEntity.setId(id);
+                    return this.template.insert(DireccionEntity.class).using(direccionEntity);
+                }).thenReturn(true)
+                .onErrorResume(DuplicateKeyException.class, e -> {
+                    LOGGER.error("{}: Se ha intentado registrar una direccion con ID {}, la cual ya existe", e.getMessage(), direccionEntity.getId());
+                   return Mono.just(false);
                 });
     }
 
     @Override
     public Mono<Boolean> update(DireccionEntity direccionEntity) {
-        return this.repo.existsById(direccionEntity.getId())
-                .flatMap(exists -> {
-                    if (exists) {
-                        this.repo.save(direccionEntity).doOnNext(updatedEntity -> {
-                            LOGGER.info("Direccion with id {} updated", updatedEntity.getId());
-                        });
-                    }
-                    return Mono.just(exists);
-                });
+        return this.repo.findById(direccionEntity.getId())
+                .flatMap(_ -> this.repo.save(direccionEntity)
+                        .doOnNext(updatedEntity -> LOGGER.info("Direccion con ID {} actualizada", updatedEntity.getId()))
+                        .thenReturn(true)
+                ).defaultIfEmpty(false);
     }
 
     @Override
@@ -67,14 +63,11 @@ public class DireccionServiceImpl implements IDireccionService {
 
     @Override
     public Mono<Boolean> deleteDireccionByID(String id) {
-        return this.repo.existsById(id)
-                .flatMap(exists -> {
-                    if (exists) {
-                        this.repo.deleteById(id);
-                        LOGGER.info("Direccion with id {} deleted", id);
-                    }
-                    return Mono.just(exists);
-                });
+        return this.repo.findById(id)
+                .flatMap(exists -> this.repo.deleteById(id)
+                        .doOnNext(deletedId -> LOGGER.info("Direccion con ID {} eliminado", deletedId))
+                        .thenReturn(true)
+                ).defaultIfEmpty(false);
     }
 
     @Override

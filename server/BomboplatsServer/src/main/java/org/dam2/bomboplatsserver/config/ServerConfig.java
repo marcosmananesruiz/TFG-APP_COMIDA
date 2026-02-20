@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.config;
 
 import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
+import org.dam2.bomboplatsserver.modelo.mapper.PedidoEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +19,11 @@ public class ServerConfig {
     @Bean
     public DireccionEntityMapper direccionEntityMapper() {
         return new DireccionEntityMapper();
+    }
+
+    @Bean
+    public PedidoEntityMapper pedidoEntityMapper() {
+        return new PedidoEntityMapper();
     }
 
     @Bean

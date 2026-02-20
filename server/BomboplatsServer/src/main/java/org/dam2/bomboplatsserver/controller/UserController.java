@@ -25,7 +25,7 @@ public class UserController {
         return this.service.findByEmail(loginAttempt.email()).map(userEntity -> {
             String storedPassword = userEntity.getPassword();
             return this.encoder.matches(loginAttempt.password(), storedPassword);
-        });
+        }).switchIfEmpty(Mono.just(false));
     }
 
     @GetMapping("/get/{id}") // /users/{id}
@@ -38,7 +38,7 @@ public class UserController {
     public Mono<Boolean> registerUser(@RequestBody User user, @RequestParam String password) {
         Mono<UserEntity> entity = this.mapper.map(Mono.just(user));
         return entity.flatMap(userEntity -> {
-            String hashedPassword = encoder.encode(password);
+            String hashedPassword = this.encoder.encode(password);
             userEntity.setPassword(hashedPassword);
             return this.service.register(userEntity);
         });

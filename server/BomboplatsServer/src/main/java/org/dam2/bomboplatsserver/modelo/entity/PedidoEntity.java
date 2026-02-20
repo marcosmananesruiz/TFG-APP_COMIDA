@@ -20,11 +20,10 @@ public class PedidoEntity {
 
     @EqualsAndHashCode.Include
     @Id
-    private String id;
-    private String idPlato; // Relacion con Plato
-    private String idUser; // Relacion con User
-    // PostgreSQL soporta arrays en texto y numeros, para almacenar las modificaciones
-    private String[] modificaciones;
-    private Pedido.Estado estado;
+    private String id; // Length = 8
+    private String idPlato; // Relacion con Plato. Length = 8. Borrar el pedido no borraria el Plato
+    private String idUser; // Relacion con User. Length = 8. Borrar el pedido no borraria el User
+    private String[] modificaciones; // PostgreSQL soporta arrays en texto y numeros, para almacenar las modificaciones
+    private Pedido.Estado estado; // Usa converter Length = 10
     private LocalDateTime entrega;
 }
