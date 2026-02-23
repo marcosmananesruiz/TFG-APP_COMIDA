@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
-@Table("DIRECCION")
+@Table("DIRECCIONES")
 public class DireccionEntity {
 
     @EqualsAndHashCode.Include

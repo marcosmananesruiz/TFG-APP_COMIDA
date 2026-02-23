@@ -32,7 +32,7 @@ public class PedidoController {
     }
 
     @GetMapping(value = "/get", params = "estado")
-    public Flux<Pedido> getPedidosByEstado(@RequestParam String estado) {
+    public Flux<Pedido> getPedidosByEstado(@RequestParam(required = false) String estado) {
         String estadoUpper = estado.toUpperCase();
         Pedido.Estado est;
         try {

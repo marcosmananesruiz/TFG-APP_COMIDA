@@ -35,13 +35,9 @@ public class UserController {
     }
 
     @PostMapping("/register") // Se pasa por json con el body
-    public Mono<Boolean> registerUser(@RequestBody User user, @RequestParam String password) {
-        Mono<UserEntity> entity = this.mapper.map(Mono.just(user));
-        return entity.flatMap(userEntity -> {
-            String hashedPassword = this.encoder.encode(password);
-            userEntity.setPassword(hashedPassword);
-            return this.service.register(userEntity);
-        });
+    public Mono<Boolean> registerUser(String nickname, String email, String password) { // Aqui va a haber un RegisterAttempt en la API
+        UserEntity userEntity = new UserEntity("", nickname, email, password, "");
+        return this.service.register(userEntity);
     }
 
     @DeleteMapping("/delete/{id}")

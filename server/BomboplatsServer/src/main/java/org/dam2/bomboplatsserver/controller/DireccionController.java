@@ -31,7 +31,7 @@ public class DireccionController {
                 .flatMap(direccionEntity -> this.service.register(direccionEntity));
     }
 
-    @PutMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public Mono<Boolean> deleteById(@PathVariable String id) {
         return this.service.deleteDireccionByID(id);
     }
