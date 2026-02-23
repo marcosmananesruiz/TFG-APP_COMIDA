@@ -24,11 +24,4 @@ public class UserEntity {
     private String password; // Length = 60
     private String iconUrl; // Length = 32
 
-    // Por usar reactividad, no estamos usando el JPA que conocemos por lo que hemos perdido
-    // las anotaciones @OneToOne, @ManyToOne...
-    // Tenemos que hacer las relaciones TAL CUAL estarian en la base de datos.
-    // Ejemplo en DireccionEntity
-
-    //private List<DireccionEntity> direcciones;
-
 }

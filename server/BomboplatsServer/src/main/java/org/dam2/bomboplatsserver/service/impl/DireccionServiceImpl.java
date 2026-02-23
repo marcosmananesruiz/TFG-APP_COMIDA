@@ -65,9 +65,9 @@ public class DireccionServiceImpl implements IDireccionService {
     public Mono<Boolean> deleteDireccionByID(String id) {
         return this.repo.findById(id)
                 .flatMap(exists -> this.repo.deleteById(id)
-                        .doOnNext(deletedId -> LOGGER.info("Direccion con ID {} eliminado", deletedId))
+                        .doOnSuccess(deletedId -> LOGGER.info("Direccion con ID {} eliminado", deletedId))
                         .thenReturn(true)
-                ).defaultIfEmpty(false);
+                );
     }
 
     @Override

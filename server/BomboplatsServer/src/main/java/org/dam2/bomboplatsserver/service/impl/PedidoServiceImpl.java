@@ -1,5 +1,6 @@
 package org.dam2.bomboplatsserver.service.impl;
 
+import org.dam2.bomboplats.api.Pedido;
 import org.dam2.bomboplatsserver.modelo.entity.PedidoEntity;
 import org.dam2.bomboplatsserver.repo.PedidoRepository;
 import org.dam2.bomboplatsserver.service.IPedidoService;
@@ -60,8 +61,13 @@ public class PedidoServiceImpl implements IPedidoService {
     public Mono<Boolean> deletePedidoById(String id) {
         return this.repo.findById(id)
                 .flatMap(exists -> this.repo.deleteById(id)
-                       .doOnNext(deletedId -> LOGGER.info("Pedido con ID {} eliminado", deletedId))
+                       .doOnSuccess(deletedId -> LOGGER.info("Pedido con ID {} eliminado", deletedId))
                        .thenReturn(true)
-                ).defaultIfEmpty(false);
+                );
+    }
+
+    @Override
+    public Flux<PedidoEntity> findByEstado(Pedido.Estado estado) {
+        return this.repo.findPedidoEntityByEstado(estado);
     }
 }

@@ -70,9 +70,9 @@ public class UserServiceImpl implements IUserService {
     public Mono<Boolean> deleteUserByID(String id) {
         return this.repo.findById(id)
                 .flatMap(exists -> this.repo.deleteById(id)
-                        .doOnNext(deletedId -> LOGGER.info("Pedido con ID {} eliminado", deletedId))
+                        .doOnSuccess(deletedId -> LOGGER.info("Pedido con ID {} eliminado", deletedId))
                         .thenReturn(true)
-                ).defaultIfEmpty(false);
+                );
     }
 
     @Override

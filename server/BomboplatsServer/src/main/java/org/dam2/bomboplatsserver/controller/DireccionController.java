@@ -9,7 +9,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/direcciones")
+@RequestMapping("/direccion")
 public class DireccionController {
 
     @Autowired private IDireccionService service;

@@ -22,7 +22,7 @@ public class PedidoController {
     }
 
     @GetMapping("/get/{id}")
-    public Mono<Pedido> findById(@PathVariable String id) {
+    public Mono<Pedido> getPedidoById(@PathVariable String id) {
         return this.mapper.unmap(this.service.findById(id));
     }
 
@@ -30,4 +30,22 @@ public class PedidoController {
     public Mono<Boolean> register(@RequestBody Pedido pedido) {
         return this.mapper.map(Mono.just(pedido)).flatMap(pedidoEntity -> this.service.register(pedidoEntity));
     }
+
+    @GetMapping(value = "/get", params = "estado")
+    public Flux<Pedido> getPedidosByEstado(@RequestParam String estado) {
+        String estadoUpper = estado.toUpperCase();
+        Pedido.Estado est;
+        try {
+            est = Pedido.Estado.valueOf(estadoUpper);
+        } catch (IllegalArgumentException e) {
+            return Flux.empty(); // Si por alguna razon le pasan un estado que no existe, pues que devuelva un Flux vacio en vez de que se la pegue
+        }
+        return this.mapper.mapFlux(this.service.findByEstado(est));
+    }
+
+    @PutMapping("/save")
+    public Mono<Boolean> updatePedido(@RequestBody Pedido pedido) {
+        return this.mapper.map(Mono.just(pedido)).flatMap(pedidoEntity -> this.service.update(pedidoEntity));
+    }
+
 }

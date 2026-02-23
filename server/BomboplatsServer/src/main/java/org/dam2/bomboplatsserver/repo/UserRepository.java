@@ -9,11 +9,13 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface UserRepository extends ReactiveCrudRepository<UserEntity, String> {
 
-    @Query("SELECT passwrod FROM USUARIOS WHERE ID = :id")
+    @Query("SELECT password FROM USUARIOS WHERE ID = :id")
     Mono<String> findPasswordById(String id);
 
     @Query("SELECT nextval('user_seq')")
     Mono<Long> getNextID();
 
     Mono<UserEntity> findUserEntityByEmail(String email);
+
+
 }
