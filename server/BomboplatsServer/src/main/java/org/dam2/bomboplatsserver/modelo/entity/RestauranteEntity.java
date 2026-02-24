@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
-@Table("RESTAURANTES")
+@Table("restaurantes")
 public class RestauranteEntity {
 
     @Id

@@ -17,7 +17,7 @@ public interface RestauranteRepository extends ReactiveCrudRepository<Restaurant
 
     Flux<RestauranteEntity> findByDescriptionContainingIgnoreCase(String description);
 
-    @Query("SELECT nextval('rest_seq')")
+    @Query("SELECT nextval('restaurante_seq')")
     Mono<Long> getNextID();
 
     @Query("SELECT * FROM RESTAURANTES r WHERE :tag = ANY(r.tags)")

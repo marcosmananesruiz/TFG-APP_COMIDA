@@ -13,7 +13,7 @@ import java.util.Set;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
-@Table("PLATOS")
+@Table("platos")
 public class PlatoEntity {
 
     @Id
