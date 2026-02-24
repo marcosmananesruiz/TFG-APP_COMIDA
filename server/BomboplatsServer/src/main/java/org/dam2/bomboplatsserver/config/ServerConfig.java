@@ -1,8 +1,7 @@
 package org.dam2.bomboplatsserver.config;
 
-import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.PedidoEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
+import org.dam2.bomboplatsserver.modelo.mapper.*;
+import org.dam2.bomboplatsserver.repo.RestauranteRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -26,6 +25,16 @@ public class ServerConfig {
     @Bean
     public PedidoEntityMapper pedidoEntityMapper() {
         return new PedidoEntityMapper();
+    }
+
+    @Bean
+    public PlatoEntityMapper platoEntityMapper() {
+        return new PlatoEntityMapper();
+    }
+
+    @Bean
+    public RestauranteEntityMapper restauranteEntityMapper() {
+        return new RestauranteEntityMapper();
     }
 
     @Bean

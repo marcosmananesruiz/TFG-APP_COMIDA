@@ -48,4 +48,15 @@ public class PedidoController {
         return this.mapper.map(Mono.just(pedido)).flatMap(pedidoEntity -> this.service.update(pedidoEntity));
     }
 
+    @PostMapping("/load")
+    public Mono<String> load(@RequestBody PedidoEntity pedidoEntity) {
+        return this.service.register(pedidoEntity).map(success -> {
+            if (success) {
+                return "Se ha registrado el pedido";
+            } else {
+                return "No se ha podido registrar el pedido";
+            }
+        });
+    }
+
 }

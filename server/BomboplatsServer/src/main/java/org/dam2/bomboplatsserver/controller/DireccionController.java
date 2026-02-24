@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.controller;
 
 import org.dam2.bomboplats.api.Direccion;
+import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +35,16 @@ public class DireccionController {
     @DeleteMapping("/delete/{id}")
     public Mono<Boolean> deleteById(@PathVariable String id) {
         return this.service.deleteDireccionByID(id);
+    }
+
+    @PostMapping("/load")
+    public Mono<String> load(@RequestBody DireccionEntity direccionEntity) {
+        return this.service.register(direccionEntity).map(success -> {
+            if (success) {
+                return "Se ha registrado la direccion";
+            } else {
+                return "No se ha podido registrar la direccion";
+            }
+        });
     }
 }

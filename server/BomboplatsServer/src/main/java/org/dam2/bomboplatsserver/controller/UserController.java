@@ -1,9 +1,9 @@
 package org.dam2.bomboplatsserver.controller;
 
 
-import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
+import org.dam2.bomboplats.api.login.UserRegister;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
 import org.dam2.bomboplatsserver.service.IUserService;
@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.HashSet;
-
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -23,7 +21,9 @@ public class UserController {
     @Autowired private UserEntityMapper mapper;
     @Autowired private PasswordEncoder encoder;
 
-    @GetMapping("/login")
+    private final String DEFAULT_ICON = "default.jpg"; // En el almacenamiento de imagenes, tendremos una por defecto y palante
+
+    @PutMapping("/login")
     public Mono<Boolean> login(@RequestBody LoginAttempt loginAttempt) {
         return this.service.findByEmail(loginAttempt.email()).map(userEntity -> {
             String storedPassword = userEntity.getPassword();
@@ -31,15 +31,16 @@ public class UserController {
         }).switchIfEmpty(Mono.just(false));
     }
 
-    @GetMapping("/get/{id}") // /users/{id}
+    @GetMapping("/get/{id}")
     public Mono<User> getByID(@PathVariable String id) {
         Mono<UserEntity> monoEntity = this.service.findByID(id);
         return this.mapper.unmap(monoEntity);
     }
 
-    @PostMapping("/register") // Se pasa por json con el body
-    public Mono<Boolean> registerUser(String nickname, String email, String password) { // Aqui va a haber un RegisterAttempt en la API
-        UserEntity userEntity = new UserEntity("", nickname, email, password, "");
+    @PostMapping("/register")
+    public Mono<Boolean> registerUser(@RequestBody UserRegister register) {
+        UserEntity userEntity = new UserEntity("", register.nickname(), register.email(), "", this.DEFAULT_ICON);
+        userEntity.setPassword(this.encoder.encode(register.password()));
         return this.service.register(userEntity);
     }
 
@@ -53,10 +54,10 @@ public class UserController {
         return this.mapper.mapFlux(this.service.findAll());
     }
 
-    @PostMapping("/cargar")
-    public Mono<String> cargarTest() {
-
-        UserEntity userEntity = UserEntity.builder().email("test@test.com").nickname("test").iconUrl("imagenes/icon").password("1234").build();
+    @PostMapping("/load")
+    public Mono<String> load(@RequestBody UserEntity userEntity) {
+        String password = userEntity.getPassword();
+        userEntity.setPassword(this.encoder.encode(password)); // La hasheo aunque sea test para que el endpoint de login siga funcionando
         return this.service.register(userEntity).map(success ->  {
            if (success) {
                return "Se registro el usuario";
