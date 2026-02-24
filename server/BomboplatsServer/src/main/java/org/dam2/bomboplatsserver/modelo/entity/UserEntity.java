@@ -12,7 +12,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 // Con datos reactivos no se pone @Entity!
-@Table("USUARIOS")
+@Table("usuarios")
 public class UserEntity {
 
     @EqualsAndHashCode.Include

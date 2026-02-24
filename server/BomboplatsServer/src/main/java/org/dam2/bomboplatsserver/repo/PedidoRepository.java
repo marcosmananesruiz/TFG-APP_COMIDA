@@ -7,11 +7,9 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 public interface PedidoRepository extends ReactiveCrudRepository<PedidoEntity, String> {
 
-    @Query("SELECT nextval('dir_ped')")
+    @Query("SELECT nextval('pedido_seq')")
     Mono<Long> getNextID();
 
     Flux<PedidoEntity> findPedidoEntityByEstado(Pedido.Estado estado);

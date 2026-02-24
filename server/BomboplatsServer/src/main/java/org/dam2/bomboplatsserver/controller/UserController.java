@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.controller;
 
 
+import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
@@ -11,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.HashSet;
 
 @RestController
 @RequestMapping("/users")
@@ -48,5 +51,18 @@ public class UserController {
     @GetMapping("/get")
     public Flux<User> findAll() {
         return this.mapper.mapFlux(this.service.findAll());
+    }
+
+    @PostMapping("/cargar")
+    public Mono<String> cargarTest() {
+
+        UserEntity userEntity = UserEntity.builder().email("test@test.com").nickname("test").iconUrl("imagenes/icon").password("1234").build();
+        return this.service.register(userEntity).map(success ->  {
+           if (success) {
+               return "Se registro el usuario";
+           } else {
+               return "No se registro al usuario";
+           }
+        });
     }
 }

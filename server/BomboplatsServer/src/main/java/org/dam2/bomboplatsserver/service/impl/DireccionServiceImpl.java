@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.service.impl;
 
 import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
+import org.dam2.bomboplatsserver.modelo.entity.RestauranteEntity;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.repo.DireccionRepository;
 import org.dam2.bomboplatsserver.service.IDireccionService;
@@ -71,12 +72,21 @@ public class DireccionServiceImpl implements IDireccionService {
     }
 
     @Override
-    public Mono<String> getIdResidente(String id) {
-        return this.repo.findIdResidenteById(id);
+    public Mono<String> getUserID(String id) {
+        return this.repo.findIdUserById(id);
+    }
+    @Override
+    public Mono<String> getRestauranteID(String id) {
+        return this.repo.findIdRestauranteById(id);
     }
 
     @Override
     public Flux<DireccionEntity> getDireccionesOfUser(UserEntity userEntity) {
-        return this.repo.findDireccionByResidentId(userEntity.getId());
+        return this.repo.findByIdUser(userEntity.getId());
+    }
+
+    @Override
+    public Flux<DireccionEntity> getDireccionesOfRestaurante(RestauranteEntity restauranteEntity) {
+        return this.repo.findByIdRestaurante(restauranteEntity.getId());
     }
 }

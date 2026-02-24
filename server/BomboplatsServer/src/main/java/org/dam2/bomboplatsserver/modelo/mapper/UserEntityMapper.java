@@ -18,17 +18,18 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
 
     @Override
     public Mono<UserEntity> map(Mono<User> o) {
-        return o.flatMap(user -> {
-            UserEntity userEntity = new UserEntity();
-            return this.userService.getPassword(user.getId())
-                    .doOnNext(password -> {
-                        userEntity.setId(user.getId());
-                        userEntity.setNickname(user.getNickname());
-                        userEntity.setEmail(user.getEmail());
-                        userEntity.setPassword(password);
-                        userEntity.setIconUrl(user.getIconUrl());
-                    }).thenReturn(userEntity);
-        });
+        return o.flatMap(user ->
+                this.userService.getPassword(user.getId())
+                        .map(password -> {
+                            UserEntity userEntity = new UserEntity();
+                            userEntity.setId(user.getId());
+                            userEntity.setNickname(user.getNickname());
+                            userEntity.setEmail(user.getEmail());
+                            userEntity.setPassword(password);
+                            userEntity.setIconUrl(user.getIconUrl());
+                            return userEntity;
+                        })
+        );
     }
 
     @Override

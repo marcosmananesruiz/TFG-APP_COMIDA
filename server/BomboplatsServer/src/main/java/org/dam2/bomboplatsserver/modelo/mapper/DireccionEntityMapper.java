@@ -15,15 +15,16 @@ public class DireccionEntityMapper implements EntityMapper<DireccionEntity, Dire
     public Mono<DireccionEntity> map(Mono<Direccion> o) {
         return o.flatMap(direccion -> {
                 DireccionEntity direccionEntity = new DireccionEntity();
-                return this.service.getIdResidente(direccionEntity.getId()).doOnNext(idResidente -> {
+                return this.service.getUserID(direccion.getId()).map(idUser -> this.service.getRestauranteID(direccion.getId()).doOnNext(idRestaurante -> {
                     direccionEntity.setId(direccion.getId());
                     direccionEntity.setPoblacion(direccion.getPoblacion());
                     direccionEntity.setCalle(direccion.getCalle());
                     direccionEntity.setCodigoPostal(direccion.getCodigoPostal());
                     direccionEntity.setPortal(direccion.getPortal());
                     direccionEntity.setPiso(direccion.getPiso());
-                    direccionEntity.setIdResidente(idResidente);
-                }).thenReturn(direccionEntity);
+                    direccionEntity.setIdUser(idUser);
+                    direccionEntity.setIdRestaurante(idRestaurante);
+                })).thenReturn(direccionEntity);
             }
         );
     }

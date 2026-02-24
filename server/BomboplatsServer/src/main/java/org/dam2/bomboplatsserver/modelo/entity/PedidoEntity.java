@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
-@Table("PEDIDOS")
+@Table("pedidos")
 public class PedidoEntity {
 
     @EqualsAndHashCode.Include

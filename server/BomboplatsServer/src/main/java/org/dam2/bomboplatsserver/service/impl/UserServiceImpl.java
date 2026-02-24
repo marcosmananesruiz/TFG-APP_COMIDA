@@ -42,6 +42,7 @@ public class UserServiceImpl implements IUserService {
         return this.repo.getNextID()
                 .map(idNumber -> this.UNIQUE_CHAR + idNumber)
                 .flatMap(id -> {
+                    LOGGER.info("nickname antes de insertar {}", userEntity.getNickname());
                     userEntity.setId(id);
                     return this.template.insert(UserEntity.class).using(userEntity);
                 }).thenReturn(true)
