@@ -12,6 +12,8 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @Configuration
 public class ServerConfig {
 
+
+
     @Bean
     public UserEntityMapper userEntityMapper() {
         return new UserEntityMapper();
@@ -37,18 +39,5 @@ public class ServerConfig {
         return new RestauranteEntityMapper();
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
-    }
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(exchange -> exchange
-                        .anyExchange().permitAll()
-                )
-                .build();
-    }
 }

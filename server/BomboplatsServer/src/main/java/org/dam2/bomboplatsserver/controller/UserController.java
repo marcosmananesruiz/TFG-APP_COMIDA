@@ -6,6 +6,7 @@ import org.dam2.bomboplats.api.login.LoginAttempt;
 import org.dam2.bomboplats.api.login.UserRegister;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
+import org.dam2.bomboplatsserver.service.IS3Service;
 import org.dam2.bomboplatsserver.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ public class UserController {
     @Autowired private IUserService service;
     @Autowired private UserEntityMapper mapper;
     @Autowired private PasswordEncoder encoder;
+    @Autowired private IS3Service s3Service;
     private final String DEFAULT_ICON = "profile/default.jpg"; // En el almacenamiento de imagenes, tendremos una por defecto y palante
 
     @PutMapping("/login")
@@ -32,8 +34,8 @@ public class UserController {
         }).switchIfEmpty(Mono.just(false));
     }
 
-    @GetMapping("/get/{id}")
-    public Mono<User> getByID(@PathVariable String id) {
+    @GetMapping( value = "/get", params = "id")
+    public Mono<User> getByID(@RequestParam(required = false) String id) {
         Mono<UserEntity> monoEntity = this.service.findByID(id);
         return this.mapper.unmap(monoEntity).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
@@ -63,6 +65,11 @@ public class UserController {
     @PutMapping("/save")
     public Mono<Boolean> updateUser(@RequestBody User user) {
         return this.mapper.map(Mono.just(user)).flatMap(userEntity -> this.service.update(userEntity));
+    }
+
+    @GetMapping(value = "imageUrl", params = "id")
+    public Mono<String> createImageUrl(@RequestParam String id) {
+        return this.s3Service.generateUserIconUrl(id);
     }
 
     @PostMapping("/load")
