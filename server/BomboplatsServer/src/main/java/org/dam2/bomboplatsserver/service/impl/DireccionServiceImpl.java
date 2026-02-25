@@ -82,11 +82,21 @@ public class DireccionServiceImpl implements IDireccionService {
 
     @Override
     public Flux<DireccionEntity> getDireccionesOfUser(UserEntity userEntity) {
-        return this.repo.findByIdUser(userEntity.getId());
+        return getDireccionesOfUser(userEntity.getId());
     }
 
     @Override
     public Flux<DireccionEntity> getDireccionesOfRestaurante(RestauranteEntity restauranteEntity) {
-        return this.repo.findByIdRestaurante(restauranteEntity.getId());
+        return this.getDireccionesOfRestaurante(restauranteEntity.getId());
+    }
+
+    @Override
+    public Flux<DireccionEntity> getDireccionesOfUser(String userID) {
+        return this.repo.findByIdUser(userID);
+    }
+
+    @Override
+    public Flux<DireccionEntity> getDireccionesOfRestaurante(String restauranteID) {
+        return this.repo.findByIdRestaurante(restauranteID);
     }
 }

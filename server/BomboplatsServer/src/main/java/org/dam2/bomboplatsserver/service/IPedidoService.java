@@ -15,5 +15,7 @@ public interface IPedidoService {
     Mono<Boolean> deletePedidoById(String id);
 
     Flux<PedidoEntity> findByEstado(Pedido.Estado estado);
+    Flux<PedidoEntity> findByUserId(String userId);
+    Flux<PedidoEntity> findByPlatoId(String platoId);
 
 }

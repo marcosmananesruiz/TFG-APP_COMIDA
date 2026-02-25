@@ -5,7 +5,9 @@ import org.dam2.bomboplatsserver.modelo.entity.PedidoEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.PedidoEntityMapper;
 import org.dam2.bomboplatsserver.service.IPedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +25,8 @@ public class PedidoController {
 
     @GetMapping("/get/{id}")
     public Mono<Pedido> getPedidoById(@PathVariable String id) {
-        return this.mapper.unmap(this.service.findById(id));
+        return this.mapper.unmap(this.service.findById(id))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @PostMapping("/register")
@@ -38,9 +41,22 @@ public class PedidoController {
         try {
             est = Pedido.Estado.valueOf(estadoUpper);
         } catch (IllegalArgumentException e) {
-            return Flux.empty(); // Si por alguna razon le pasan un estado que no existe, pues que devuelva un Flux vacio en vez de que se la pegue
+            return Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND)); // Si por alguna razon le pasan un estado que no existe, pues que devuelva un Flux vacio en vez de que se la pegue
         }
-        return this.mapper.mapFlux(this.service.findByEstado(est));
+        return this.mapper.mapFlux(this.service.findByEstado(est))
+                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    @GetMapping(value = "/get", params = "user")
+    public Flux<Pedido> getPedidosByUser(@RequestParam(required = false) String user) {
+        return this.mapper.mapFlux(this.service.findByUserId(user))
+                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    @GetMapping(value = "/get", params = "plato")
+    public Flux<Pedido> getPedidosByPlato(@RequestParam(required = false) String plato) {
+        return this.mapper.mapFlux(this.service.findByPlatoId(plato))
+                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @PutMapping("/save")

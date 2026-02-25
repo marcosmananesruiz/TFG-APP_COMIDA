@@ -8,8 +8,10 @@ import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
 import org.dam2.bomboplatsserver.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -20,8 +22,7 @@ public class UserController {
     @Autowired private IUserService service;
     @Autowired private UserEntityMapper mapper;
     @Autowired private PasswordEncoder encoder;
-
-    private final String DEFAULT_ICON = "default.jpg"; // En el almacenamiento de imagenes, tendremos una por defecto y palante
+    private final String DEFAULT_ICON = "profile/default.jpg"; // En el almacenamiento de imagenes, tendremos una por defecto y palante
 
     @PutMapping("/login")
     public Mono<Boolean> login(@RequestBody LoginAttempt loginAttempt) {
@@ -34,7 +35,12 @@ public class UserController {
     @GetMapping("/get/{id}")
     public Mono<User> getByID(@PathVariable String id) {
         Mono<UserEntity> monoEntity = this.service.findByID(id);
-        return this.mapper.unmap(monoEntity);
+        return this.mapper.unmap(monoEntity).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    @GetMapping(value = "/get", params = "email")
+    public Mono<User> getByEmail(@RequestParam(required = false) String email) {
+        return this.mapper.unmap(this.service.findByEmail(email));
     }
 
     @PostMapping("/register")
@@ -52,6 +58,11 @@ public class UserController {
     @GetMapping("/get")
     public Flux<User> findAll() {
         return this.mapper.mapFlux(this.service.findAll());
+    }
+
+    @PutMapping("/save")
+    public Mono<Boolean> updateUser(@RequestBody User user) {
+        return this.mapper.map(Mono.just(user)).flatMap(userEntity -> this.service.update(userEntity));
     }
 
     @PostMapping("/load")

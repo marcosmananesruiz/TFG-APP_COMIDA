@@ -5,7 +5,9 @@ import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,7 +25,20 @@ public class DireccionController {
 
     @GetMapping("/get/{id}")
     public Mono<Direccion> getDireccionById(@PathVariable String id) {
-        return this.mapper.unmap(this.service.findById(id));
+        return this.mapper.unmap(this.service.findById(id))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    @GetMapping(value = "/get", params = "user")
+    public Flux<Direccion> getDireccionOfUser(@RequestParam(required = false) String user) {
+        return this.mapper.mapFlux(this.service.getDireccionesOfUser(user))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    @GetMapping(value = "/get", params = "restaurante")
+    public Flux<Direccion> getDireccionOfRestaurante(@RequestParam(required = false) String restaurante) {
+        return this.mapper.mapFlux(this.service.getDireccionesOfRestaurante(restaurante))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @PostMapping("/register")
@@ -35,6 +50,11 @@ public class DireccionController {
     @DeleteMapping("/delete/{id}")
     public Mono<Boolean> deleteById(@PathVariable String id) {
         return this.service.deleteDireccionByID(id);
+    }
+
+    @PutMapping("/save")
+    public Mono<Boolean> updateDireccion(@RequestBody Direccion direccion) {
+        return this.mapper.map(Mono.just(direccion)).flatMap(direccionEntity -> this.service.update(direccionEntity));
     }
 
     @PostMapping("/load")

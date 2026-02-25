@@ -18,5 +18,7 @@ public interface IDireccionService {
     Mono<String> getRestauranteID(String id);
 
     Flux<DireccionEntity> getDireccionesOfUser(UserEntity userEntity);
+    Flux<DireccionEntity> getDireccionesOfUser(String userId);
     Flux<DireccionEntity> getDireccionesOfRestaurante(RestauranteEntity restauranteEntity);
+    Flux<DireccionEntity> getDireccionesOfRestaurante(String restauranteId);
 }

@@ -13,4 +13,8 @@ public interface PedidoRepository extends ReactiveCrudRepository<PedidoEntity, S
     Mono<Long> getNextID();
 
     Flux<PedidoEntity> findPedidoEntityByEstado(Pedido.Estado estado);
+
+    Flux<PedidoEntity> findByIdUser(String idUser);
+
+    Flux<PedidoEntity> findByIdPlato(String idPlato);
 }

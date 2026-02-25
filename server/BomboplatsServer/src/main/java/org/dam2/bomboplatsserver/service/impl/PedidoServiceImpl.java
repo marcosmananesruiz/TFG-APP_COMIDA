@@ -70,4 +70,14 @@ public class PedidoServiceImpl implements IPedidoService {
     public Flux<PedidoEntity> findByEstado(Pedido.Estado estado) {
         return this.repo.findPedidoEntityByEstado(estado);
     }
+
+    @Override
+    public Flux<PedidoEntity> findByUserId(String userId) {
+        return this.repo.findByIdUser(userId);
+    }
+
+    @Override
+    public Flux<PedidoEntity> findByPlatoId(String platoId) {
+        return this.repo.findByIdPlato(platoId);
+    }
 }
