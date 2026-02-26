@@ -13,8 +13,8 @@ public interface IDireccionService {
 
     /**
      * Encuentra una direccion según su ID
-     * @param id {@link String} id a buscar
-     * @return {@link Mono}<{@link DireccionEntity}> con ese ID
+     * @param id id a buscar
+     * @return {@link Mono}<{@link DireccionEntity}> con ese ID o {@link Mono#empty()} si no existe
      */
     Mono<DireccionEntity> findById(String id);
 
@@ -26,21 +26,21 @@ public interface IDireccionService {
 
     /**
      * Registra un direccion en la base de datos
-     * @param direccionEntity {@link DireccionEntity} a registrar
+     * @param direccionEntity Direccion a registrar
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se registro correctamente, {@code false} si ya existia ese registro o se produjo un error
      */
     Mono<Boolean> register(DireccionEntity direccionEntity);
 
     /**
-     * Actualiza la informacion de un direccion en la base de datos
-     * @param direccionEntity {@link DireccionEntity} a actualizar
-     * @return {@link Mono}<{@link Boolean}>: {@code true} si se actualizo correctamente, {@code false} si ya no existe ese registro o se produjo un error
+     * Actualiza la información de un direccion en la base de datos
+     * @param direccionEntity Dirección a actualizar
+     * @return {@link Mono}<{@link Boolean}>: {@code true} si se actualizó correctamente, {@code false} si ya no existe ese registro o se produjo un error
      */
     Mono<Boolean> update(DireccionEntity direccionEntity);
 
     /**
      * Borra un direccion de la base de datos
-     * @param direccionEntity {@link DireccionEntity} a borrar
+     * @param direccionEntity Dirección a borrar
      * @see #deleteDireccionByID(String)
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se borro correctamente, {@code false} si no existe ese registro o se produjo un error
      */
@@ -48,23 +48,23 @@ public interface IDireccionService {
 
     /**
      * Borra un direccion de la base de datos
-     * @param id {@link String} id del {@link DireccionEntity} a borrar
+     * @param id id de la dirección a borrar
      * @see #deleteDireccion(DireccionEntity)
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se borro correctamente, {@code false} si no existe ese registro o se produjo un error
      */
     Mono<Boolean> deleteDireccionByID(String id);
 
     /**
-     * Obtener el {@code idUser} de la direccion segun su id
-     * @param id {@link String} id de la {@link DireccionEntity}
-     * @return {@link Mono}<{@link String}> con el {@code idUser}, o {@link Mono}<{@link Void}> si no existe esa direccion
+     * Obtener el {@code idUser} de la direccion según su id
+     * @param id id de la dirección
+     * @return {@link Mono}<{@link String}> con él {@code idUser}, o {@link Mono#empty()} si no existe esa direccion
      */
     Mono<String> getUserID(String id);
 
     /**
-     * Obtener el {@code idRestaurante} de la direccion segun su id
-     * @param id {@link String} id de la {@link DireccionEntity}
-     * @return {@link Mono}<{@link String}> con el {@code idRestaurante}, o {@link Mono}<{@link Void}> si no existe esa direccion
+     * Obtener el {@code idRestaurante} de la direccion según su id
+     * @param id {@link String} id de la dirección
+     * @return {@link Mono}<{@link String}> con él {@code idRestaurante}, o {@link Mono#empty()} si no existe esa dirección
      */
     Mono<String> getRestauranteID(String id);
 
