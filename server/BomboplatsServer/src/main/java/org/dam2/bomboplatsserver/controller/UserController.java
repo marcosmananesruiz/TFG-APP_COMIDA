@@ -68,7 +68,7 @@ public class UserController {
     }
 
     @GetMapping(value = "imageUrl", params = "id")
-    public Mono<String> createImageUrl(@RequestParam String id) {
+    public Mono<String> createImageUrl(@RequestParam String id) { // Este no va a funcionar hasta que este en un ECS
         return this.s3Service.generateUserIconUrl(id);
     }
 
