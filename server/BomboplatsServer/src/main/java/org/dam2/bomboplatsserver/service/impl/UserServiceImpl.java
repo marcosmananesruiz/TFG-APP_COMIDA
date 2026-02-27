@@ -35,29 +35,30 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public Mono<Boolean> register(UserEntity userEntity) {
+        return this.repo.existsByEmail(userEntity.getEmail())
+                .flatMap(exists -> {
+                    if (exists) {
+                        LOGGER.error("Se ha intentado registrar un usuario con email {}, el cual ya existe", userEntity.getId());
+                        return Mono.just(false);
+                    }
 
-        // existsById() ya no devuelve un booleano, devuelve un Mono<Boolean> del cual no se puede sacar
-        // su valor individual. Por lo que se hace esto
-
-        return this.repo.getNextID()
-                .map(idNumber -> this.UNIQUE_CHAR + idNumber)
-                .flatMap(id -> {
-                    LOGGER.info("nickname antes de insertar {}", userEntity.getNickname());
-                    userEntity.setId(id);
-                    return this.template.insert(UserEntity.class).using(userEntity);
-                }).thenReturn(true)
-                .onErrorResume(DuplicateKeyException.class, e -> {
-                    LOGGER.error("{}: Se ha intentado registrar un pedido con ID {}, el cual ya existe", e.getMessage(), userEntity.getId());
+                    return this.repo.getNextID()
+                            .map(idNumber -> this.UNIQUE_CHAR + idNumber)
+                            .flatMap(id -> {
+                                userEntity.setId(id);
+                                return this.template.insert(UserEntity.class).using(userEntity);
+                            }).thenReturn(true);
+                }).onErrorResume(DuplicateKeyException.class, e -> {
+                    LOGGER.error("{}: Se ha intentado registrar un usuario con email {}, el cual ya existe", e.getMessage(), userEntity.getId());
                     return Mono.just(false);
                 });
-
     }
 
     @Override
     public Mono<Boolean> update(UserEntity userEntity) {
         return this.repo.findById(userEntity.getId())
                 .flatMap(existing -> this.repo.save(userEntity)
-                        .doOnNext(updatedEntity -> LOGGER.info("Pedido con ID {} actualizado", updatedEntity.getId()))
+                        .doOnNext(updatedEntity -> LOGGER.info("Usuario con ID {} actualizado", updatedEntity.getId()))
                         .thenReturn(true)
                 ).defaultIfEmpty(false);
     }
@@ -71,7 +72,7 @@ public class UserServiceImpl implements IUserService {
     public Mono<Boolean> deleteUserByID(String id) {
         return this.repo.findById(id)
                 .flatMap(exists -> this.repo.deleteById(id)
-                        .doOnSuccess(deletedId -> LOGGER.info("Pedido con ID {} eliminado", deletedId))
+                        .doOnSuccess(deletedId -> LOGGER.info("Usuario con ID {} eliminado", id))
                         .thenReturn(true)
                 );
     }

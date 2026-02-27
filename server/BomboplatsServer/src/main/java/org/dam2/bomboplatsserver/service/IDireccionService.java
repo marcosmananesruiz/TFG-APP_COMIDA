@@ -19,15 +19,15 @@ public interface IDireccionService {
     Mono<DireccionEntity> findById(String id);
 
     /**
-     * Encuentra todos las direcciones en la base de datos
+     * Encuentra todas las direcciones en la base de datos
      * @return {@link Flux}<{@link DireccionEntity}> con todas las direcciones
      */
     Flux<DireccionEntity> findAll();
 
     /**
      * Registra un direccion en la base de datos
-     * @param direccionEntity Direccion a registrar
-     * @return {@link Mono}<{@link Boolean}>: {@code true} si se registro correctamente, {@code false} si ya existia ese registro o se produjo un error
+     * @param direccionEntity Dirección a registrar
+     * @return {@link Mono}<{@link Boolean}>: {@code true} si se registró correctamente, {@code false} si ya existía ese registro o se produjo un error
      */
     Mono<Boolean> register(DireccionEntity direccionEntity);
 

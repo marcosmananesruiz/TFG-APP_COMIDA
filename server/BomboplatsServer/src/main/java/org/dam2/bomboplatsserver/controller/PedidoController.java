@@ -1,5 +1,10 @@
 package org.dam2.bomboplatsserver.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.dam2.bomboplats.api.Pedido;
 import org.dam2.bomboplatsserver.modelo.entity.PedidoEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.PedidoEntityMapper;
@@ -19,19 +24,22 @@ public class PedidoController {
     @Autowired private PedidoEntityMapper mapper;
 
     @GetMapping("/get")
+    @Operation(summary = "Obtener todos los pedidos o según su id/estado/user/plato")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Pedidos encontrados",
+                    content = @Content(schema = @Schema(implementation = Pedido.class))),
+            @ApiResponse(responseCode = "404", description = "No se han encontrado pedidos")
+    })
     public Flux<Pedido> findAll() {
-        return this.mapper.mapFlux(this.service.findAll());
-    }
-
-    @GetMapping("/get/{id}")
-    public Mono<Pedido> getPedidoById(@PathVariable String id) {
-        return this.mapper.unmap(this.service.findById(id))
+        return this.mapper.mapFlux(this.service.findAll())
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
-    @PostMapping("/register")
-    public Mono<Boolean> register(@RequestBody Pedido pedido) {
-        return this.mapper.map(Mono.just(pedido)).flatMap(pedidoEntity -> this.service.register(pedidoEntity));
+    @GetMapping(value = "/get", params = "id")
+    public Mono<Pedido> getPedidoById(@RequestParam(required = false) String id) {
+        return this.mapper.unmap(this.service.findById(id))
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @GetMapping(value = "/get", params = "estado")
@@ -59,11 +67,28 @@ public class PedidoController {
                 .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
+    @PostMapping("/register")
+    @Operation(summary = "Registrar un pedido")
+    @ApiResponse(responseCode = "200", description = "true: Pedido registrado. false: Ese registro ya existe o se ha producido un error")
+    public Mono<Boolean> register(@RequestBody Pedido pedido) {
+        return this.mapper.map(Mono.just(pedido)).flatMap(pedidoEntity -> this.service.register(pedidoEntity));
+    }
+
     @PutMapping("/save")
+    @Operation(summary = "Actualizar un pedido")
+    @ApiResponse(responseCode = "200", description = "true: Pedido actualizado. false: Ese registro no existe o se ha producido un error")
     public Mono<Boolean> updatePedido(@RequestBody Pedido pedido) {
         return this.mapper.map(Mono.just(pedido)).flatMap(pedidoEntity -> this.service.update(pedidoEntity));
     }
 
+    @DeleteMapping("/delete/{id}")
+    @Operation(summary = "Borrar un pedido")
+    @ApiResponse(responseCode = "200", description = "true: Pedido borrado. false: Ese registro no existe o se ha producido un error")
+    public Mono<Boolean> deletePedido(@PathVariable String id) {
+        return this.service.deletePedidoById(id);
+    }
+
+    // SOLO PARA TESTEO
     @PostMapping("/load")
     public Mono<String> load(@RequestBody PedidoEntity pedidoEntity) {
         return this.service.register(pedidoEntity).map(success -> {
