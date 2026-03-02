@@ -77,7 +77,7 @@ public class UserController {
     @Operation(summary = "Registrar un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario registrado. false: Usuario ya existía o hubo un error")
     public Mono<Boolean> registerUser(@RequestBody UserRegister register) {
-        UserEntity userEntity = new UserEntity("", register.nickname(), register.email(), "", this.DEFAULT_ICON);
+        UserEntity userEntity = new UserEntity("U0", register.nickname(), register.email(), "", this.DEFAULT_ICON);
         userEntity.setPassword(this.encoder.encode(register.password()));
         return this.service.register(userEntity);
     }
@@ -100,20 +100,16 @@ public class UserController {
     }
 
     @PutMapping("/save")
-    @Operation(summary = "Actualizar informacion de un usuario")
+    @Operation(summary = "Actualizar información de un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario actualizado. false: Usuario no existía o hubo un error")
     public Mono<Boolean> updateUser(@RequestBody User user) {
-
-        return this.mapper.map(Mono.just(user)).flatMap(userEntity -> {
-            user.getDirecciones().forEach(direccion -> {
-                this.direccionMapper.map(Mono.just(direccion)) // Esto está mal y para corregirlo es una puta mierda, ya lo haré
-                        .doOnNext(direccionEntity -> {
+        return this.mapper.map(Mono.just(user)).flatMap(userEntity ->
+                Flux.fromIterable(user.getDirecciones()).flatMap(direccion ->
+                        this.direccionMapper.map(Mono.just(direccion)).flatMap(direccionEntity -> {
                             direccionEntity.setIdUser(user.getId());
-                            this.direccionService.update(direccionEntity);
-                        });
-            });
-            return this.service.update(userEntity);
-        });
+                            return this.direccionService.update(direccionEntity);
+                        })
+                ).then(this.service.update(userEntity)));
     }
 
     @GetMapping(value = "imageUrl", params = "id")
