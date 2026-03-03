@@ -2,6 +2,8 @@ package com.example.bomboplats;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -45,20 +47,35 @@ public class GeneralActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true); // Muestra el botón de navegación (hamburguesa)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
         // Botón del carrito en la Toolbar
         ImageView cartButton = findViewById(R.id.toolbar_shopping_cart);
         cartButton.setOnClickListener(v -> loadFragment(new MisBombosFragment()));
 
-        // Barra de búsqueda
+        // Barra de búsqueda reactiva
         searchEditText = findViewById(R.id.search_edit_text);
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+                if (currentFragment instanceof GeneralFragment) {
+                    ((GeneralFragment) currentFragment).filtrar(s.toString());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
         ImageView searchIcon = findViewById(R.id.search_icon);
         searchIcon.setOnClickListener(v -> {
             String searchText = searchEditText.getText().toString();
             Toast.makeText(GeneralActivity.this, "Buscando: " + searchText, Toast.LENGTH_SHORT).show();
-            // Aquí iría la lógica para realizar la búsqueda
         });
 
         // DrawerLayout y NavigationView
@@ -113,7 +130,7 @@ public class GeneralActivity extends AppCompatActivity {
             navigationView.setCheckedItem(R.id.nav_home);
         }
 
-        // Manejar el botón de "atrás" con el nuevo dispatcher
+        // Manejar el botón de "atrás"
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -138,6 +155,4 @@ public class GeneralActivity extends AppCompatActivity {
         transaction.replace(R.id.container, fragment);
         transaction.commit();
     }
-
-    // El método onBackPressed() ha sido reemplazado por el OnBackPressedDispatcher en onCreate
 }
