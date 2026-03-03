@@ -18,4 +18,8 @@ public class ConfiguracionFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_configuracion, container, false);
     }
+
+    public void filtrar(String texto) {
+        // Lógica de filtrado para Configuración
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.bomboplats.ui.general;
 
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,15 +11,20 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Restaurante;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GeneralFragment extends Fragment {
+public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRestauranteClickListener {
 
     private RecyclerView recyclerView;
     private TextView tvEmptyError;
@@ -35,23 +41,30 @@ public class GeneralFragment extends Fragment {
         tvEmptyError = view.findViewById(R.id.tv_empty_error);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        inicializarDiccionario();
+        inicializarDiccionarioDesdeAssets();
         cargarDatosEjemplo();
 
-        adapter = new RestauranteAdapter(new ArrayList<>(listaCompleta));
+        adapter = new RestauranteAdapter(new ArrayList<>(listaCompleta), this);
         recyclerView.setAdapter(adapter);
 
         return view;
     }
-    // Busqueda con palabras clave
-    private void inicializarDiccionario() {
+
+    private void inicializarDiccionarioDesdeAssets() {
         diccionarioEtiquetas = new HashMap<>();
-        diccionarioEtiquetas.put("tailandesa", "thai");
-        diccionarioEtiquetas.put("tailandia", "thai");
-        diccionarioEtiquetas.put("hamburguesa", "burger");
-        diccionarioEtiquetas.put("italiana", "pizza");
-        diccionarioEtiquetas.put("japonesa", "sushi");
-        diccionarioEtiquetas.put("mexicana", "taco");
+        AssetManager am = getContext().getAssets();
+        
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(am.open("etiquetas.txt")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length == 2) {
+                    diccionarioEtiquetas.put(parts[0].trim().toLowerCase(), parts[1].trim().toLowerCase());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void cargarDatosEjemplo() {
@@ -63,7 +76,19 @@ public class GeneralFragment extends Fragment {
         listaCompleta.add(new Restaurante("taco_fiesta", "Taco Fiesta", "Tacos increíbles.", 4.2f, "€", Arrays.asList("taco", "mexicana")));
     }
 
-    // Método público para filtrar desde la Activity
+    @Override
+    public void onRestauranteClick(Restaurante restaurante) {
+        BombosFragment fragment = new BombosFragment();
+        Bundle args = new Bundle();
+        args.putString("restauranteId", restaurante.getId());
+        fragment.setArguments(args);
+
+        // Usamos el nuevo método de la Activity que ya tiene las animaciones configuradas
+        if (getActivity() instanceof GeneralActivity) {
+            ((GeneralActivity) getActivity()).onRestauranteClickFromFragment(fragment);
+        }
+    }
+
     public void filtrar(String texto) {
         if (listaCompleta == null) return;
         
@@ -76,7 +101,6 @@ public class GeneralFragment extends Fragment {
             for (Restaurante r : listaCompleta) {
                 boolean coincideNombre = r.getNombre().toLowerCase().contains(query);
                 
-                // 1. Comprobamos etiquetas directas (que empiecen por la búsqueda)
                 boolean coincideEtiquetaDirecta = false;
                 for (String tag : r.getEtiquetas()) {
                     if (tag.toLowerCase().startsWith(query)) {
@@ -85,12 +109,10 @@ public class GeneralFragment extends Fragment {
                     }
                 }
 
-                // 2. Comprobamos palabras clave del diccionario (que empiecen por la búsqueda)
                 boolean coincidePalabraClave = false;
                 for (Map.Entry<String, String> entry : diccionarioEtiquetas.entrySet()) {
-                    // Si la palabra clave (ej: "tailandesa") empieza por lo que el usuario escribe (ej: "tail")
                     if (entry.getKey().startsWith(query)) {
-                        String etiquetaAsociada = entry.getValue(); // Obtenemos "thai"
+                        String etiquetaAsociada = entry.getValue();
                         if (r.getEtiquetas().contains(etiquetaAsociada)) {
                             coincidePalabraClave = true;
                             break;

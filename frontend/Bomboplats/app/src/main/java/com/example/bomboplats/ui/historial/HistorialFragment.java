@@ -18,4 +18,8 @@ public class HistorialFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_historial, container, false);
     }
+
+    public void filtrar(String texto) {
+        // Lógica de filtrado para Historial
+    }
 }

@@ -1,0 +1,16 @@
+tailandesa:thai
+tailandia:thai
+thai:thai
+hamburguesa:burger
+burger:burger
+italiana:pizza
+pizza:pizza
+pasta:pizza
+japonesa:sushi
+sushi:sushi
+mexicana:taco
+taco:taco
+picante:mexicana
+comida_rapida:fastfood
+saludable:asiatica
+mibombo:thai

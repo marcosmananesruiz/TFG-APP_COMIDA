@@ -20,6 +20,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.bomboplats.ui.configuracion.ConfiguracionFragment;
 import com.example.bomboplats.ui.cuenta.CuentaFragment;
+import com.example.bomboplats.ui.general.BombosFragment;
 import com.example.bomboplats.ui.general.GeneralFragment;
 import com.example.bomboplats.ui.historial.HistorialFragment;
 import com.example.bomboplats.ui.login.LoginActivity;
@@ -63,8 +64,22 @@ public class GeneralActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+                String query = s.toString();
+                
                 if (currentFragment instanceof GeneralFragment) {
-                    ((GeneralFragment) currentFragment).filtrar(s.toString());
+                    ((GeneralFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof BombosFragment) {
+                    ((BombosFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof MisBombosFragment) {
+                    ((MisBombosFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof CuentaFragment) {
+                    ((CuentaFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof HistorialFragment) {
+                    ((HistorialFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof NotificacionesFragment) {
+                    ((NotificacionesFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof ConfiguracionFragment) {
+                    ((ConfiguracionFragment) currentFragment).filtrar(query);
                 }
             }
 
@@ -124,7 +139,7 @@ public class GeneralActivity extends AppCompatActivity {
             return true;
         });
 
-        // Cargar el fragmento inicial y seleccionar el item del menú
+        // Cargar el fragmento inicial
         if (savedInstanceState == null) {
             loadFragment(new GeneralFragment());
             navigationView.setCheckedItem(R.id.nav_home);
@@ -134,8 +149,15 @@ public class GeneralActivity extends AppCompatActivity {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+
                 if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                     drawerLayout.closeDrawer(GravityCompat.START);
+                } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                } else if (!(currentFragment instanceof GeneralFragment)) {
+                    loadFragment(new GeneralFragment());
+                    navigationView.setCheckedItem(R.id.nav_home);
                 } else if (backPressedTime + 2000 > System.currentTimeMillis()) {
                     if (backToast != null) {
                         backToast.cancel();
@@ -151,8 +173,21 @@ public class GeneralActivity extends AppCompatActivity {
     }
 
     private void loadFragment(Fragment fragment) {
+        getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        // Añadimos las animaciones para que se deslicen al entrar y salir
+        transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
         transaction.replace(R.id.container, fragment);
+        transaction.commit();
+    }
+
+    // Actualizamos el método de navegación desde GeneralFragment para incluir animaciones también
+    public void onRestauranteClickFromFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+        transaction.replace(R.id.container, fragment);
+        transaction.addToBackStack(null);
         transaction.commit();
     }
 }

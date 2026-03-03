@@ -14,12 +14,17 @@ import java.util.List;
 public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.RestauranteViewHolder> {
 
     private List<Restaurante> listaRestaurantes;
+    private OnRestauranteClickListener listener;
 
-    public RestauranteAdapter(List<Restaurante> listaRestaurantes) {
-        this.listaRestaurantes = listaRestaurantes;
+    public interface OnRestauranteClickListener {
+        void onRestauranteClick(Restaurante restaurante);
     }
 
-    // Método para actualizar la lista filtrada
+    public RestauranteAdapter(List<Restaurante> listaRestaurantes, OnRestauranteClickListener listener) {
+        this.listaRestaurantes = listaRestaurantes;
+        this.listener = listener;
+    }
+
     public void setFilteredList(List<Restaurante> filteredList) {
         this.listaRestaurantes = filteredList;
         notifyDataSetChanged();
@@ -48,6 +53,8 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
         } else {
             holder.imgRestaurante.setImageResource(R.drawable.ic_launcher_background);
         }
+
+        holder.itemView.setOnClickListener(v -> listener.onRestauranteClick(restaurante));
     }
 
     @Override
