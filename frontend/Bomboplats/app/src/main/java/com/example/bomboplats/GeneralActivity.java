@@ -37,6 +37,7 @@ public class GeneralActivity extends AppCompatActivity {
     private long backPressedTime;
     private Toast backToast;
     private EditText searchEditText;
+    private ImageView searchIcon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,14 +56,24 @@ public class GeneralActivity extends AppCompatActivity {
         ImageView cartButton = findViewById(R.id.toolbar_shopping_cart);
         cartButton.setOnClickListener(v -> loadFragment(new MisBombosFragment()));
 
-        // Barra de búsqueda reactiva
+        // Barra de búsqueda reactiva e inteligente
         searchEditText = findViewById(R.id.search_edit_text);
+        searchIcon = findViewById(R.id.search_icon);
+
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Cambiar icono entre lupa y X
+                if (s.length() > 0) {
+                    searchIcon.setImageResource(R.drawable.ic_close);
+                } else {
+                    searchIcon.setImageResource(R.drawable.ic_search);
+                }
+
+                // Lógica de filtrado
                 Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
                 String query = s.toString();
                 
@@ -87,10 +98,16 @@ public class GeneralActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        ImageView searchIcon = findViewById(R.id.search_icon);
+        // Configurar clic en el icono de búsqueda / borrar
         searchIcon.setOnClickListener(v -> {
-            String searchText = searchEditText.getText().toString();
-            Toast.makeText(GeneralActivity.this, "Buscando: " + searchText, Toast.LENGTH_SHORT).show();
+            if (searchEditText.getText().length() > 0) {
+                // Si hay texto, la X lo borra todo
+                searchEditText.setText("");
+            } else {
+                // Si no hay texto, la lupa puede mostrar un mensaje o simplemente dar foco
+                searchEditText.requestFocus();
+                Toast.makeText(GeneralActivity.this, "Escribe algo para buscar", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // DrawerLayout y NavigationView
@@ -176,13 +193,11 @@ public class GeneralActivity extends AppCompatActivity {
         getSupportFragmentManager().popBackStack(null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
         
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        // Añadimos las animaciones para que se deslicen al entrar y salir
         transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
         transaction.replace(R.id.container, fragment);
         transaction.commit();
     }
 
-    // Actualizamos el método de navegación desde GeneralFragment para incluir animaciones también
     public void onRestauranteClickFromFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
