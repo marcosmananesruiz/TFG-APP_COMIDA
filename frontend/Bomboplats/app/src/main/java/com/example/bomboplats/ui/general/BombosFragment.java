@@ -28,6 +28,15 @@ public class BombosFragment extends Fragment {
     private List<Bombo> listaBombosRestaurante;
     private Restaurante restauranteActual;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            restauranteId = getArguments().getString("restauranteId");
+        }
+        cargarDatosEjemplo();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -44,11 +53,12 @@ public class BombosFragment extends Fragment {
         tvEmptyBombos = view.findViewById(R.id.tv_empty_bombos);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        if (getArguments() != null) {
-            restauranteId = getArguments().getString("restauranteId");
+        // Aseguramos que el adaptador se mantenga o se cree de nuevo con la lista
+        if (adapter == null) {
+            adapter = new BomboAdapter(listaBombosRestaurante);
         }
+        recyclerView.setAdapter(adapter);
 
-        cargarDatosEjemplo();
         mostrarInfoRestaurante();
         updateUI(listaBombosRestaurante);
 
@@ -131,16 +141,13 @@ public class BombosFragment extends Fragment {
     }
 
     private void updateUI(List<Bombo> lista) {
-        if (lista.isEmpty()) {
+        if (lista == null || lista.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyBombos.setVisibility(View.VISIBLE);
         } else {
             recyclerView.setVisibility(View.VISIBLE);
             tvEmptyBombos.setVisibility(View.GONE);
-            if (adapter == null) {
-                adapter = new BomboAdapter(lista);
-                recyclerView.setAdapter(adapter);
-            } else {
+            if (adapter != null) {
                 adapter.setFilteredList(lista);
             }
         }

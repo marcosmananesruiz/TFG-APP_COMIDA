@@ -1,12 +1,15 @@
 package com.example.bomboplats.ui.general;
 
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import java.util.List;
@@ -19,7 +22,6 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         this.listaBombos = listaBombos;
     }
 
-    // Método para actualizar la lista filtrada
     public void setFilteredList(List<Bombo> filteredList) {
         this.listaBombos = filteredList;
         notifyDataSetChanged();
@@ -36,7 +38,7 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
     public void onBindViewHolder(@NonNull BomboViewHolder holder, int position) {
         Bombo bombo = listaBombos.get(position);
         holder.tvNombre.setText(bombo.getNombre());
-        holder.tvDescripcion.setText(bombo.getDescripcion()); // Corregido: getDescripcion()
+        holder.tvDescripcion.setText(bombo.getDescripcion());
         holder.tvPrecio.setText(bombo.getPrecio());
 
         int resID = holder.itemView.getContext().getResources().getIdentifier(
@@ -47,6 +49,17 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         } else {
             holder.imgBombo.setImageResource(R.drawable.ic_launcher_background);
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            DetalleBomboFragment fragment = new DetalleBomboFragment();
+            Bundle args = new Bundle();
+            args.putString("bomboId", bombo.getId());
+            fragment.setArguments(args);
+
+            if (v.getContext() instanceof GeneralActivity) {
+                ((GeneralActivity) v.getContext()).onRestauranteClickFromFragment(fragment);
+            }
+        });
     }
 
     @Override
