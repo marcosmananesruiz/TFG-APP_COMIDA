@@ -12,14 +12,17 @@ import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
 import java.util.List;
+import java.util.Set;
 
 public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoViewHolder> {
 
     private List<BomboConCantidad> listaCarrito;
     private OnCarritoActionListener listener;
+    private Set<String> favoritos;
 
     public interface OnCarritoActionListener {
         void onRestarClick(String bomboId);
+        void onFavoritoClick(String bomboId);
     }
 
     public CarritoAdapter(List<BomboConCantidad> listaCarrito, OnCarritoActionListener listener) {
@@ -27,8 +30,9 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         this.listener = listener;
     }
 
-    public void actualizarLista(List<BomboConCantidad> nuevaLista) {
+    public void actualizarLista(List<BomboConCantidad> nuevaLista, Set<String> favoritos) {
         this.listaCarrito = nuevaLista;
+        this.favoritos = favoritos;
         notifyDataSetChanged();
     }
 
@@ -61,6 +65,17 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
             if (listener != null) listener.onRestarClick(bombo.getId());
         });
 
+        // Configurar favorito
+        if (favoritos != null && favoritos.contains(bombo.getId())) {
+            holder.ivFavorito.setImageResource(R.drawable.ic_favorite_filled);
+        } else {
+            holder.ivFavorito.setImageResource(R.drawable.ic_heart_unselected);
+        }
+
+        holder.ivFavorito.setOnClickListener(v -> {
+            if (listener != null) listener.onFavoritoClick(bombo.getId());
+        });
+
         int resID = holder.itemView.getContext().getResources().getIdentifier(
                 bombo.getId(), "drawable", holder.itemView.getContext().getPackageName());
         
@@ -78,7 +93,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
 
     public static class CarritoViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvDescripcion, tvPrecio, tvCantidad;
-        ImageView imgBombo, btnMasCarrito;
+        ImageView imgBombo, btnMasCarrito, ivFavorito;
         Button btnRestar;
 
         public CarritoViewHolder(@NonNull View itemView) {
@@ -90,6 +105,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
             imgBombo = itemView.findViewById(R.id.img_bombo);
             btnRestar = itemView.findViewById(R.id.btn_remover_uno);
             btnMasCarrito = itemView.findViewById(R.id.btn_agregar_carrito_rapido);
+            ivFavorito = itemView.findViewById(R.id.btn_fav_bombo);
         }
     }
 }

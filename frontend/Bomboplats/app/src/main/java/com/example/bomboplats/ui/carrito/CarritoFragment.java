@@ -16,14 +16,18 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
+import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarritoActionListener {
 
     private CarritoViewModel carritoViewModel;
+    private FavoritosViewModel favoritosViewModel;
     private RecyclerView recyclerView;
     private CarritoAdapter adapter;
     private TextView tvVacio;
@@ -43,26 +47,40 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         layoutTotal = view.findViewById(R.id.layout_total);
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
+        favoritosViewModel = new ViewModelProvider(requireActivity()).get(FavoritosViewModel.class);
 
         adapter = new CarritoAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
+        // Observar cambios en el carrito
         carritoViewModel.getItemsCarrito().observe(getViewLifecycleOwner(), items -> {
-            if (items == null || items.isEmpty()) {
-                mostrarCarritoVacio(true);
-            } else {
-                mostrarCarritoVacio(false);
-                actualizarListaVisual(items);
-            }
+            actualizarUI();
+        });
+
+        // Observar cambios en favoritos
+        favoritosViewModel.getIdsFavoritos().observe(getViewLifecycleOwner(), favoritos -> {
+            actualizarUI();
         });
 
         return view;
     }
 
+    private void actualizarUI() {
+        Map<String, Integer> items = carritoViewModel.getItemsCarrito().getValue();
+        List<String> favoritosList = favoritosViewModel.getIdsFavoritos().getValue();
+        Set<String> favoritosSet = favoritosList != null ? new HashSet<>(favoritosList) : new HashSet<>();
+
+        if (items == null || items.isEmpty()) {
+            mostrarCarritoVacio(true);
+        } else {
+            mostrarCarritoVacio(false);
+            actualizarListaVisual(items, favoritosSet);
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
-        // Notificamos a la Activity que estamos en la pantalla del carrito
         if (getActivity() instanceof GeneralActivity) {
             ((GeneralActivity) getActivity()).updateCartIcon(this);
         }
@@ -80,7 +98,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         }
     }
 
-    private void actualizarListaVisual(Map<String, Integer> items) {
+    private void actualizarListaVisual(Map<String, Integer> items, Set<String> favoritos) {
         List<BomboConCantidad> listaFinal = new ArrayList<>();
         double totalCompra = 0.0;
 
@@ -92,7 +110,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
             if (b != null) {
                 listaFinal.add(new BomboConCantidad(b, cantidad));
                 try {
-                    String precioLimpio = b.getPrecio().replace("€", "").replace(",", ".	").trim();
+                    String precioLimpio = b.getPrecio().replace("€", "").replace(",", ".").trim();
                     totalCompra += Double.parseDouble(precioLimpio) * cantidad;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -100,7 +118,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
             }
         }
         
-        adapter.actualizarLista(listaFinal);
+        adapter.actualizarLista(listaFinal, favoritos);
         tvTotalPrecio.setText(String.format(Locale.getDefault(), "%.2f€", totalCompra));
     }
 
@@ -109,14 +127,23 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         carritoViewModel.removerDelCarrito(bomboId);
     }
 
+    @Override
+    public void onFavoritoClick(String bomboId) {
+        favoritosViewModel.toggleFavorito(bomboId);
+    }
+
     private Bombo buscarBomboPorId(String id) {
         List<Bombo> todos = new ArrayList<>();
-        todos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", "Fideos de arroz con gambas y cacahuetes.", "12.50€"));
-        todos.add(new Bombo("curry_verde", "thai_food", "Green Curry", "Curry verde picante con leche de coco.", "13.90€"));
-        todos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", "Ternera, cheddar, lechuga y tomate.", "10.50€"));
-        todos.add(new Bombo("bbq_burger", "burger_place", "BBQ Special", "Ternera, bacon y mucha salsa barbacoa.", "11.90€"));
-        todos.add(new Bombo("pizza_margherita", "pizza_italiana", "Pizza Margherita", "Tomate, mozzarella fresca y albahaca.", "9.50€"));
-        todos.add(new Bombo("pizza_4_quesos", "pizza_italiana", "Cuatro Quesos", "Mozzarella, gorgonzola, parmesano y emmental.", "11.50€"));
+        todos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", "Fideos de arroz con gambas.", "12.50€"));
+        todos.add(new Bombo("curry_verde", "thai_food", "Green Curry", "Curry verde picante.", "13.90€"));
+        todos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", "Ternera, cheddar, lechuga.", "10.50€"));
+        todos.add(new Bombo("bbq_burger", "burger_place", "BBQ Special", "Ternera, bacon.", "11.90€"));
+        todos.add(new Bombo("pizza_margherita", "pizza_italiana", "Pizza Margherita", "Tomate, mozzarella fresca.", "9.50€"));
+        todos.add(new Bombo("pizza_4_quesos", "pizza_italiana", "Cuatro Quesos", "Varios tipos de queso.", "11.50€"));
+        
+        todos.add(new Bombo("som_tam", "thai_food", "Ensalada Som Tam", "Ensalada de papaya verde.", "8.50€"));
+        todos.add(new Bombo("tom_yum", "thai_food", "Sopa Tom Yum", "Sopa picante de langostinos.", "10.00€"));
+        todos.add(new Bombo("satay_pollo", "thai_food", "Satay de Pollo", "Brochetas con salsa de cacahuete.", "7.50€"));
 
         for (Bombo b : todos) {
             if (b.getId().equals(id)) return b;

@@ -12,16 +12,22 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class DetalleBomboFragment extends Fragment {
 
     private CarritoViewModel carritoViewModel;
+    private TextView tvNombre, tvPrecio, tvDescripcion, tvIngredientes, tvAlergenos, tvCantidad;
+    private ImageView ivFavorito;
+    private RecyclerView rvFotos;
     private String bomboId;
-    private String nombre;
-    private String precio;
-    private String desc;
+    private Bombo bomboActual;
     private int cantidad = 1;
 
     @Nullable
@@ -31,28 +37,28 @@ public class DetalleBomboFragment extends Fragment {
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
 
-        if (getArguments() != null) {
-            bomboId = getArguments().getString("bomboId");
-            nombre = getArguments().getString("nombre");
-            precio = getArguments().getString("precio");
-            desc = getArguments().getString("desc");
-        }
+        tvNombre = view.findViewById(R.id.tv_bombo_nombre);
+        tvPrecio = view.findViewById(R.id.tv_bombo_precio);
+        tvDescripcion = view.findViewById(R.id.tv_bombo_descripcion);
+        tvIngredientes = view.findViewById(R.id.tv_bombo_ingredientes);
+        tvAlergenos = view.findViewById(R.id.tv_bombo_alergenos);
+        rvFotos = view.findViewById(R.id.rv_bombo_fotos);
+        tvCantidad = view.findViewById(R.id.tv_cantidad);
+        ivFavorito = view.findViewById(R.id.iv_favorito);
         
-        ImageView img = view.findViewById(R.id.img_detalle_bombo);
-        TextView tvNombre = view.findViewById(R.id.tv_nombre_detalle);
-        TextView tvPrecio = view.findViewById(R.id.tv_precio_detalle);
-        TextView tvDesc = view.findViewById(R.id.tv_descripcion_detalle);
-        TextView tvCantidad = view.findViewById(R.id.tv_cantidad);
-        Button btnMenos = view.findViewById(R.id.btn_menos);
-        Button btnMas = view.findViewById(R.id.btn_mas);
+        View btnMenos = view.findViewById(R.id.btn_menos);
+        View btnMas = view.findViewById(R.id.btn_mas);
         Button btnPedido = view.findViewById(R.id.btn_realizar_pedido);
 
-        tvNombre.setText(nombre);
-        tvPrecio.setText(precio);
-        tvDesc.setText(desc);
+        if (getArguments() != null) {
+            bomboId = getArguments().getString("bomboId");
+        }
 
-        int resID = getContext().getResources().getIdentifier(bomboId, "drawable", getContext().getPackageName());
-        if (resID != 0) img.setImageResource(resID);
+        cargarDatosEjemplo();
+        mostrarInfoBombo();
+
+        // Inicializar estado de favorito
+        actualizarIconoFavorito();
 
         btnMas.setOnClickListener(v -> {
             cantidad++;
@@ -66,13 +72,90 @@ public class DetalleBomboFragment extends Fragment {
             }
         });
 
-        btnPedido.setOnClickListener(v -> {
+        ivFavorito.setOnClickListener(v -> {
             if (bomboId != null) {
-                carritoViewModel.agregarAlCarrito(bomboId, cantidad);
-                Toast.makeText(getContext(), "¡" + cantidad + " x " + nombre + " añadido al carrito!", Toast.LENGTH_SHORT).show();
+                carritoViewModel.alternarFavorito(bomboId);
+                boolean esFavorito = carritoViewModel.esFavorito(bomboId);
+                actualizarIconoFavorito();
+                String mensaje = esFavorito ? "Añadido a favoritos" : "Eliminado de favoritos";
+                Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
             }
         });
 
+        btnPedido.setOnClickListener(v -> {
+            if (bomboActual != null) {
+                carritoViewModel.agregarAlCarrito(bomboActual.getId(), cantidad);
+                Toast.makeText(getContext(), "¡" + cantidad + " x " + bomboActual.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Opcional: Observar cambios en favoritos para mantener UI sincronizada
+        carritoViewModel.getFavoritos().observe(getViewLifecycleOwner(), favs -> {
+            actualizarIconoFavorito();
+        });
+
         return view;
+    }
+
+    private void actualizarIconoFavorito() {
+        if (bomboId != null && ivFavorito != null) {
+            boolean esFav = carritoViewModel.esFavorito(bomboId);
+            ivFavorito.setImageResource(esFav ? R.drawable.ic_favorite_filled : R.drawable.ic_favorite_border);
+        }
+    }
+
+    private void mostrarInfoBombo() {
+        if (bomboActual != null) {
+            tvNombre.setText(bomboActual.getNombre());
+            tvPrecio.setText(bomboActual.getPrecio());
+            tvDescripcion.setText(bomboActual.getDescripcion());
+            
+            if (bomboActual.getIngredientes() != null && !bomboActual.getIngredientes().isEmpty()) {
+                tvIngredientes.setText(String.join(", ", bomboActual.getIngredientes()));
+            } else {
+                tvIngredientes.setText("No especificados");
+            }
+
+            if (bomboActual.getAlergenos() != null && !bomboActual.getAlergenos().isEmpty()) {
+                tvAlergenos.setText(String.join(", ", bomboActual.getAlergenos()));
+            } else {
+                tvAlergenos.setText("Sin alérgenos conocidos");
+            }
+
+            RestauranteFotoAdapter fotoAdapter = new RestauranteFotoAdapter(bomboActual.getFotos());
+            rvFotos.setAdapter(fotoAdapter);
+        }
+    }
+
+    private void cargarDatosEjemplo() {
+        List<Bombo> todosLosBombos = new ArrayList<>();
+        
+        // Thai Food
+        todosLosBombos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", 
+            "Fideos de arroz con gambas, tofu, huevo y brotes de soja.", "12.50€",
+            Arrays.asList("Fideos de arroz", "Gambas", "Tofu", "Huevo", "Cacahuetes", "Brotes de soja", "Salsa de pescado"),
+            Arrays.asList("Crustáceos", "Huevo", "Cacahuetes", "Pescado", "Soja"),
+            Arrays.asList(android.R.drawable.ic_menu_gallery, android.R.drawable.ic_menu_camera)));
+        
+        todosLosBombos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", 
+            "Ternera, cheddar, lechuga, tomate y nuestra salsa secreta.", "10.50€",
+            Arrays.asList("Carne de ternera", "Queso Cheddar", "Lechuga", "Tomate", "Pan de brioche", "Salsa secreta"),
+            Arrays.asList("Gluten", "Lácteos", "Huevo", "Mostaza"),
+            Arrays.asList(android.R.drawable.ic_menu_gallery, android.R.drawable.ic_menu_camera)));
+
+        for (Bombo b : todosLosBombos) {
+            if (b.getId().equals(bomboId)) {
+                bomboActual = b;
+                break;
+            }
+        }
+        
+        if (bomboActual == null) {
+            bomboActual = new Bombo(bomboId, "desconocido", "Plato de Ejemplo", 
+                "Descripción detallada del plato.", "9.99€",
+                Arrays.asList("Ingrediente A", "Ingrediente B"),
+                Arrays.asList("Alérgeno X"),
+                Arrays.asList(android.R.drawable.ic_menu_gallery));
+        }
     }
 }
