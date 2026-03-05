@@ -9,12 +9,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import java.util.List;
 
-public class RestauranteFotoAdapter extends RecyclerView.Adapter<RestauranteFotoAdapter.FotoViewHolder> {
+public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapter.FotoViewHolder> {
 
-    private List<Integer> fotos;
+    private List<String> listaFotos;
 
-    public RestauranteFotoAdapter(List<Integer> fotos) {
-        this.fotos = fotos;
+    public FotoCarruselAdapter(List<String> listaFotos) {
+        this.listaFotos = listaFotos;
     }
 
     @NonNull
@@ -26,21 +26,27 @@ public class RestauranteFotoAdapter extends RecyclerView.Adapter<RestauranteFoto
 
     @Override
     public void onBindViewHolder(@NonNull FotoViewHolder holder, int position) {
-        holder.imageView.setImageResource(fotos.get(position));
+        String fotoId = listaFotos.get(position);
+        int resID = holder.itemView.getContext().getResources().getIdentifier(
+                fotoId, "drawable", holder.itemView.getContext().getPackageName());
+        
+        if (resID != 0) {
+            holder.imgFoto.setImageResource(resID);
+        } else {
+            holder.imgFoto.setImageResource(R.drawable.ic_launcher_background);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return fotos.size();
+        return listaFotos.size();
     }
 
-    static class FotoViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
-
+    public static class FotoViewHolder extends RecyclerView.ViewHolder {
+        ImageView imgFoto;
         public FotoViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Corregido: Usamos el ID real que está en item_restaurante_foto.xml
-            imageView = itemView.findViewById(R.id.img_carrusel);
+            imgFoto = itemView.findViewById(R.id.img_carrusel);
         }
     }
 }

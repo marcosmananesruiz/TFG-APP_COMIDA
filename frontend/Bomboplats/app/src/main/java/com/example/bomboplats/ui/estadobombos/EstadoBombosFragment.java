@@ -1,0 +1,25 @@
+package com.example.bomboplats.ui.estadobombos;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import com.example.bomboplats.R;
+
+public class EstadoBombosFragment extends Fragment {
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_estadobombos, container, false);
+    }
+
+    public void filtrar(String texto) {
+        // Lógica de filtrado para Estado de mis bombos
+    }
+}

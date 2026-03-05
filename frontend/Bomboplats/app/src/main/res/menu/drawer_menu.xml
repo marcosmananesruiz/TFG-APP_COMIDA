@@ -7,7 +7,10 @@
         android:title="Cuenta" />
     <item
         android:id="@+id/nav_misbombos"
-        android:title="Mis bombos" />
+        android:title="Mis bombos favoritos" />
+    <item
+        android:id="@+id/nav_estadobombos"
+        android:title="Estado de mis bombos" />
     <item
         android:id="@+id/nav_historialDeBombos"
         android:title="Historial de bombos" />

@@ -17,9 +17,13 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.bomboplats.ui.carrito.CarritoFragment;
+import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.configuracion.ConfiguracionFragment;
 import com.example.bomboplats.ui.cuenta.CuentaFragment;
+import com.example.bomboplats.ui.estadobombos.EstadoBombosFragment;
 import com.example.bomboplats.ui.general.BombosFragment;
 import com.example.bomboplats.ui.general.GeneralFragment;
 import com.example.bomboplats.ui.historial.HistorialFragment;
@@ -38,11 +42,15 @@ public class GeneralActivity extends AppCompatActivity {
     private Toast backToast;
     private EditText searchEditText;
     private ImageView searchIcon;
+    private ImageView cartButton;
+    private CarritoViewModel carritoViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_general);
+
+        carritoViewModel = new ViewModelProvider(this).get(CarritoViewModel.class);
 
         // Toolbar
         toolbar = findViewById(R.id.toolbar);
@@ -53,10 +61,18 @@ public class GeneralActivity extends AppCompatActivity {
         }
 
         // Botón del carrito en la Toolbar
-        ImageView cartButton = findViewById(R.id.toolbar_shopping_cart);
-        cartButton.setOnClickListener(v -> loadFragment(new MisBombosFragment()));
+        cartButton = findViewById(R.id.toolbar_shopping_cart);
+        cartButton.setOnClickListener(v -> {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+            if (currentFragment instanceof CarritoFragment) {
+                carritoViewModel.limpiarCarrito();
+                Toast.makeText(this, "Carrito vaciado", Toast.LENGTH_SHORT).show();
+            } else {
+                loadFragment(new CarritoFragment());
+            }
+        });
 
-        // Barra de búsqueda reactiva e inteligente
+        // Barra de búsqueda reactiva
         searchEditText = findViewById(R.id.search_edit_text);
         searchIcon = findViewById(R.id.search_icon);
 
@@ -66,14 +82,12 @@ public class GeneralActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Cambiar icono entre lupa y X
                 if (s.length() > 0) {
                     searchIcon.setImageResource(R.drawable.ic_close);
                 } else {
                     searchIcon.setImageResource(R.drawable.ic_search);
                 }
 
-                // Lógica de filtrado
                 Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
                 String query = s.toString();
                 
@@ -91,6 +105,10 @@ public class GeneralActivity extends AppCompatActivity {
                     ((NotificacionesFragment) currentFragment).filtrar(query);
                 } else if (currentFragment instanceof ConfiguracionFragment) {
                     ((ConfiguracionFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof EstadoBombosFragment) {
+                    ((EstadoBombosFragment) currentFragment).filtrar(query);
+                } else if (currentFragment instanceof CarritoFragment) {
+                    ((CarritoFragment) currentFragment).filtrar(query);
                 }
             }
 
@@ -98,15 +116,11 @@ public class GeneralActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        // Configurar clic en el icono de búsqueda / borrar
         searchIcon.setOnClickListener(v -> {
             if (searchEditText.getText().length() > 0) {
-                // Si hay texto, la X lo borra todo
                 searchEditText.setText("");
             } else {
-                // Si no hay texto, la lupa puede mostrar un mensaje o simplemente dar foco
                 searchEditText.requestFocus();
-                Toast.makeText(GeneralActivity.this, "Escribe algo para buscar", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -133,6 +147,8 @@ public class GeneralActivity extends AppCompatActivity {
                 loadFragment(new GeneralFragment());
             } else if (itemId == R.id.nav_misbombos) {
                 loadFragment(new MisBombosFragment());
+            } else if (itemId == R.id.nav_estadobombos) {
+                loadFragment(new EstadoBombosFragment());
             } else if (itemId == R.id.nav_settings) {
                 loadFragment(new CuentaFragment());
             } else if (itemId == R.id.nav_historialDeBombos) {
@@ -172,6 +188,7 @@ public class GeneralActivity extends AppCompatActivity {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                     getSupportFragmentManager().popBackStack();
+                    updateCartIconBasedOnFragment(); // Actualizar icono al volver atrás
                 } else if (!(currentFragment instanceof GeneralFragment)) {
                     loadFragment(new GeneralFragment());
                     navigationView.setCheckedItem(R.id.nav_home);
@@ -196,6 +213,8 @@ public class GeneralActivity extends AppCompatActivity {
         transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
         transaction.replace(R.id.container, fragment);
         transaction.commit();
+        
+        updateCartIcon(fragment);
     }
 
     public void onRestauranteClickFromFragment(Fragment fragment) {
@@ -204,5 +223,25 @@ public class GeneralActivity extends AppCompatActivity {
         transaction.replace(R.id.container, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
+        
+        updateCartIcon(fragment);
+    }
+
+    // Hecho público para que el fragmento pueda llamarlo
+    public void updateCartIcon(Fragment fragment) {
+        if (cartButton == null) return;
+        if (fragment instanceof CarritoFragment) {
+            cartButton.setImageResource(R.drawable.ic_close);
+        } else {
+            cartButton.setImageResource(R.drawable.ic_shopping_cart);
+        }
+    }
+
+    private void updateCartIconBasedOnFragment() {
+        // Necesitamos un pequeño retardo o usar un listener para asegurar que el fragmento ya ha cambiado
+        getWindow().getDecorView().post(() -> {
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+            updateCartIcon(currentFragment);
+        });
     }
 }

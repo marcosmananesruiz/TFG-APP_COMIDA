@@ -1,25 +1,34 @@
 package com.example.bomboplats.ui.general;
 
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
-import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
+import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.List;
 
 public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHolder> {
 
     private List<Bombo> listaBombos;
+    private OnBomboClickListener listener;
+    private FavoritosViewModel favoritosViewModel;
 
-    public BomboAdapter(List<Bombo> listaBombos) {
+    public interface OnBomboClickListener {
+        void onBomboClick(Bombo bombo);
+        void onFavoritoClick(Bombo bombo);
+        void onAgregarCarritoClick(Bombo bombo);
+    }
+
+    public BomboAdapter(List<Bombo> listaBombos, OnBomboClickListener listener, FavoritosViewModel favoritosViewModel) {
         this.listaBombos = listaBombos;
+        this.listener = listener;
+        this.favoritosViewModel = favoritosViewModel;
     }
 
     public void setFilteredList(List<Bombo> filteredList) {
@@ -41,6 +50,13 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         holder.tvDescripcion.setText(bombo.getDescripcion());
         holder.tvPrecio.setText(bombo.getPrecio());
 
+        // Actualizado: Usamos ic_heart_unselected cuando no es favorito
+        if (favoritosViewModel != null && favoritosViewModel.esFavorito(bombo.getId())) {
+            holder.btnFav.setImageResource(R.drawable.ic_favorite_filled);
+        } else {
+            holder.btnFav.setImageResource(R.drawable.ic_heart_unselected);
+        }
+
         int resID = holder.itemView.getContext().getResources().getIdentifier(
                 bombo.getId(), "drawable", holder.itemView.getContext().getPackageName());
         
@@ -51,14 +67,16 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         }
 
         holder.itemView.setOnClickListener(v -> {
-            DetalleBomboFragment fragment = new DetalleBomboFragment();
-            Bundle args = new Bundle();
-            args.putString("bomboId", bombo.getId());
-            fragment.setArguments(args);
+            if (listener != null) listener.onBomboClick(bombo);
+        });
 
-            if (v.getContext() instanceof GeneralActivity) {
-                ((GeneralActivity) v.getContext()).onRestauranteClickFromFragment(fragment);
-            }
+        holder.btnFav.setOnClickListener(v -> {
+            if (listener != null) listener.onFavoritoClick(bombo);
+            notifyItemChanged(position);
+        });
+
+        holder.btnMasCarrito.setOnClickListener(v -> {
+            if (listener != null) listener.onAgregarCarritoClick(bombo);
         });
     }
 
@@ -68,15 +86,18 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
     }
 
     public static class BomboViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNombre, tvDescripcion, tvPrecio;
-        ImageView imgBombo;
+        TextView tvNombre, tvDescripcion, tvPrecio, tvCantidad;
+        ImageView imgBombo, btnFav, btnMasCarrito;
 
         public BomboViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNombre = itemView.findViewById(R.id.tv_nombre_bombo);
             tvDescripcion = itemView.findViewById(R.id.tv_descripcion_bombo);
             tvPrecio = itemView.findViewById(R.id.tv_precio_bombo);
+            tvCantidad = itemView.findViewById(R.id.tv_cantidad_bombo);
             imgBombo = itemView.findViewById(R.id.img_bombo);
+            btnFav = itemView.findViewById(R.id.btn_fav_bombo);
+            btnMasCarrito = itemView.findViewById(R.id.btn_agregar_carrito_rapido);
         }
     }
 }

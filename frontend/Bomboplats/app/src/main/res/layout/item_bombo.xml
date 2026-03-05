@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:padding="12dp">
 
+        <!-- Imagen del plato (izquierda) -->
         <ImageView
             android:id="@+id/img_bombo"
             android:layout_width="80dp"
@@ -22,42 +23,101 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Nombre del plato (arriba a la derecha de la imagen) -->
         <TextView
             android:id="@+id/tv_nombre_bombo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="12dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="40dp"
             android:text="Nombre del Plato"
             android:textColor="@android:color/black"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/tv_precio_bombo"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/img_bombo"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Descripción (debajo del nombre) -->
         <TextView
             android:id="@+id/tv_descripcion_bombo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Descripción del plato..."
+            android:layout_marginEnd="40dp"
+            android:text="Descripción corta del plato..."
             android:textSize="14sp"
-            app:layout_constraintEnd_toStartOf="@+id/tv_precio_bombo"
-            app:layout_constraintStart_toEndOf="@+id/img_bombo"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/tv_nombre_bombo"
             app:layout_constraintTop_toBottomOf="@+id/tv_nombre_bombo" />
 
+        <!-- Precio (debajo de descripción, a la derecha de la imagen) -->
         <TextView
             android:id="@+id/tv_precio_bombo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="12.50€"
             android:textColor="#4CAF50"
+            android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/tv_nombre_bombo"
+            app:layout_constraintTop_toBottomOf="@+id/tv_descripcion_bombo" />
+
+        <!-- Cantidad (visible solo en el carrito) -->
+        <TextView
+            android:id="@+id/tv_cantidad_bombo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="x1"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_precio_bombo"
+            app:layout_constraintStart_toEndOf="@+id/tv_precio_bombo"
+            app:layout_constraintTop_toTopOf="@+id/tv_precio_bombo" />
+
+        <!-- Corazón (Esquina superior derecha) -->
+        <ImageView
+            android:id="@+id/btn_fav_bombo"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_heart_unselected"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Botón + (Esquina inferior derecha) -->
+        <ImageView
+            android:id="@+id/btn_agregar_carrito_rapido"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_add_to_cart"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Botón - (Solo visible en el carrito, debajo del +) -->
+        <Button
+            android:id="@+id/btn_remover_uno"
+            style="?attr/borderlessButtonStyle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="-"
+            android:textColor="#F44336"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_agregar_carrito_rapido" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

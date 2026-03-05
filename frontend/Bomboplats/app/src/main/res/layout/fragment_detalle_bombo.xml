@@ -1,110 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:background="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tv_bombo_nombre"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Nombre del Plato"
-            android:textColor="@color/black"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
+        <ImageView
+            android:id="@+id/img_detalle_bombo"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_launcher_background"
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tv_bombo_precio"
+            android:id="@+id/tv_nombre_detalle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="12.50€"
+            android:layout_marginTop="16dp"
+            android:text="Nombre del Plato"
+            android:textColor="@android:color/black"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/img_detalle_bombo" />
+
+        <TextView
+            android:id="@+id/tv_precio_detalle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="15.00€"
             android:textColor="#4CAF50"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_nombre_detalle" />
+
+        <TextView
+            android:id="@+id/tv_desc_titulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Descripción"
+            android:textColor="@android:color/black"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_bombo_nombre" />
-
-        <!-- Carrusel de fotos -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_bombo_fotos"
-            android:layout_width="0dp"
-            android:layout_height="200dp"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_bombo_precio"
-            tools:listitem="@layout/item_restaurante_foto" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_nombre_detalle" />
 
         <TextView
-            android:id="@+id/tv_bombo_descripcion"
-            android:layout_width="0dp"
+            android:id="@+id/tv_descripcion_detalle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Descripción del plato."
-            android:textColor="@color/black"
+            android:layout_marginTop="8dp"
+            android:text="Aquí va la descripción detallada del plato..."
             android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_bombo_fotos" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_desc_titulo" />
 
         <TextView
-            android:id="@+id/label_ingredientes"
+            android:id="@+id/tv_ingredientes_titulo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Ingredientes:"
-            android:textColor="@color/black"
+            android:layout_marginTop="24dp"
+            android:text="Ingredientes y Alérgenos"
+            android:textColor="@android:color/black"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_bombo_descripcion" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_descripcion_detalle" />
 
         <TextView
-            android:id="@+id/tv_bombo_ingredientes"
-            android:layout_width="0dp"
+            android:id="@+id/tv_ingredientes_detalle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Lista de ingredientes..."
-            android:textColor="@color/black"
-            android:textSize="14sp"
+            android:layout_marginTop="8dp"
+            android:text="• Ingrediente 1\n• Ingrediente 2\n• Alérgeno: Gluten"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@+id/tv_ingredientes_titulo" />
+
+        <!-- Selector de Cantidad Ovalado -->
+        <LinearLayout
+            android:id="@+id/layout_cantidad"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/total_section_background"
+            android:elevation="4dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/label_ingredientes" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_ingredientes_detalle">
 
-        <TextView
-            android:id="@+id/label_alergenos"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            <Button
+                android:id="@+id/btn_menos"
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="-"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_cantidad"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btn_mas"
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="+"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_realizar_pedido"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
             android:layout_marginTop="16dp"
-            android:text="Alérgenos:"
-            android:textColor="@color/black"
+            android:text="REALIZAR PEDIDO"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_bombo_ingredientes" />
-
-        <TextView
-            android:id="@+id/tv_bombo_alergenos"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Lista de alérgenos..."
-            android:textColor="@color/black"
-            android:textSize="14sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/label_alergenos" />
+            app:layout_constraintTop_toBottomOf="@+id/layout_cantidad" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

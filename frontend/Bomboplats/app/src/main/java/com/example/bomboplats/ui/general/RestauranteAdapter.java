@@ -45,6 +45,7 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
         holder.tvEstrellas.setText("⭐ " + restaurante.getEstrellas());
         holder.tvPrecio.setText(restaurante.getRangoPrecio());
 
+        // Cargar imagen por ID
         int resID = holder.itemView.getContext().getResources().getIdentifier(
                 restaurante.getId(), "drawable", holder.itemView.getContext().getPackageName());
         
@@ -54,7 +55,11 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
             holder.imgRestaurante.setImageResource(R.drawable.ic_launcher_background);
         }
 
-        holder.itemView.setOnClickListener(v -> listener.onRestauranteClick(restaurante));
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onRestauranteClick(restaurante);
+            }
+        });
     }
 
     @Override
