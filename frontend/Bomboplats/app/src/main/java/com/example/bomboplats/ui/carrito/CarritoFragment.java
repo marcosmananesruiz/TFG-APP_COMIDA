@@ -16,6 +16,7 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
+import com.example.bomboplats.ui.general.DetalleBomboFragment;
 import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -130,6 +131,21 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
     @Override
     public void onFavoritoClick(String bomboId) {
         favoritosViewModel.toggleFavorito(bomboId);
+    }
+
+    @Override
+    public void onBomboClick(Bombo b) {
+        DetalleBomboFragment fragment = new DetalleBomboFragment();
+        Bundle args = new Bundle();
+        args.putString("bomboId", b.getId());
+        args.putString("nombre", b.getNombre());
+        args.putString("precio", b.getPrecio());
+        args.putString("desc", b.getDescripcion());
+        fragment.setArguments(args);
+
+        if (getActivity() instanceof GeneralActivity) {
+            ((GeneralActivity) getActivity()).onRestauranteClickFromFragment(fragment);
+        }
     }
 
     private Bombo buscarBomboPorId(String id) {

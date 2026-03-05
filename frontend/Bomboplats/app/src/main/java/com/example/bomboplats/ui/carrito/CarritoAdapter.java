@@ -23,6 +23,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
     public interface OnCarritoActionListener {
         void onRestarClick(String bomboId);
         void onFavoritoClick(String bomboId);
+        void onBomboClick(Bombo bombo);
     }
 
     public CarritoAdapter(List<BomboConCantidad> listaCarrito, OnCarritoActionListener listener) {
@@ -74,6 +75,10 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
 
         holder.ivFavorito.setOnClickListener(v -> {
             if (listener != null) listener.onFavoritoClick(bombo.getId());
+        });
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) listener.onBomboClick(bombo);
         });
 
         int resID = holder.itemView.getContext().getResources().getIdentifier(
