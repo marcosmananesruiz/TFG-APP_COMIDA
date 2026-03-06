@@ -28,11 +28,11 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     private FavoritosViewModel favoritosViewModel;
     private CarritoViewModel carritoViewModel;
     private TextView tvEmptyFavoritos;
+    private List<Bombo> listaFavoritosCompleta = new ArrayList<>();
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Corregido: Usamos el nombre real del archivo de layout
         View view = inflater.inflate(R.layout.fragment_misbombosfavoritos, container, false);
 
         recyclerView = view.findViewById(R.id.rv_mis_bombos);
@@ -52,14 +52,18 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
 
     private void actualizarListaFavoritos(List<String> idsFavoritos) {
         List<Bombo> todosLosBombos = obtenerTodosLosBombos();
-        List<Bombo> favoritos = new ArrayList<>();
+        listaFavoritosCompleta.clear();
         for (Bombo b : todosLosBombos) {
             if (idsFavoritos.contains(b.getId())) {
-                favoritos.add(b);
+                listaFavoritosCompleta.add(b);
             }
         }
 
-        if (favoritos.isEmpty()) {
+        mostrarResultados(listaFavoritosCompleta);
+    }
+
+    private void mostrarResultados(List<Bombo> lista) {
+        if (lista.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyFavoritos.setVisibility(View.VISIBLE);
         } else {
@@ -67,10 +71,10 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
             tvEmptyFavoritos.setVisibility(View.GONE);
             
             if (adapter == null) {
-                adapter = new BomboAdapter(favoritos, this, favoritosViewModel);
+                adapter = new BomboAdapter(new ArrayList<>(lista), this, favoritosViewModel);
                 recyclerView.setAdapter(adapter);
             } else {
-                adapter.setFilteredList(favoritos);
+                adapter.setFilteredList(new ArrayList<>(lista));
             }
         }
     }
@@ -102,7 +106,22 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     }
 
     public void filtrar(String texto) {
-        // Lógica de filtrado si fuera necesaria
+        if (listaFavoritosCompleta == null) return;
+        
+        List<Bombo> filtrados = new ArrayList<>();
+        String query = texto.toLowerCase().trim();
+
+        if (query.isEmpty()) {
+            filtrados.addAll(listaFavoritosCompleta);
+        } else {
+            for (Bombo b : listaFavoritosCompleta) {
+                if (b.getNombre().toLowerCase().contains(query)) {
+                    filtrados.add(b);
+                }
+            }
+        }
+        
+        mostrarResultados(filtrados);
     }
 
     private List<Bombo> obtenerTodosLosBombos() {

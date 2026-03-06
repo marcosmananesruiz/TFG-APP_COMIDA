@@ -24,12 +24,14 @@ import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.configuracion.ConfiguracionFragment;
 import com.example.bomboplats.ui.cuenta.CuentaFragment;
 import com.example.bomboplats.ui.estadobombos.EstadoBombosFragment;
+import com.example.bomboplats.ui.estadobombos.EstadoBombosViewModel;
 import com.example.bomboplats.ui.general.BombosFragment;
 import com.example.bomboplats.ui.general.GeneralFragment;
 import com.example.bomboplats.ui.historial.HistorialFragment;
 import com.example.bomboplats.ui.login.LoginActivity;
 import com.example.bomboplats.ui.misbombos.MisBombosFragment;
 import com.example.bomboplats.ui.notificaciones.NotificacionesFragment;
+import com.example.bomboplats.utils.NotificationHelper;
 import com.google.android.material.navigation.NavigationView;
 
 public class GeneralActivity extends AppCompatActivity {
@@ -44,6 +46,7 @@ public class GeneralActivity extends AppCompatActivity {
     private ImageView searchIcon;
     private ImageView cartButton;
     private CarritoViewModel carritoViewModel;
+    private EstadoBombosViewModel estadoBombosViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +54,14 @@ public class GeneralActivity extends AppCompatActivity {
         setContentView(R.layout.activity_general);
 
         carritoViewModel = new ViewModelProvider(this).get(CarritoViewModel.class);
+        estadoBombosViewModel = new ViewModelProvider(this).get(EstadoBombosViewModel.class);
+
+        // Observador Global de Notificaciones (Funciona en segundo plano)
+        estadoBombosViewModel.getEventoNotificacion().observe(this, mensaje -> {
+            if (mensaje != null) {
+                NotificationHelper.showNotification(this, "Estado de tus Bombos", mensaje);
+            }
+        });
 
         // Toolbar
         toolbar = findViewById(R.id.toolbar);
@@ -188,7 +199,7 @@ public class GeneralActivity extends AppCompatActivity {
                     drawerLayout.closeDrawer(GravityCompat.START);
                 } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                     getSupportFragmentManager().popBackStack();
-                    updateCartIconBasedOnFragment(); // Actualizar icono al volver atrás
+                    updateCartIconBasedOnFragment(); 
                 } else if (!(currentFragment instanceof GeneralFragment)) {
                     loadFragment(new GeneralFragment());
                     navigationView.setCheckedItem(R.id.nav_home);
@@ -227,7 +238,6 @@ public class GeneralActivity extends AppCompatActivity {
         updateCartIcon(fragment);
     }
 
-    // Hecho público para que el fragmento pueda llamarlo
     public void updateCartIcon(Fragment fragment) {
         if (cartButton == null) return;
         if (fragment instanceof CarritoFragment) {
@@ -238,7 +248,6 @@ public class GeneralActivity extends AppCompatActivity {
     }
 
     private void updateCartIconBasedOnFragment() {
-        // Necesitamos un pequeño retardo o usar un listener para asegurar que el fragmento ya ha cambiado
         getWindow().getDecorView().post(() -> {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
             updateCartIcon(currentFragment);

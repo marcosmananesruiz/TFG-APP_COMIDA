@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,7 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
-import java.util.ArrayList;
+import com.example.bomboplats.utils.NotificationHelper;
 
 public class EstadoBombosFragment extends Fragment {
 
@@ -28,11 +29,7 @@ public class EstadoBombosFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.rv_estado_bombos);
         tvVacio = view.findViewById(R.id.tv_estado_vacio);
-        
-        if (recyclerView == null) {
-            // Si el layout no tenía el ID correcto, lo manejamos o asumimos que lo actualizaremos ahora
-            return view; 
-        }
+        Button btnSimular = view.findViewById(R.id.btn_simular_cambio);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new EstadoBombosAdapter();
@@ -40,6 +37,7 @@ public class EstadoBombosFragment extends Fragment {
 
         viewModel = new ViewModelProvider(requireActivity()).get(EstadoBombosViewModel.class);
 
+        // Observar la lista de pedidos
         viewModel.getBombosEnEstado().observe(getViewLifecycleOwner(), bombos -> {
             if (bombos == null || bombos.isEmpty()) {
                 recyclerView.setVisibility(View.GONE);
@@ -51,10 +49,18 @@ public class EstadoBombosFragment extends Fragment {
             }
         });
 
+        // El observer de notificaciones se moverá a la GeneralActivity
+
+        btnSimular.setOnClickListener(v -> {
+            // Este botón ahora solo servirá para forzar una actualización de estados
+            // si el temporizador no ha saltado aún.
+        });
+
         return view;
     }
 
+    // Método añadido para que la búsqueda global no falle
     public void filtrar(String texto) {
-        // Lógica de filtrado opcional
+        // En esta pantalla, la búsqueda no hace nada, pero el método debe existir
     }
 }
