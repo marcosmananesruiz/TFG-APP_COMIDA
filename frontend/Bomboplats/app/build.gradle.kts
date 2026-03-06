@@ -26,10 +26,8 @@ android {
         }
     }
     compileOptions {
-        // Enable support for Java 17 language features
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-        // Enable core library desugaring
         isCoreLibraryDesugaringEnabled = true
     }
     buildFeatures {
@@ -45,12 +43,12 @@ dependencies {
     implementation(libs.annotation)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.gson)
 
     implementation(fileTree("libs") {
         include("*.jar")
     })
 
-    // Add dependency for core library desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
     testImplementation(libs.junit)

@@ -63,6 +63,13 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
             actualizarUI();
         });
 
+        btnPagar.setOnClickListener(v -> {
+            RealizarEnvioFragment fragment = new RealizarEnvioFragment();
+            if (getActivity() instanceof GeneralActivity) {
+                ((GeneralActivity) getActivity()).onRestauranteClickFromFragment(fragment);
+            }
+        });
+
         return view;
     }
 
