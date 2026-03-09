@@ -1,83 +1,85 @@
 package com.example.bomboplats.ui.estadobombos;
 
-import android.os.Handler;
-import android.os.Looper;
+import android.app.Application;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-import com.example.bomboplats.data.model.BomboConCantidad;
-import com.example.bomboplats.data.model.EstadoBombo;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
+import com.example.bomboplats.data.EstadoBombosRepository;
+import com.example.bomboplats.data.model.EstadoPedido;
+import com.example.bomboplats.ui.historial.Pedido;
+import com.example.bomboplats.utils.EstadoBomboWorker;
+import com.example.bomboplats.utils.NotificationHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-public class EstadoBombosViewModel extends ViewModel {
-    private final MutableLiveData<List<EstadoBombo>> bombosEnEstado = new MutableLiveData<>(new ArrayList<>());
-    private final MutableLiveData<String> eventoNotificacion = new MutableLiveData<>();
-    private final Handler handler = new Handler(Looper.getMainLooper());
-    
-    private final Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            actualizarEstados();
-            handler.postDelayed(this, 15000); // Repetir cada 15 segundos
-        }
-    };
+public class EstadoBombosViewModel extends AndroidViewModel {
+    private final EstadoBombosRepository repository = EstadoBombosRepository.getInstance();
+    private final WorkManager workManager;
 
-    public LiveData<List<EstadoBombo>> getBombosEnEstado() {
-        return bombosEnEstado;
-    }
-
-    public LiveData<String> getEventoNotificacion() {
-        return eventoNotificacion;
-    }
-
-    public void agregarBombosDesdePedido(List<BomboConCantidad> bombosDelPedido) {
-        List<EstadoBombo> listaActual = bombosEnEstado.getValue();
-        if (listaActual != null) {
-            for (BomboConCantidad b : bombosDelPedido) {
-                listaActual.add(new EstadoBombo(b, "Preparando"));
-            }
-            bombosEnEstado.setValue(new ArrayList<>(listaActual));
-
-            if (!bombosDelPedido.isEmpty()) {
-                iniciarCicloDeActualizacion();
-            }
+    public EstadoBombosViewModel(@NonNull Application application) {
+        super(application);
+        workManager = WorkManager.getInstance(application);
+        
+        if (!pedidosTodosEntregados()) {
+            lanzarWorkerDeEstado();
         }
     }
 
-    private void iniciarCicloDeActualizacion() {
-        handler.removeCallbacks(runnable);
-        handler.postDelayed(runnable, 15000);
+    private boolean pedidosTodosEntregados() {
+        List<EstadoPedido> listaActual = repository.getListaActual();
+        if (listaActual.isEmpty()) return true;
+        for (EstadoPedido ep : listaActual) {
+            if (!"Entregado".equals(ep.getEstado())) return false;
+        }
+        return true;
     }
 
-    private void actualizarEstados() {
-        List<EstadoBombo> listaActual = bombosEnEstado.getValue();
+    public LiveData<List<EstadoPedido>> getPedidosEnEstado() {
+        return repository.getPedidosEnEstado();
+    }
+
+    public void agregarPedidoAEstado(Pedido pedido) {
+        List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
+        listaActual.add(new EstadoPedido(pedido, "Preparando"));
+        repository.guardarEnDisco(getApplication(), listaActual);
+        lanzarWorkerDeEstado();
+    }
+
+    public void simularPasoTiempo() {
+        List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
         boolean huboCambios = false;
 
-        if (listaActual != null) {
-            for (EstadoBombo eb : listaActual) {
-                String nombreBombo = eb.getBomboConCantidad().getBombo().getNombre();
-                if (eb.getEstado().equals("Preparando")) {
-                    eb.setEstado("De camino");
-                    eventoNotificacion.setValue("Tu bombo (" + nombreBombo + ") está de camino 🛵");
-                    huboCambios = true;
-                } else if (eb.getEstado().equals("De camino")) {
-                    eb.setEstado("Entregado");
-                    eventoNotificacion.setValue("¡Tu bombo (" + nombreBombo + ") ha sido entregado! 😋");
-                    huboCambios = true;
-                }
+        for (EstadoPedido ep : listaActual) {
+            if ("Preparando".equals(ep.getEstado())) {
+                ep.setEstado("De camino");
+                huboCambios = true;
+                NotificationHelper.showNotification(getApplication(), "Simulación: Estado de tus Bombos", "Tu pedido #" + ep.getPedido().getId() + " está de camino 🛵");
+            } else if ("De camino".equals(ep.getEstado())) {
+                ep.setEstado("Entregado");
+                huboCambios = true;
+                NotificationHelper.showNotification(getApplication(), "Simulación: Estado de tus Bombos", "¡Tu pedido #" + ep.getPedido().getId() + " ha sido entregado! 😋");
             }
+        }
 
-            if (huboCambios) {
-                bombosEnEstado.setValue(new ArrayList<>(listaActual));
-            }
+        if (huboCambios) {
+            repository.guardarEnDisco(getApplication(), listaActual);
         }
     }
 
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        handler.removeCallbacks(runnable);
+    private void lanzarWorkerDeEstado() {
+        OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(EstadoBomboWorker.class)
+                .setInitialDelay(15, TimeUnit.SECONDS)
+                .build();
+        
+        workManager.enqueueUniqueWork(
+                "SeguimientoBombos",
+                ExistingWorkPolicy.KEEP,
+                workRequest
+        );
     }
 }

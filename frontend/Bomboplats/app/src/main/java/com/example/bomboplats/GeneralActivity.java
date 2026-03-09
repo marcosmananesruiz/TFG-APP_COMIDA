@@ -19,6 +19,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.bomboplats.data.EstadoBombosRepository;
+import com.example.bomboplats.data.NotificationRepository;
 import com.example.bomboplats.ui.carrito.CarritoFragment;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.configuracion.ConfiguracionFragment;
@@ -53,15 +55,12 @@ public class GeneralActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_general);
 
+        // CARGAMOS TODO DEL DISCO AL ARRANCAR
+        EstadoBombosRepository.getInstance().cargarDesdeDisco(getApplicationContext());
+        NotificationRepository.getInstance().cargarDesdeDisco(getApplicationContext());
+
         carritoViewModel = new ViewModelProvider(this).get(CarritoViewModel.class);
         estadoBombosViewModel = new ViewModelProvider(this).get(EstadoBombosViewModel.class);
-
-        // Observador Global de Notificaciones (Funciona en segundo plano)
-        estadoBombosViewModel.getEventoNotificacion().observe(this, mensaje -> {
-            if (mensaje != null) {
-                NotificationHelper.showNotification(this, "Estado de tus Bombos", mensaje);
-            }
-        });
 
         // Toolbar
         toolbar = findViewById(R.id.toolbar);
@@ -183,10 +182,15 @@ public class GeneralActivity extends AppCompatActivity {
             return true;
         });
 
-        // Cargar el fragmento inicial
+        // Lógica de navegación inicial o desde notificación
         if (savedInstanceState == null) {
-            loadFragment(new GeneralFragment());
-            navigationView.setCheckedItem(R.id.nav_home);
+            if (getIntent().getBooleanExtra("ir_a_estados", false)) {
+                loadFragment(new EstadoBombosFragment());
+                navigationView.setCheckedItem(R.id.nav_estadobombos);
+            } else {
+                loadFragment(new GeneralFragment());
+                navigationView.setCheckedItem(R.id.nav_home);
+            }
         }
 
         // Manejar el botón de "atrás"
@@ -215,6 +219,16 @@ public class GeneralActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent.getBooleanExtra("ir_a_estados", false)) {
+            loadFragment(new EstadoBombosFragment());
+            navigationView.setCheckedItem(R.id.nav_estadobombos);
+        }
     }
 
     private void loadFragment(Fragment fragment) {

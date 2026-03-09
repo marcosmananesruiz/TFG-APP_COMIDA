@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.gson)
+    implementation(libs.androidx.work.runtime) // AÑADIDO: Soporte para tareas persistentes
 
     implementation(fileTree("libs") {
         include("*.jar")

@@ -9,8 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.NotificationRepository;
+import com.example.bomboplats.ui.estadobombos.EstadoBombosFragment;
 import java.util.ArrayList;
 
 public class NotificacionesFragment extends Fragment {
@@ -30,6 +35,7 @@ public class NotificacionesFragment extends Fragment {
 
         viewModel = new ViewModelProvider(requireActivity()).get(NotificacionesViewModel.class);
 
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new NotificacionesAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
@@ -44,10 +50,26 @@ public class NotificacionesFragment extends Fragment {
             }
         });
 
+        // Configurar el gesto de deslizar para borrar
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                NotificationRepository.getInstance().removeNotification(getContext(), position);
+            }
+        };
+
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(recyclerView);
+
         return view;
     }
 
     public void filtrar(String texto) {
-        // Lógica de filtrado opcional para notificaciones
+        // Lógica de filtrado opcional
     }
 }

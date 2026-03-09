@@ -92,14 +92,14 @@ public class RealizarEnvioFragment extends Fragment {
         Pedido nuevoPedido = new Pedido(idPedido, fecha, listaItems, total, etDireccion.getText().toString().trim());
         historialViewModel.agregarPedido(nuevoPedido);
         
-        // Agregar al estado de "Mis Bombos"
-        estadoBombosViewModel.agregarBombosDesdePedido(listaItems);
+        // CORREGIDO: Ahora pasamos el pedido completo al sistema de seguimiento
+        estadoBombosViewModel.agregarPedidoAEstado(nuevoPedido);
         
         Toast.makeText(getContext(), "¡Pedido " + idPedido + " realizado!", Toast.LENGTH_LONG).show();
         carritoViewModel.limpiarCarrito();
         
-        if (getFragmentManager() != null) {
-            getFragmentManager().popBackStack();
+        if (getParentFragmentManager() != null) {
+            getParentFragmentManager().popBackStack();
         }
     }
 

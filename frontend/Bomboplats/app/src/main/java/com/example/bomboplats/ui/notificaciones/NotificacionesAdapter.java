@@ -25,13 +25,13 @@ public class NotificacionesAdapter extends RecyclerView.Adapter<NotificacionesAd
     @NonNull
     @Override
     public NotiViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext()).inflate(android.R.layout.simple_list_item_1, parent, false);
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_notificacion, parent, false);
         return new NotiViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull NotiViewHolder holder, int position) {
-        holder.tv.setText(lista.get(position));
+        holder.tvMensaje.setText(lista.get(position));
     }
 
     @Override
@@ -40,10 +40,10 @@ public class NotificacionesAdapter extends RecyclerView.Adapter<NotificacionesAd
     }
 
     static class NotiViewHolder extends RecyclerView.ViewHolder {
-        TextView tv;
+        TextView tvMensaje;
         public NotiViewHolder(@NonNull View v) {
             super(v);
-            tv = v.findViewById(android.R.id.text1);
+            tvMensaje = v.findViewById(R.id.tv_noti_mensaje);
         }
     }
 }

@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,10 +11,12 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
-import com.example.bomboplats.utils.NotificationHelper;
+import com.example.bomboplats.data.model.EstadoPedido;
+import com.example.bomboplats.ui.historial.ListaPedidoHistorialFragment;
 
-public class EstadoBombosFragment extends Fragment {
+public class EstadoBombosFragment extends Fragment implements EstadoBombosAdapter.OnEstadoPedidoClickListener {
 
     private RecyclerView recyclerView;
     private EstadoBombosAdapter adapter;
@@ -29,38 +30,34 @@ public class EstadoBombosFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.rv_estado_bombos);
         tvVacio = view.findViewById(R.id.tv_estado_vacio);
-        Button btnSimular = view.findViewById(R.id.btn_simular_cambio);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new EstadoBombosAdapter();
+        adapter = new EstadoBombosAdapter(this);
         recyclerView.setAdapter(adapter);
 
         viewModel = new ViewModelProvider(requireActivity()).get(EstadoBombosViewModel.class);
 
-        // Observar la lista de pedidos
-        viewModel.getBombosEnEstado().observe(getViewLifecycleOwner(), bombos -> {
-            if (bombos == null || bombos.isEmpty()) {
+        viewModel.getPedidosEnEstado().observe(getViewLifecycleOwner(), pedidos -> {
+            if (pedidos == null || pedidos.isEmpty()) {
                 recyclerView.setVisibility(View.GONE);
                 tvVacio.setVisibility(View.VISIBLE);
             } else {
                 recyclerView.setVisibility(View.VISIBLE);
                 tvVacio.setVisibility(View.GONE);
-                adapter.setLista(bombos);
+                adapter.setLista(pedidos);
             }
-        });
-
-        // El observer de notificaciones se moverá a la GeneralActivity
-
-        btnSimular.setOnClickListener(v -> {
-            // Este botón ahora solo servirá para forzar una actualización de estados
-            // si el temporizador no ha saltado aún.
         });
 
         return view;
     }
 
-    // Método añadido para que la búsqueda global no falle
-    public void filtrar(String texto) {
-        // En esta pantalla, la búsqueda no hace nada, pero el método debe existir
+    @Override
+    public void onPedidoClick(EstadoPedido estadoPedido) {
+        ListaPedidoHistorialFragment fragment = ListaPedidoHistorialFragment.newInstance(estadoPedido.getPedido());
+        if (getActivity() instanceof GeneralActivity) {
+            ((GeneralActivity) getActivity()).onRestauranteClickFromFragment(fragment);
+        }
     }
+
+    public void filtrar(String texto) {}
 }
