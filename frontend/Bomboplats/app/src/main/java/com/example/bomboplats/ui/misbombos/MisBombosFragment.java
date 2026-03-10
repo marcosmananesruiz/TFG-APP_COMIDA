@@ -16,6 +16,7 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
+import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.general.BomboAdapter;
 import com.example.bomboplats.ui.general.DetalleBomboFragment;
 import java.util.ArrayList;
@@ -25,10 +26,9 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
 
     private RecyclerView recyclerView;
     private BomboAdapter adapter;
-    private FavoritosViewModel favoritosViewModel;
+    private UserViewModel userViewModel;
     private CarritoViewModel carritoViewModel;
     private TextView tvEmptyFavoritos;
-    private List<Bombo> listaFavoritosCompleta = new ArrayList<>();
 
     @Nullable
     @Override
@@ -39,11 +39,11 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         tvEmptyFavoritos = view.findViewById(R.id.tv_empty_favoritos);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        favoritosViewModel = new ViewModelProvider(requireActivity()).get(FavoritosViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
 
-        // Observar los cambios en la lista de favoritos
-        favoritosViewModel.getIdsFavoritos().observe(getViewLifecycleOwner(), idsFavoritos -> {
+        // Al observar favoritos, la lista se actualizará automáticamente cuando cambie el usuario en UserViewModel
+        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), idsFavoritos -> {
             actualizarListaFavoritos(idsFavoritos);
         });
 
@@ -52,18 +52,16 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
 
     private void actualizarListaFavoritos(List<String> idsFavoritos) {
         List<Bombo> todosLosBombos = obtenerTodosLosBombos();
-        listaFavoritosCompleta.clear();
-        for (Bombo b : todosLosBombos) {
-            if (idsFavoritos.contains(b.getId())) {
-                listaFavoritosCompleta.add(b);
+        List<Bombo> favoritos = new ArrayList<>();
+        if (idsFavoritos != null) {
+            for (Bombo b : todosLosBombos) {
+                if (idsFavoritos.contains(b.getId())) {
+                    favoritos.add(b);
+                }
             }
         }
 
-        mostrarResultados(listaFavoritosCompleta);
-    }
-
-    private void mostrarResultados(List<Bombo> lista) {
-        if (lista.isEmpty()) {
+        if (favoritos.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyFavoritos.setVisibility(View.VISIBLE);
         } else {
@@ -71,10 +69,10 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
             tvEmptyFavoritos.setVisibility(View.GONE);
             
             if (adapter == null) {
-                adapter = new BomboAdapter(new ArrayList<>(lista), this, favoritosViewModel);
+                adapter = new BomboAdapter(favoritos, this, userViewModel);
                 recyclerView.setAdapter(adapter);
             } else {
-                adapter.setFilteredList(new ArrayList<>(lista));
+                adapter.setFilteredList(favoritos);
             }
         }
     }
@@ -96,7 +94,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
 
     @Override
     public void onFavoritoClick(Bombo b) {
-        favoritosViewModel.toggleFavorito(b.getId());
+        userViewModel.toggleFavorito(b.getId());
     }
 
     @Override
@@ -105,24 +103,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         Toast.makeText(getContext(), "¡" + b.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
     }
 
-    public void filtrar(String texto) {
-        if (listaFavoritosCompleta == null) return;
-        
-        List<Bombo> filtrados = new ArrayList<>();
-        String query = texto.toLowerCase().trim();
-
-        if (query.isEmpty()) {
-            filtrados.addAll(listaFavoritosCompleta);
-        } else {
-            for (Bombo b : listaFavoritosCompleta) {
-                if (b.getNombre().toLowerCase().contains(query)) {
-                    filtrados.add(b);
-                }
-            }
-        }
-        
-        mostrarResultados(filtrados);
-    }
+    public void filtrar(String texto) {}
 
     private List<Bombo> obtenerTodosLosBombos() {
         List<Bombo> todos = new ArrayList<>();

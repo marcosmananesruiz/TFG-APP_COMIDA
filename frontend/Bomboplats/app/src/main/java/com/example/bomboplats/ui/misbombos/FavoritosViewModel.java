@@ -7,12 +7,13 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.bomboplats.ui.general.FavoritosProvider;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class FavoritosViewModel extends AndroidViewModel {
+public class FavoritosViewModel extends AndroidViewModel implements FavoritosProvider {
     private static final String PREFS_NAME = "bomboplats_prefs";
     private static final String KEY_FAVORITOS = "favoritos_items";
     
@@ -42,6 +43,7 @@ public class FavoritosViewModel extends AndroidViewModel {
         }
     }
 
+    @Override
     public boolean esFavorito(String bomboId) {
         List<String> listaActual = idsFavoritos.getValue();
         return listaActual != null && listaActual.contains(bomboId);

@@ -16,9 +16,9 @@ import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
+import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.general.BomboAdapter;
 import com.example.bomboplats.ui.general.DetalleBomboFragment;
-import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
     private RecyclerView recyclerView;
     private BomboAdapter adapter;
     private Pedido pedido;
-    private FavoritosViewModel favoritosViewModel;
+    private UserViewModel userViewModel;
     private CarritoViewModel carritoViewModel;
 
     public static ListaPedidoHistorialFragment newInstance(Pedido pedido) {
@@ -53,7 +53,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
         recyclerView = view.findViewById(R.id.rv_productos_historial);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        favoritosViewModel = new ViewModelProvider(requireActivity()).get(FavoritosViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
 
         if (pedido != null) {
@@ -65,9 +65,13 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
                 bombos.add(item.getBombo());
             }
 
-            adapter = new BomboAdapter(bombos, this, favoritosViewModel);
+            adapter = new BomboAdapter(bombos, this, userViewModel);
             recyclerView.setAdapter(adapter);
         }
+
+        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), favs -> {
+            if (adapter != null) adapter.notifyDataSetChanged();
+        });
 
         return view;
     }
@@ -90,8 +94,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
 
     @Override
     public void onFavoritoClick(Bombo b) {
-        favoritosViewModel.toggleFavorito(b.getId());
-        adapter.notifyDataSetChanged();
+        userViewModel.toggleFavorito(b.getId());
     }
 
     @Override

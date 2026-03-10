@@ -16,6 +16,7 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
+import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private String restauranteId;
     private List<Bombo> listaBombosRestaurante;
     private CarritoViewModel carritoViewModel;
-    private FavoritosViewModel favoritosViewModel;
+    private UserViewModel userViewModel;
 
     @Nullable
     @Override
@@ -38,7 +39,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         View view = inflater.inflate(R.layout.fragment_bombos, container, false);
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
-        favoritosViewModel = new ViewModelProvider(requireActivity()).get(FavoritosViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         // Referencias del encabezado
         TextView tvNombre = view.findViewById(R.id.tv_restaurante_nombre);
@@ -68,6 +69,10 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
 
         cargarDatosEjemplo();
         updateUI(listaBombosRestaurante);
+
+        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), favs -> {
+            if (adapter != null) adapter.notifyDataSetChanged();
+        });
 
         return view;
     }
@@ -108,7 +113,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
 
     @Override
     public void onFavoritoClick(Bombo bombo) {
-        favoritosViewModel.toggleFavorito(bombo.getId());
+        userViewModel.toggleFavorito(bombo.getId());
     }
 
     @Override
@@ -143,7 +148,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             
             // Si el adaptador no existe, lo creamos. Si existe, solo actualizamos su lista.
             if (adapter == null) {
-                adapter = new BomboAdapter(lista, this, favoritosViewModel);
+                adapter = new BomboAdapter(lista, this, userViewModel);
             } else {
                 adapter.setFilteredList(lista);
             }

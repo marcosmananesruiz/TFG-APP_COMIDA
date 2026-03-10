@@ -1,7 +1,9 @@
 package com.example.bomboplats.ui.login;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -69,33 +71,37 @@ public class LoginActivity extends AppCompatActivity {
                 backPressedTime = System.currentTimeMillis();
             }
         });
-        // Esto es lo de que el gato te mueva al generalActivity
+
+        // Configurar el "login rápido" al pulsar el gato
         catImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, GeneralActivity.class);
-                startActivity(intent);
-                finish(); // Cierra LoginActivity
+                // Rellenamos los campos con la primera cuenta de prueba
+                usernameEditText.setText("usuario1@test.com");
+                passwordEditText.setText("juan123");
+                
+                // Ejecutamos el login
+                loadingProgressBar.setVisibility(View.VISIBLE);
+                loginViewModel.login("usuario1@test.com", "juan123");
             }
         });
 
-        // Observa los datos del formulario
         loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
-            @Override // Comprueba los cambios que se hagan en los campos
+            @Override
             public void onChanged(@Nullable LoginFormState loginFormState) {
                 if (loginFormState == null) {
                     return;
                 }
-                loginButton.setEnabled(loginFormState.isDataValid()); // Este comrueba si los datos son válidos
-                if (loginFormState.getUsernameError() != null) {    // Comprueba con una funcion del loginFormState si hay errores con el nombre
+                loginButton.setEnabled(loginFormState.isDataValid());
+                if (loginFormState.getUsernameError() != null) {
                     usernameEditText.setError(getString(loginFormState.getUsernameError()));
                 }
-                if (loginFormState.getPasswordError() != null) { // Comprueba con una funcion del loginFormState si hay errores con la contraseña
+                if (loginFormState.getPasswordError() != null) {
                     passwordEditText.setError(getString(loginFormState.getPasswordError()));
                 }
             }
         });
-        // Aquí comprueba el resultado de iniciar sesión
+
         loginViewModel.getLoginResult().observe(this, new Observer<LoginResult>() {
             @Override
             public void onChanged(@Nullable LoginResult loginResult) {
@@ -103,44 +109,43 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
                 loadingProgressBar.setVisibility(View.GONE);
-                if (loginResult.getError() != null) { // Comprueba si tiene algún error el login
+                if (loginResult.getError() != null) {
                     showLoginFailed(loginResult.getError());
                 }
-                if (loginResult.getSuccess() != null) { // Comprueba si es un exito el login
-                    updateUiWithUser(loginResult.getSuccess()); // Muestra un toast
-                    setResult(Activity.RESULT_OK); // Se indica que se ha iniciado sesión correctamente
+                if (loginResult.getSuccess() != null) {
+                    // PERSISTENCIA DEL USUARIO LOGUEADO
+                    String email = usernameEditText.getText().toString();
+                    SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                    prefs.edit().putString("current_user_email", email).apply();
 
-                    //Navega a la actividad principal y cierra esta
+                    updateUiWithUser(loginResult.getSuccess());
+                    setResult(Activity.RESULT_OK);
+
                     Intent generalIntent = new Intent(LoginActivity.this, GeneralActivity.class);
                     startActivity(generalIntent);
-                    finish(); // Cierra LoginActivity
+                    finish();
                 }
             }
         });
-        // Carga cuando detecta que se ha detectado un cambio del texto
+
         TextWatcher afterTextChangedListener = new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // ignore
-            }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // ignore
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
             @Override
-            public void afterTextChanged(Editable s) { // Se ejecuta después de que se cambie el texto
+            public void afterTextChanged(Editable s) {
                 loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString()); // Manda los nuevos campos escritos y los registra como datos para que lo lea la app
+                        passwordEditText.getText().toString());
             }
         };
-        usernameEditText.addTextChangedListener(afterTextChangedListener); // Notifica que ha cambiado el texto
-        passwordEditText.addTextChangedListener(afterTextChangedListener); // Notifica que ha cambiado el texto
+        usernameEditText.addTextChangedListener(afterTextChangedListener);
+        passwordEditText.addTextChangedListener(afterTextChangedListener);
         passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) { // Detecta si se pulsa enviar
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
                     loginViewModel.login(usernameEditText.getText().toString(),
                             passwordEditText.getText().toString());
@@ -148,26 +153,23 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
         });
-        // Ejecuta lo que tenga dentro al pulsar el botón login.
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadingProgressBar.setVisibility(View.VISIBLE); // Se muestra una pantalla de carga
-                loginViewModel.login(usernameEditText.getText().toString(), // Se ejecuta la función de login de LoginViewModel
+                loadingProgressBar.setVisibility(View.VISIBLE);
+                loginViewModel.login(usernameEditText.getText().toString(),
                         passwordEditText.getText().toString());
             }
         });
     }
 
-    private void updateUiWithUser(LoggedInUserView model) { // Esto es lo del toast de éxito
+    private void updateUiWithUser(LoggedInUserView model) {
         String welcome = getString(R.string.welcome) + model.getDisplayName();
-        // TODO : initiate successful logged in experience
         Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
     }
 
-    private void showLoginFailed(@StringRes Integer errorString) { // El toast de error.
+    private void showLoginFailed(@StringRes Integer errorString) {
         Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();
     }
-
-    // El método onBackPressed() ha sido reemplazado por el OnBackPressedDispatcher en onCreate
 }

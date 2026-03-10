@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
+import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +25,7 @@ import java.util.List;
 public class DetalleBomboFragment extends Fragment {
 
     private CarritoViewModel carritoViewModel;
-    private FavoritosViewModel favoritosViewModel;
+    private UserViewModel userViewModel;
     private TextView tvNombre, tvPrecio, tvDescripcion, tvIngredientes, tvAlergenos, tvCantidad;
     private ImageView ivFavorito;
     private RecyclerView rvFotos;
@@ -38,7 +39,7 @@ public class DetalleBomboFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_detalle_bombo, container, false);
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
-        favoritosViewModel = new ViewModelProvider(requireActivity()).get(FavoritosViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         tvNombre = view.findViewById(R.id.tv_bombo_nombre);
         tvPrecio = view.findViewById(R.id.tv_bombo_precio);
@@ -77,8 +78,8 @@ public class DetalleBomboFragment extends Fragment {
 
         ivFavorito.setOnClickListener(v -> {
             if (bomboId != null) {
-                favoritosViewModel.toggleFavorito(bomboId);
-                boolean esFavorito = favoritosViewModel.esFavorito(bomboId);
+                userViewModel.toggleFavorito(bomboId);
+                boolean esFavorito = userViewModel.esFavorito(bomboId);
                 actualizarIconoFavorito();
                 String mensaje = esFavorito ? "Añadido a favoritos" : "Eliminado de favoritos";
                 Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
@@ -93,7 +94,7 @@ public class DetalleBomboFragment extends Fragment {
         });
 
         // Observar cambios en favoritos para mantener UI sincronizada
-        favoritosViewModel.getIdsFavoritos().observe(getViewLifecycleOwner(), ids -> {
+        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), ids -> {
             actualizarIconoFavorito();
         });
 
@@ -101,8 +102,8 @@ public class DetalleBomboFragment extends Fragment {
     }
 
     private void actualizarIconoFavorito() {
-        if (bomboId != null && ivFavorito != null && favoritosViewModel != null) {
-            boolean esFav = favoritosViewModel.esFavorito(bomboId);
+        if (bomboId != null && ivFavorito != null && userViewModel != null) {
+            boolean esFav = userViewModel.esFavorito(bomboId);
             ivFavorito.setImageResource(esFav ? R.drawable.ic_favorite_filled : R.drawable.ic_favorite_border);
         }
     }

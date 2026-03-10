@@ -16,6 +16,7 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
+import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.general.DetalleBomboFragment;
 import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.Set;
 public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarritoActionListener {
 
     private CarritoViewModel carritoViewModel;
-    private FavoritosViewModel favoritosViewModel;
+    private UserViewModel userViewModel;
     private RecyclerView recyclerView;
     private CarritoAdapter adapter;
     private TextView tvVacio;
@@ -48,18 +49,19 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         layoutTotal = view.findViewById(R.id.layout_total);
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
-        favoritosViewModel = new ViewModelProvider(requireActivity()).get(FavoritosViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         adapter = new CarritoAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
         // Observar cambios en el carrito
         carritoViewModel.getItemsCarrito().observe(getViewLifecycleOwner(), items -> {
+            userViewModel.setCarrito(items);
             actualizarUI();
         });
 
         // Observar cambios en favoritos
-        favoritosViewModel.getIdsFavoritos().observe(getViewLifecycleOwner(), favoritos -> {
+        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), favoritos -> {
             actualizarUI();
         });
 
@@ -75,7 +77,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
 
     private void actualizarUI() {
         Map<String, Integer> items = carritoViewModel.getItemsCarrito().getValue();
-        List<String> favoritosList = favoritosViewModel.getIdsFavoritos().getValue();
+        List<String> favoritosList = userViewModel.getFavoritos().getValue();
         Set<String> favoritosSet = favoritosList != null ? new HashSet<>(favoritosList) : new HashSet<>();
 
         if (items == null || items.isEmpty()) {
@@ -137,7 +139,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
 
     @Override
     public void onFavoritoClick(String bomboId) {
-        favoritosViewModel.toggleFavorito(bomboId);
+        userViewModel.toggleFavorito(bomboId);
     }
 
     @Override

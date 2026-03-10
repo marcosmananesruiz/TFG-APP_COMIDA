@@ -10,25 +10,24 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
-import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.List;
 
 public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHolder> {
 
     private List<Bombo> listaBombos;
     private OnBomboClickListener listener;
-    private FavoritosViewModel favoritosViewModel;
+    private FavoritosProvider favoritosProvider;
 
     public interface OnBomboClickListener {
         void onBomboClick(Bombo bombo);
         void onFavoritoClick(Bombo bombo);
-        void onAgregarCarritoClick(Bombo bombo);
+        void onAgregarCarritoClick(Bombo b);
     }
 
-    public BomboAdapter(List<Bombo> listaBombos, OnBomboClickListener listener, FavoritosViewModel favoritosViewModel) {
+    public BomboAdapter(List<Bombo> listaBombos, OnBomboClickListener listener, FavoritosProvider favoritosProvider) {
         this.listaBombos = listaBombos;
         this.listener = listener;
-        this.favoritosViewModel = favoritosViewModel;
+        this.favoritosProvider = favoritosProvider;
     }
 
     public void setFilteredList(List<Bombo> filteredList) {
@@ -51,7 +50,7 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         holder.tvPrecio.setText(bombo.getPrecio());
 
         // Actualizado: Usamos ic_heart_unselected cuando no es favorito
-        if (favoritosViewModel != null && favoritosViewModel.esFavorito(bombo.getId())) {
+        if (favoritosProvider != null && favoritosProvider.esFavorito(bombo.getId())) {
             holder.btnFav.setImageResource(R.drawable.ic_favorite_filled);
         } else {
             holder.btnFav.setImageResource(R.drawable.ic_heart_unselected);

@@ -13,12 +13,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class CarritoViewModel extends AndroidViewModel {
-    private static final String PREFS_NAME = "bomboplats_prefs";
-    private static final String KEY_CARRITO = "carrito_items";
-    private static final String KEY_FAVORITOS = "favoritos_items";
+    private static final String PREFS_NAME = "user_prefs";
+    private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
+    private static final String PREFIX_CARRITO = "carrito_";
     
     private final MutableLiveData<Map<String, Integer>> itemsCarrito = new MutableLiveData<>(new HashMap<>());
-    private final MutableLiveData<Set<String>> favoritos = new MutableLiveData<>(new HashSet<>());
     private final SharedPreferences sharedPreferences;
 
     public CarritoViewModel(@NonNull Application application) {
@@ -29,10 +28,6 @@ public class CarritoViewModel extends AndroidViewModel {
 
     public LiveData<Map<String, Integer>> getItemsCarrito() {
         return itemsCarrito;
-    }
-
-    public LiveData<Set<String>> getFavoritos() {
-        return favoritos;
     }
 
     public void agregarAlCarrito(String bomboId, int cantidad) {
@@ -64,27 +59,9 @@ public class CarritoViewModel extends AndroidViewModel {
         guardarCarrito();
     }
 
-    public boolean esFavorito(String bomboId) {
-        Set<String> setFavoritos = favoritos.getValue();
-        return setFavoritos != null && setFavoritos.contains(bomboId);
-    }
-
-    public void alternarFavorito(String bomboId) {
-        Set<String> setFavoritos = favoritos.getValue();
-        if (setFavoritos != null) {
-            Set<String> nuevoSet = new HashSet<>(setFavoritos);
-            if (nuevoSet.contains(bomboId)) {
-                nuevoSet.remove(bomboId);
-            } else {
-                nuevoSet.add(bomboId);
-            }
-            favoritos.setValue(nuevoSet);
-            guardarFavoritos();
-        }
-    }
-
-    // Persistencia
+    // Persistencia por usuario
     private void guardarCarrito() {
+        String currentEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Map<String, Integer> mapa = itemsCarrito.getValue();
         if (mapa != null) {
@@ -92,23 +69,14 @@ public class CarritoViewModel extends AndroidViewModel {
             for (Map.Entry<String, Integer> entry : mapa.entrySet()) {
                 set.add(entry.getKey() + ":" + entry.getValue());
             }
-            editor.putStringSet(KEY_CARRITO, set);
-            editor.apply();
-        }
-    }
-
-    private void guardarFavoritos() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Set<String> set = favoritos.getValue();
-        if (set != null) {
-            editor.putStringSet(KEY_FAVORITOS, new HashSet<>(set));
+            editor.putStringSet(PREFIX_CARRITO + currentEmail, set);
             editor.apply();
         }
     }
 
     private void cargarDatosPersistentes() {
-        // Cargar Carrito
-        Set<String> setCarrito = sharedPreferences.getStringSet(KEY_CARRITO, new HashSet<>());
+        String currentEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
+        Set<String> setCarrito = sharedPreferences.getStringSet(PREFIX_CARRITO + currentEmail, new HashSet<>());
         Map<String, Integer> mapaCargado = new HashMap<>();
         for (String item : setCarrito) {
             String[] parts = item.split(":");
@@ -119,9 +87,5 @@ public class CarritoViewModel extends AndroidViewModel {
             }
         }
         itemsCarrito.setValue(mapaCargado);
-
-        // Cargar Favoritos
-        Set<String> setFavoritos = sharedPreferences.getStringSet(KEY_FAVORITOS, new HashSet<>());
-        favoritos.setValue(new HashSet<>(setFavoritos));
     }
 }
