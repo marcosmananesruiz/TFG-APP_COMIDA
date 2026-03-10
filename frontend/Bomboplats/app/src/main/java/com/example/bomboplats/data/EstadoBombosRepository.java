@@ -16,8 +16,9 @@ import java.util.List;
 public class EstadoBombosRepository {
     private static EstadoBombosRepository instance;
     private final MutableLiveData<List<EstadoPedido>> pedidosEnEstado = new MutableLiveData<>(new ArrayList<>());
-    private static final String PREF_NAME = "bomboplats_prefs";
-    private static final String KEY_ESTADOS_PEDIDOS = "estados_pedidos_v3";
+    private static final String PREF_NAME = "user_prefs";
+    private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
+    private static final String PREFIX_ESTADOS = "estados_pedidos_";
 
     private EstadoBombosRepository() {}
 
@@ -34,10 +35,12 @@ public class EstadoBombosRepository {
 
     public void cargarDesdeDisco(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        String json = prefs.getString(KEY_ESTADOS_PEDIDOS, null);
+        String currentEmail = prefs.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
+        String json = prefs.getString(PREFIX_ESTADOS + currentEmail, null);
+        
+        List<EstadoPedido> lista = new ArrayList<>();
         if (json != null) {
             try {
-                List<EstadoPedido> lista = new ArrayList<>();
                 JSONArray array = new JSONArray(json);
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject obj = array.getJSONObject(i);
@@ -66,26 +69,26 @@ public class EstadoBombosRepository {
                         pedidoObj.getString("direccion")
                     );
                     
-                    // Recuperamos la hora de creación guardada
                     long hora = obj.optLong("timestampCreacion", System.currentTimeMillis());
                     lista.add(new EstadoPedido(p, obj.getString("estado"), hora));
                 }
-                pedidosEnEstado.postValue(lista);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        pedidosEnEstado.postValue(lista);
     }
 
     public void guardarEnDisco(Context context, List<EstadoPedido> lista) {
         pedidosEnEstado.postValue(new ArrayList<>(lista));
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String currentEmail = prefs.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
         try {
             JSONArray array = new JSONArray();
             for (EstadoPedido ep : lista) {
                 JSONObject obj = new JSONObject();
                 obj.put("estado", ep.getEstado());
-                obj.put("timestampCreacion", ep.getTimestampCreacion()); // Guardamos la hora
+                obj.put("timestampCreacion", ep.getTimestampCreacion());
                 
                 JSONObject pedidoObj = new JSONObject();
                 pedidoObj.put("id", ep.getPedido().getId());
@@ -110,7 +113,7 @@ public class EstadoBombosRepository {
                 obj.put("pedido", pedidoObj);
                 array.put(obj);
             }
-            prefs.edit().putString(KEY_ESTADOS_PEDIDOS, array.toString()).apply();
+            prefs.edit().putString(PREFIX_ESTADOS + currentEmail, array.toString()).apply();
         } catch (Exception e) {
             e.printStackTrace();
         }
