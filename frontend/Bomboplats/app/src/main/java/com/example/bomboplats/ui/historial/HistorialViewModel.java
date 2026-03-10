@@ -16,8 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HistorialViewModel extends AndroidViewModel {
-    private static final String PREFS_NAME = "bomboplats_prefs";
-    private static final String KEY_HISTORIAL = "historial_pedidos";
+    private static final String PREFS_NAME = "user_prefs";
+    private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
+    private static final String PREFIX_HISTORIAL = "historial_";
     
     private final MutableLiveData<List<Pedido>> pedidos = new MutableLiveData<>(new ArrayList<>());
     private final SharedPreferences sharedPreferences;
@@ -42,16 +43,20 @@ public class HistorialViewModel extends AndroidViewModel {
     }
 
     private void guardarHistorial() {
+        String currentEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
         String json = gson.toJson(pedidos.getValue());
-        sharedPreferences.edit().putString(KEY_HISTORIAL, json).apply();
+        sharedPreferences.edit().putString(PREFIX_HISTORIAL + currentEmail, json).apply();
     }
 
     private void cargarHistorial() {
-        String json = sharedPreferences.getString(KEY_HISTORIAL, null);
+        String currentEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
+        String json = sharedPreferences.getString(PREFIX_HISTORIAL + currentEmail, null);
         if (json != null) {
             Type type = new TypeToken<ArrayList<Pedido>>() {}.getType();
             List<Pedido> listaCargada = gson.fromJson(json, type);
-            pedidos.setValue(listaCargada);
+            pedidos.setValue(listaCargada != null ? listaCargada : new ArrayList<>());
+        } else {
+            pedidos.setValue(new ArrayList<>());
         }
     }
 }
