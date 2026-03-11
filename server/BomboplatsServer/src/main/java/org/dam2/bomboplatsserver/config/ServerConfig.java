@@ -12,8 +12,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @Configuration
 public class ServerConfig {
 
-
-
     @Bean
     public UserEntityMapper userEntityMapper() {
         return new UserEntityMapper();
