@@ -11,6 +11,8 @@ import com.example.bomboplats.data.Result;
 import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.R;
 
+import java.util.ArrayList;
+
 public class LoginViewModel extends ViewModel {
 
     private MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
@@ -39,6 +41,18 @@ public class LoginViewModel extends ViewModel {
         } else {
             loginResult.setValue(new LoginResult(R.string.login_failed));
         }
+    }
+
+    public void registerTestUser(String email, String password, String displayName) {
+        LoggedInUser newUser = new LoggedInUser(
+                java.util.UUID.randomUUID().toString(),
+                displayName,
+                email,
+                password,
+                new ArrayList<>(),
+                new ArrayList<>()
+        );
+        loginRepository.register(newUser);
     }
 
     public void loginDataChanged(String username, String password) {

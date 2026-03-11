@@ -27,7 +27,11 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.Result;
+import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.databinding.ActivityLoginBinding;
+
+import java.util.ArrayList;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -46,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
+        loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory(getApplicationContext()))
                 .get(LoginViewModel.class);
 
         final EditText usernameEditText = binding.username;
@@ -76,6 +80,10 @@ public class LoginActivity extends AppCompatActivity {
         catImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Primero intentamos registrar a los usuarios de prueba si no existen
+                loginViewModel.registerTestUser("usuario1@test.com", "juan123", "Juan Pérez");
+                loginViewModel.registerTestUser("usuario2@test.com", "maria456", "María García");
+
                 // Rellenamos los campos con la primera cuenta de prueba
                 usernameEditText.setText("usuario1@test.com");
                 passwordEditText.setText("juan123");
