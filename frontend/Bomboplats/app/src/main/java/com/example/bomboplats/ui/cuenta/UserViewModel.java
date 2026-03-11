@@ -7,10 +7,11 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.bomboplats.data.LoginDataSource;
+import com.example.bomboplats.data.LoginRepository;
+import com.example.bomboplats.data.Result;
+import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.ui.general.FavoritosProvider;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,14 +23,12 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private static final String PREFS_NAME = "user_prefs";
     private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
     
-    // Prefijo para las claves de cada usuario: "user_email_..."
-    private static final String PREFIX_NAME = "name_";
-    private static final String PREFIX_PASSWORD = "password_";
     private static final String PREFIX_PHOTO = "photo_";
     private static final String PREFIX_FAVORITOS = "favoritos_";
     private static final String PREFIX_CARRITO = "carrito_";
 
     private final SharedPreferences sharedPreferences;
+    private final LoginRepository loginRepository;
     private final MutableLiveData<String> name = new MutableLiveData<>();
     private final MutableLiveData<String> email = new MutableLiveData<>();
     private final MutableLiveData<String> password = new MutableLiveData<>();
@@ -40,36 +39,21 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public UserViewModel(@NonNull Application application) {
         super(application);
         sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        loginRepository = LoginRepository.getInstance(new LoginDataSource(application));
+
+        LoggedInUser user = loginRepository.getUser();
+        if (user != null) {
+            loadUserData(user);
+        }
+    }
+
+    public void loadUserData(LoggedInUser user) {
+        this.email.setValue(user.getEmail());
+        this.name.setValue(user.getDisplayName());
+        this.password.setValue(user.getPassword());
         
-        // Crear cuentas de ejemplo si no existen
-        crearCuentasEjemplo();
-
-        // Cargar el último usuario logueado o uno por defecto
-        String currentEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
-        loadUserData(currentEmail);
-    }
-
-    private void crearCuentasEjemplo() {
-        if (!sharedPreferences.contains(PREFIX_NAME + "usuario1@test.com")) {
-            sharedPreferences.edit()
-                .putString(PREFIX_NAME + "usuario1@test.com", "Juan Pérez")
-                .putString(PREFIX_PASSWORD + "usuario1@test.com", "juan123")
-                .apply();
-        }
-        if (!sharedPreferences.contains(PREFIX_NAME + "usuario2@test.com")) {
-            sharedPreferences.edit()
-                .putString(PREFIX_NAME + "usuario2@test.com", "María García")
-                .putString(PREFIX_PASSWORD + "usuario2@test.com", "maria456")
-                .apply();
-        }
-    }
-
-    public void loadUserData(String userEmail) {
-        this.email.setValue(userEmail);
+        String userEmail = user.getEmail();
         sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, userEmail).apply();
-        
-        name.setValue(sharedPreferences.getString(PREFIX_NAME + userEmail, "Usuario"));
-        password.setValue(sharedPreferences.getString(PREFIX_PASSWORD + userEmail, "123456"));
         photoUri.setValue(sharedPreferences.getString(PREFIX_PHOTO + userEmail, null));
         
         Set<String> setFavs = sharedPreferences.getStringSet(PREFIX_FAVORITOS + userEmail, new HashSet<>());
@@ -96,21 +80,25 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<Map<String, Integer>> getCarrito() { return carrito; }
 
     public void setName(String newName) {
-        String currentEmail = email.getValue();
-        name.setValue(newName);
-        sharedPreferences.edit().putString(PREFIX_NAME + currentEmail, newName).apply();
+        Result<LoggedInUser> result = loginRepository.updateName(newName);
+        if (result instanceof Result.Success) {
+            name.setValue(newName);
+        }
     }
 
     public void setEmail(String newEmail) {
-        String currentEmail = email.getValue();
-        this.email.setValue(newEmail);
-        sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, newEmail).apply();
+        Result<LoggedInUser> result = loginRepository.updateEmail(newEmail);
+        if (result instanceof Result.Success) {
+            this.email.setValue(newEmail);
+            sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, newEmail).apply();
+        }
     }
 
-    public void setPassword(String newPassword) {
-        String currentEmail = email.getValue();
-        password.setValue(newPassword);
-        sharedPreferences.edit().putString(PREFIX_PASSWORD + currentEmail, newPassword).apply();
+    public void setPassword(String oldPassword, String newPassword) {
+        Result<LoggedInUser> result = loginRepository.updatePassword(oldPassword, newPassword);
+        if (result instanceof Result.Success) {
+            password.setValue(newPassword);
+        }
     }
 
     public void setPhotoUri(String uri) {
@@ -118,20 +106,19 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         photoUri.setValue(uri);
         sharedPreferences.edit().putString(PREFIX_PHOTO + currentEmail, uri).apply();
     }
-    // Función para agregar o quitar bombos de favoritos.
+
     public void toggleFavorito(String itemId) {
-        // Primero carga la el email y la lista de favoritos. Si no existe la lista, crea una.
         String currentEmail = email.getValue();
         List<String> lista = favoritos.getValue();
         if (lista == null) lista = new ArrayList<>();
         
-        if (lista.contains(itemId)) {  // Verifica que al pulsar no haya ningún bombo con la misma ID
-            lista.remove(itemId); // Si la hay, elimina el bombo de la lista
+        if (lista.contains(itemId)) {
+            lista.remove(itemId);
         } else {
-            lista.add(itemId); // Si no, lo agrega.
+            lista.add(itemId);
         }
         
-        favoritos.setValue(new ArrayList<>(lista)); // Carga la lista temportal a la lista normal de favoritos.
+        favoritos.setValue(new ArrayList<>(lista));
         sharedPreferences.edit().putStringSet(PREFIX_FAVORITOS + currentEmail, new HashSet<>(lista)).apply();
     }
 

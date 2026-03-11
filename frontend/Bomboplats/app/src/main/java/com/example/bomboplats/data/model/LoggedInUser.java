@@ -1,7 +1,9 @@
 package com.example.bomboplats.data.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Data class that captures user information for logged in users retrieved from LoginRepository
@@ -13,15 +15,15 @@ public class LoggedInUser {
     private String email;
     private String password;
     private List<String> favoritePlateIds = new ArrayList<>();
-    private List<String> cartPlateIds = new ArrayList<>();
+    private Map<String, Integer> cartItems = new HashMap<>(); // Cambiado a Map para guardar ID y Cantidad
 
-    public LoggedInUser(String userId, String displayName, String email, String password, List<String> favoritePlateIds, List<String> cartPlateIds) {
+    public LoggedInUser(String userId, String displayName, String email, String password, List<String> favoritePlateIds, Map<String, Integer> cartItems) {
         this.userId = userId;
         this.displayName = displayName;
         this.email = email;
         this.password = password;
         this.favoritePlateIds = favoritePlateIds != null ? favoritePlateIds : new ArrayList<>();
-        this.cartPlateIds = cartPlateIds != null ? cartPlateIds : new ArrayList<>();
+        this.cartItems = cartItems != null ? cartItems : new HashMap<>();
     }
 
     public String getUserId() {
@@ -64,11 +66,11 @@ public class LoggedInUser {
         this.favoritePlateIds = favoritePlateIds;
     }
 
-    public List<String> getCartPlateIds() {
-        return cartPlateIds;
+    public Map<String, Integer> getCartItems() {
+        return cartItems;
     }
 
-    public void setCartPlateIds(List<String> cartPlateIds) {
-        this.cartPlateIds = cartPlateIds;
+    public void setCartItems(Map<String, Integer> cartItems) {
+        this.cartItems = cartItems;
     }
 }

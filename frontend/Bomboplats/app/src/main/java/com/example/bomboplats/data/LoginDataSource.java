@@ -41,7 +41,6 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> register(LoggedInUser user) {
-        // Verificar que el email no esté ya registrado en otra cuenta
         File filesDir = context.getFilesDir();
         File[] files = filesDir.listFiles((dir, name) -> name.endsWith(".json"));
         if (files != null) {
@@ -58,8 +57,17 @@ public class LoginDataSource {
         return saveUserInternal(user);
     }
 
+    public Result<LoggedInUser> updateName(String username, String newName) {
+        Result<LoggedInUser> loadResult = getUser(username);
+        if (loadResult instanceof Result.Success) {
+            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
+            user.setDisplayName(newName);
+            return saveUserInternal(user);
+        }
+        return loadResult;
+    }
+
     public Result<LoggedInUser> updateEmail(String oldUsername, String newEmail) {
-        // Verificar que el nuevo email no exista en otros archivos
         File filesDir = context.getFilesDir();
         File[] files = filesDir.listFiles((dir, name) -> name.endsWith(".json"));
         if (files != null) {
@@ -77,7 +85,6 @@ public class LoginDataSource {
         if (loadResult instanceof Result.Success) {
             LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
             user.setEmail(newEmail);
-            // Borrar el archivo viejo y guardar el nuevo (nombre de archivo basado en el username/email)
             File oldFile = new File(context.getFilesDir(), oldUsername + ".json");
             oldFile.delete();
             return saveUserInternal(user);
@@ -145,7 +152,6 @@ public class LoginDataSource {
     }
 
     private Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
-        // Usamos el email como identificador para el nombre del archivo (username.json)
         File file = new File(context.getFilesDir(), user.getEmail() + ".json");
         try (FileWriter writer = new FileWriter(file)) {
             gson.toJson(user, writer);
@@ -156,6 +162,5 @@ public class LoginDataSource {
     }
 
     public void logout() {
-        // Revoke authentication
     }
 }

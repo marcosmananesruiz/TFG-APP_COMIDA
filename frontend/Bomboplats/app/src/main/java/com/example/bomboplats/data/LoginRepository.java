@@ -1,6 +1,8 @@
 package com.example.bomboplats.data;
 
 import com.example.bomboplats.data.model.LoggedInUser;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class that requests authentication and user information from the remote data source and
@@ -11,12 +13,8 @@ public class LoginRepository {
     private static volatile LoginRepository instance;
 
     private LoginDataSource dataSource;
-
-    // If user credentials will be cached in local storage, it is recommended it be encrypted
-    // @see https://developer.android.com/training/articles/keystore
     private LoggedInUser user = null;
 
-    // private constructor : singleton access
     private LoginRepository(LoginDataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -25,7 +23,6 @@ public class LoginRepository {
         if (instance == null) {
             instance = new LoginRepository(dataSource);
         } else if (dataSource != null) {
-            // Update data source if provided (e.g. to handle context changes if needed)
             instance.dataSource = dataSource;
         }
         return instance;
@@ -45,7 +42,6 @@ public class LoginRepository {
     }
 
     public Result<LoggedInUser> login(String username, String password) {
-        // handle login
         Result<LoggedInUser> result = dataSource.login(username, password);
         if (result instanceof Result.Success) {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
@@ -59,6 +55,49 @@ public class LoginRepository {
             setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
         }
         return result;
+    }
+
+    public Result<LoggedInUser> updateName(String newName) {
+        if (user == null) return new Result.Error(new Exception("No hay usuario logueado"));
+        Result<LoggedInUser> result = dataSource.updateName(user.getEmail(), newName);
+        if (result instanceof Result.Success) {
+            user = ((Result.Success<LoggedInUser>) result).getData();
+        }
+        return result;
+    }
+
+    public Result<LoggedInUser> updateEmail(String newEmail) {
+        if (user == null) return new Result.Error(new Exception("No hay usuario logueado"));
+        String oldEmail = user.getEmail();
+        Result<LoggedInUser> result = dataSource.updateEmail(oldEmail, newEmail);
+        if (result instanceof Result.Success) {
+            user = ((Result.Success<LoggedInUser>) result).getData();
+        }
+        return result;
+    }
+
+    public Result<LoggedInUser> updatePassword(String oldPassword, String newPassword) {
+        if (user == null) return new Result.Error(new Exception("No hay usuario logueado"));
+        Result<LoggedInUser> result = dataSource.updatePassword(user.getEmail(), oldPassword, newPassword);
+        if (result instanceof Result.Success) {
+            user = ((Result.Success<LoggedInUser>) result).getData();
+        }
+        return result;
+    }
+
+    // NUEVOS: Métodos para Favoritos y Carrito persistentes en JSON
+    public void setFavorites(List<String> plateIds) {
+        if (user != null) {
+            user.setFavoritePlateIds(new ArrayList<>(plateIds));
+            dataSource.saveUserInternal(user); // Persistimos en el JSON
+        }
+    }
+
+    public void setCart(List<String> plateIds) {
+        if (user != null) {
+            user.setCartPlateIds(new ArrayList<>(plateIds));
+            dataSource.saveUserInternal(user); // Persistimos en el JSON
+        }
     }
 
     public LoggedInUser getUser() {
