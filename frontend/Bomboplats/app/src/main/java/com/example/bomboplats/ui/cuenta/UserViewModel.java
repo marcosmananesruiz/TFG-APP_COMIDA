@@ -118,19 +118,20 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         photoUri.setValue(uri);
         sharedPreferences.edit().putString(PREFIX_PHOTO + currentEmail, uri).apply();
     }
-
+    // Función para agregar o quitar bombos de favoritos.
     public void toggleFavorito(String itemId) {
+        // Primero carga la el email y la lista de favoritos. Si no existe la lista, crea una.
         String currentEmail = email.getValue();
         List<String> lista = favoritos.getValue();
         if (lista == null) lista = new ArrayList<>();
         
-        if (lista.contains(itemId)) {
-            lista.remove(itemId);
+        if (lista.contains(itemId)) {  // Verifica que al pulsar no haya ningún bombo con la misma ID
+            lista.remove(itemId); // Si la hay, elimina el bombo de la lista
         } else {
-            lista.add(itemId);
+            lista.add(itemId); // Si no, lo agrega.
         }
         
-        favoritos.setValue(new ArrayList<>(lista));
+        favoritos.setValue(new ArrayList<>(lista)); // Carga la lista temportal a la lista normal de favoritos.
         sharedPreferences.edit().putStringSet(PREFIX_FAVORITOS + currentEmail, new HashSet<>(lista)).apply();
     }
 
