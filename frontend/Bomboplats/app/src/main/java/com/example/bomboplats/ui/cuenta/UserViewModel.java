@@ -14,18 +14,13 @@ import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.ui.general.FavoritosProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class UserViewModel extends AndroidViewModel implements FavoritosProvider {
     private static final String PREFS_NAME = "user_prefs";
     private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
-    
     private static final String PREFIX_PHOTO = "photo_";
-    private static final String PREFIX_FAVORITOS = "favoritos_";
-    private static final String PREFIX_CARRITO = "carrito_";
 
     private final SharedPreferences sharedPreferences;
     private final LoginRepository loginRepository;
@@ -41,7 +36,16 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         loginRepository = LoginRepository.getInstance(new LoginDataSource(application));
 
+        // Intentar restaurar sesión si no hay usuario
         LoggedInUser user = loginRepository.getUser();
+        if (user == null) {
+            String savedEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, null);
+            if (savedEmail != null) {
+                loginRepository.loadUserSession(savedEmail);
+                user = loginRepository.getUser();
+            }
+        }
+
         if (user != null) {
             loadUserData(user);
         }
@@ -56,17 +60,12 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, userEmail).apply();
         photoUri.setValue(sharedPreferences.getString(PREFIX_PHOTO + userEmail, null));
         
-        Set<String> setFavs = sharedPreferences.getStringSet(PREFIX_FAVORITOS + userEmail, new HashSet<>());
-        favoritos.setValue(new ArrayList<>(setFavs));
+        favoritos.setValue(new ArrayList<>(user.getFavoritePlateIds()));
 
-        Set<String> setCarrito = sharedPreferences.getStringSet(PREFIX_CARRITO + userEmail, new HashSet<>());
         Map<String, Integer> mapaCarrito = new HashMap<>();
-        for (String item : setCarrito) {
-            String[] parts = item.split(":");
-            if (parts.length == 2) {
-                try {
-                    mapaCarrito.put(parts[0], Integer.parseInt(parts[1]));
-                } catch (NumberFormatException ignored) {}
+        if (user.getCartPlateIds() != null) {
+            for (String id : user.getCartPlateIds()) {
+                mapaCarrito.put(id, mapaCarrito.getOrDefault(id, 0) + 1);
             }
         }
         carrito.setValue(mapaCarrito);
@@ -103,12 +102,13 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
 
     public void setPhotoUri(String uri) {
         String currentEmail = email.getValue();
-        photoUri.setValue(uri);
-        sharedPreferences.edit().putString(PREFIX_PHOTO + currentEmail, uri).apply();
+        if (currentEmail != null) {
+            photoUri.setValue(uri);
+            sharedPreferences.edit().putString(PREFIX_PHOTO + currentEmail, uri).apply();
+        }
     }
 
     public void toggleFavorito(String itemId) {
-        String currentEmail = email.getValue();
         List<String> lista = favoritos.getValue();
         if (lista == null) lista = new ArrayList<>();
         
@@ -119,18 +119,18 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         }
         
         favoritos.setValue(new ArrayList<>(lista));
-        sharedPreferences.edit().putStringSet(PREFIX_FAVORITOS + currentEmail, new HashSet<>(lista)).apply();
+        loginRepository.setFavorites(lista);
     }
 
     public void setCarrito(Map<String, Integer> nuevoCarrito) {
-        String currentEmail = email.getValue();
         carrito.setValue(new HashMap<>(nuevoCarrito));
-        
-        Set<String> set = new HashSet<>();
+        List<String> listaIds = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : nuevoCarrito.entrySet()) {
-            set.add(entry.getKey() + ":" + entry.getValue());
+            for (int i = 0; i < entry.getValue(); i++) {
+                listaIds.add(entry.getKey());
+            }
         }
-        sharedPreferences.edit().putStringSet(PREFIX_CARRITO + currentEmail, set).apply();
+        loginRepository.setCart(listaIds);
     }
 
     @Override

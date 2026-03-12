@@ -1,6 +1,5 @@
 package com.example.bomboplats.ui.general;
 
-import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,21 +8,15 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Restaurante;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRestauranteClickListener {
 
@@ -31,7 +24,7 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
     private TextView tvEmptyError;
     private RestauranteAdapter adapter;
     private List<Restaurante> listaCompleta;
-    private Map<String, String> diccionarioEtiquetas;
+    private FoodRepository foodRepository;
 
     @Nullable
     @Override
@@ -42,8 +35,8 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         tvEmptyError = view.findViewById(R.id.tv_empty_error);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        inicializarDiccionarioDesdeAssets();
-        cargarDatosEjemplo();
+        foodRepository = FoodRepository.getInstance(requireContext());
+        listaCompleta = foodRepository.getRestaurantes();
 
         if (listaCompleta == null || listaCompleta.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -58,34 +51,6 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         return view;
     }
 
-    private void inicializarDiccionarioDesdeAssets() {
-        diccionarioEtiquetas = new HashMap<>();
-        if (getContext() == null) return;
-        AssetManager am = getContext().getAssets();
-        
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(am.open("etiquetas.txt")))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(":");
-                if (parts.length == 2) {
-                    diccionarioEtiquetas.put(parts[0].trim().toLowerCase(), parts[1].trim().toLowerCase());
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void cargarDatosEjemplo() {
-        listaCompleta = new ArrayList<>();
-        // Añadimos ubicación y una lista de fotos para el carrusel a cada restaurante
-        listaCompleta.add(new Restaurante("thai_food", "Thai Palace", "Auténtica comida tailandesa en el centro.", 4.8f, "€€€", Arrays.asList("thai", "asiatica"), "Calle Real 123, Madrid", Arrays.asList("thai_food", "thai_food_2", "thai_food_3")));
-        listaCompleta.add(new Restaurante("burger_place", "The Big Burger", "Las mejores hamburguesas de la ciudad.", 4.5f, "€€", Arrays.asList("burger", "fastfood"), "Av. Libertad 45, Madrid", Arrays.asList("burger_place", "burger_place_2")));
-        listaCompleta.add(new Restaurante("pizza_italiana", "Mamma Mia", "Pizzas al horno de leña tradicionales.", 4.7f, "€€", Arrays.asList("pizza", "italiana"), "Plaza Mayor 5, Madrid", Arrays.asList("pizza_italiana", "pizza_italiana_2")));
-        listaCompleta.add(new Restaurante("sushi_bar", "Sakura Sushi", "Sushi fresco y variado todos los días.", 4.9f, "€€€€", Arrays.asList("sushi", "japonesa"), "Calle Pez 10, Madrid", Arrays.asList("sushi_bar", "sushi_bar_2")));
-        listaCompleta.add(new Restaurante("taco_fiesta", "Taco Fiesta", "Tacos, burritos y margaritas increíbles.", 4.2f, "€", Arrays.asList("taco", "mexicana"), "Calle Luna 22, Madrid", Arrays.asList("taco_fiesta", "taco_fiesta_2")));
-    }
-
     @Override
     public void onRestauranteClick(Restaurante restaurante) {
         BombosFragment fragment = new BombosFragment();
@@ -95,7 +60,7 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         args.putString("ubicacion", restaurante.getUbicacion());
         args.putString("descripcion", restaurante.getDescripcion());
         // Pasamos las fotos como un ArrayList de Strings
-        args.putStringArrayList("fotos", new ArrayList<>(restaurante.getFotosCarrusel()));
+        args.putStringArrayList("fotos", new ArrayList<>(restaurante.getFotos()));
         fragment.setArguments(args);
 
         if (getActivity() instanceof GeneralActivity) {
@@ -111,7 +76,17 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
             filtrados.addAll(listaCompleta);
         } else {
             for (Restaurante r : listaCompleta) {
-                if (r.getNombre().toLowerCase().contains(query) || r.getEtiquetas().contains(query)) {
+                boolean matchEtiqueta = false;
+                if (r.getEtiquetas() != null) {
+                    for (String tag : r.getEtiquetas()) {
+                        if (tag.toLowerCase().contains(query)) {
+                            matchEtiqueta = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (r.getNombre().toLowerCase().contains(query) || matchEtiqueta) {
                     filtrados.add(r);
                 }
             }

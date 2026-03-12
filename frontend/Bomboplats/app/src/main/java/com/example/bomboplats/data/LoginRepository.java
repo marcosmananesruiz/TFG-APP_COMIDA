@@ -4,14 +4,9 @@ import com.example.bomboplats.data.model.LoggedInUser;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Class that requests authentication and user information from the remote data source and
- * maintains an in-memory cache of login status and user credentials information.
- */
 public class LoginRepository {
 
     private static volatile LoginRepository instance;
-
     private LoginDataSource dataSource;
     private LoggedInUser user = null;
 
@@ -57,6 +52,20 @@ public class LoginRepository {
         return result;
     }
 
+    /**
+     * Carga la sesión del usuario desde el almacenamiento local (JSON)
+     * basándose en su email.
+     */
+    public boolean loadUserSession(String email) {
+        if (email == null) return false;
+        Result<LoggedInUser> result = dataSource.getUser(email);
+        if (result instanceof Result.Success) {
+            setLoggedInUser(((Result.Success<LoggedInUser>) result).getData());
+            return true;
+        }
+        return false;
+    }
+
     public Result<LoggedInUser> updateName(String newName) {
         if (user == null) return new Result.Error(new Exception("No hay usuario logueado"));
         Result<LoggedInUser> result = dataSource.updateName(user.getEmail(), newName);
@@ -85,18 +94,17 @@ public class LoginRepository {
         return result;
     }
 
-    // NUEVOS: Métodos para Favoritos y Carrito persistentes en JSON
     public void setFavorites(List<String> plateIds) {
         if (user != null) {
             user.setFavoritePlateIds(new ArrayList<>(plateIds));
-            dataSource.saveUserInternal(user); // Persistimos en el JSON
+            dataSource.saveUserInternal(user);
         }
     }
 
     public void setCart(List<String> plateIds) {
         if (user != null) {
             user.setCartPlateIds(new ArrayList<>(plateIds));
-            dataSource.saveUserInternal(user); // Persistimos en el JSON
+            dataSource.saveUserInternal(user);
         }
     }
 

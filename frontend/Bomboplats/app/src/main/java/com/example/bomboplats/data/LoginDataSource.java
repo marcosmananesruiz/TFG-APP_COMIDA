@@ -8,22 +8,23 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/**
- * Class that handles authentication w/ login credentials and retrieves user information.
- * Persistence is managed via local JSON files using GSON.
- */
 public class LoginDataSource {
 
     private final Context context;
     private final Gson gson;
+    private final File usersDir;
 
     public LoginDataSource(Context context) {
         this.context = context;
         this.gson = new Gson();
+        // Crear estructura de carpetas: documentos/users
+        File root = new File(context.getFilesDir(), "documentos");
+        this.usersDir = new File(root, "users");
+        if (!usersDir.exists()) usersDir.mkdirs();
     }
 
     public Result<LoggedInUser> login(String username, String password) {
-        File file = new File(context.getFilesDir(), username + ".json");
+        File file = new File(usersDir, username + ".json");
         if (!file.exists()) {
             return new Result.Error(new IOException("Usuario no encontrado"));
         }
@@ -41,8 +42,7 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> register(LoggedInUser user) {
-        File filesDir = context.getFilesDir();
-        File[] files = filesDir.listFiles((dir, name) -> name.endsWith(".json"));
+        File[] files = usersDir.listFiles((dir, name) -> name.endsWith(".json"));
         if (files != null) {
             for (File f : files) {
                 try (FileReader reader = new FileReader(f)) {
@@ -53,7 +53,6 @@ public class LoginDataSource {
                 } catch (IOException ignored) {}
             }
         }
-
         return saveUserInternal(user);
     }
 
@@ -68,8 +67,7 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> updateEmail(String oldUsername, String newEmail) {
-        File filesDir = context.getFilesDir();
-        File[] files = filesDir.listFiles((dir, name) -> name.endsWith(".json"));
+        File[] files = usersDir.listFiles((dir, name) -> name.endsWith(".json"));
         if (files != null) {
             for (File f : files) {
                 try (FileReader reader = new FileReader(f)) {
@@ -85,7 +83,7 @@ public class LoginDataSource {
         if (loadResult instanceof Result.Success) {
             LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
             user.setEmail(newEmail);
-            File oldFile = new File(context.getFilesDir(), oldUsername + ".json");
+            File oldFile = new File(usersDir, oldUsername + ".json");
             oldFile.delete();
             return saveUserInternal(user);
         }
@@ -140,8 +138,8 @@ public class LoginDataSource {
         }
     }
 
-    private Result<LoggedInUser> getUser(String username) {
-        File file = new File(context.getFilesDir(), username + ".json");
+    public Result<LoggedInUser> getUser(String username) {
+        File file = new File(usersDir, username + ".json");
         if (!file.exists()) return new Result.Error(new IOException("Usuario no encontrado"));
         try (FileReader reader = new FileReader(file)) {
             LoggedInUser user = gson.fromJson(reader, LoggedInUser.class);
@@ -151,8 +149,8 @@ public class LoginDataSource {
         }
     }
 
-    private Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
-        File file = new File(context.getFilesDir(), user.getEmail() + ".json");
+    public Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
+        File file = new File(usersDir, user.getEmail() + ".json");
         try (FileWriter writer = new FileWriter(file)) {
             gson.toJson(user, writer);
             return new Result.Success<>(user);
@@ -161,6 +159,5 @@ public class LoginDataSource {
         }
     }
 
-    public void logout() {
-    }
+    public void logout() {}
 }

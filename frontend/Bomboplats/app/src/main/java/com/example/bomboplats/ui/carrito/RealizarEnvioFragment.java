@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
 import com.example.bomboplats.ui.estadobombos.EstadoBombosViewModel;
@@ -35,6 +36,7 @@ public class RealizarEnvioFragment extends Fragment {
     private CarritoViewModel carritoViewModel;
     private HistorialViewModel historialViewModel;
     private EstadoBombosViewModel estadoBombosViewModel;
+    private FoodRepository foodRepository;
 
     @Nullable
     @Override
@@ -44,6 +46,7 @@ public class RealizarEnvioFragment extends Fragment {
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
         historialViewModel = new ViewModelProvider(requireActivity()).get(HistorialViewModel.class);
         estadoBombosViewModel = new ViewModelProvider(requireActivity()).get(EstadoBombosViewModel.class);
+        foodRepository = FoodRepository.getInstance(requireContext());
 
         etDireccion = view.findViewById(R.id.et_direccion);
         etTarjetaNumero = view.findViewById(R.id.et_tarjeta_numero);
@@ -92,7 +95,6 @@ public class RealizarEnvioFragment extends Fragment {
         Pedido nuevoPedido = new Pedido(idPedido, fecha, listaItems, total, etDireccion.getText().toString().trim());
         historialViewModel.agregarPedido(nuevoPedido);
         
-        // CORREGIDO: Ahora pasamos el pedido completo al sistema de seguimiento
         estadoBombosViewModel.agregarPedidoAEstado(nuevoPedido);
         
         Toast.makeText(getContext(), "¡Pedido " + idPedido + " realizado!", Toast.LENGTH_LONG).show();
@@ -104,17 +106,7 @@ public class RealizarEnvioFragment extends Fragment {
     }
 
     private Bombo buscarBomboPorId(String id) {
-        List<Bombo> todos = new ArrayList<>();
-        todos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", "Fideos de arroz con gambas.", "12.50€"));
-        todos.add(new Bombo("curry_verde", "thai_food", "Green Curry", "Curry verde picante.", "13.90€"));
-        todos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", "Ternera, cheddar, lechuga.", "10.50€"));
-        todos.add(new Bombo("bbq_burger", "burger_place", "BBQ Special", "Ternera, bacon.", "11.90€"));
-        todos.add(new Bombo("pizza_margherita", "pizza_italiana", "Pizza Margherita", "Tomate, mozzarella fresca.", "9.50€"));
-        todos.add(new Bombo("pizza_4_quesos", "pizza_italiana", "Cuatro Quesos", "Varios tipos de queso.", "11.50€"));
-        for (Bombo b : todos) {
-            if (b.getId().equals(id)) return b;
-        }
-        return null;
+        return foodRepository.getBomboPorId(id);
     }
 
     private boolean validarCampos() {

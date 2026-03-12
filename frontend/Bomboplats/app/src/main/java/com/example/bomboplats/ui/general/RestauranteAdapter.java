@@ -41,16 +41,21 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
     public void onBindViewHolder(@NonNull RestauranteViewHolder holder, int position) {
         Restaurante restaurante = listaRestaurantes.get(position);
         holder.tvNombre.setText(restaurante.getNombre());
-        holder.tvDescription.setText(restaurante.getDescripcion());
-        holder.tvEstrellas.setText("⭐ " + restaurante.getEstrellas());
+        holder.tvDescripcion.setText(restaurante.getDescripcion());
+        holder.tvEstrellas.setText("⭐ " + restaurante.getValoracion());
         holder.tvPrecio.setText(restaurante.getRangoPrecio());
 
-        // Cargar imagen por ID
-        int resID = holder.itemView.getContext().getResources().getIdentifier(
-                restaurante.getId(), "drawable", holder.itemView.getContext().getPackageName());
-        
-        if (resID != 0) {
-            holder.imgRestaurante.setImageResource(resID);
+        // Usamos la primera foto como imagen principal
+        if (restaurante.getFotos() != null && !restaurante.getFotos().isEmpty()) {
+            String fotoName = restaurante.getFotos().get(0);
+            int resID = holder.itemView.getContext().getResources().getIdentifier(
+                    fotoName, "drawable", holder.itemView.getContext().getPackageName());
+            
+            if (resID != 0) {
+                holder.imgRestaurante.setImageResource(resID);
+            } else {
+                holder.imgRestaurante.setImageResource(R.drawable.ic_launcher_background);
+            }
         } else {
             holder.imgRestaurante.setImageResource(R.drawable.ic_launcher_background);
         }
@@ -68,13 +73,13 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
     }
 
     public static class RestauranteViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNombre, tvDescription, tvEstrellas, tvPrecio;
+        TextView tvNombre, tvDescripcion, tvEstrellas, tvPrecio;
         ImageView imgRestaurante;
 
         public RestauranteViewHolder(@NonNull View itemView) {
             super(itemView);
             tvNombre = itemView.findViewById(R.id.tv_nombre);
-            tvDescription = itemView.findViewById(R.id.tv_descripcion);
+            tvDescripcion = itemView.findViewById(R.id.tv_descripcion);
             tvEstrellas = itemView.findViewById(R.id.tv_estrellas);
             tvPrecio = itemView.findViewById(R.id.tv_precio);
             imgRestaurante = itemView.findViewById(R.id.img_restaurante);

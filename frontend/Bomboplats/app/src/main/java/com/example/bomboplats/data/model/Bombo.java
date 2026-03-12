@@ -9,36 +9,31 @@ public class Bombo {
     private String nombre;
     private String descripcion;
     private String precio;
+    private List<String> etiquetas;
+    private List<String> fotos;
     private List<String> ingredientes;
     private List<String> alergenos;
-    private List<Integer> fotos; // IDs de recursos para el carrusel
 
-    public Bombo(String id, String restauranteId, String nombre, String descripcion, String precio) {
-        this(id, restauranteId, nombre, descripcion, precio, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
-    }
-
-    public Bombo(String id, String restauranteId, String nombre, String descripcion, String precio, List<String> ingredientes, List<String> alergenos, List<Integer> fotos) {
+    public Bombo(String id, String restauranteId, String nombre, String descripcion, String precio, List<String> etiquetas, List<String> fotos, List<String> ingredientes, List<String> alergenos) {
         this.id = id;
         this.restauranteId = restauranteId;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
-        this.ingredientes = ingredientes;
-        this.alergenos = alergenos;
-        this.fotos = fotos;
+        this.etiquetas = etiquetas != null ? etiquetas : new ArrayList<>();
+        this.fotos = fotos != null ? fotos : new ArrayList<>();
+        this.ingredientes = ingredientes != null ? ingredientes : new ArrayList<>();
+        this.alergenos = alergenos != null ? alergenos : new ArrayList<>();
     }
 
-    // Getters
     public String getId() { return id; }
     public String getRestauranteId() { return restauranteId; }
+    public void setRestauranteId(String restauranteId) { this.restauranteId = restauranteId; }
     public String getNombre() { return nombre; }
     public String getDescripcion() { return descripcion; }
     public String getPrecio() { return precio; }
+    public List<String> getEtiquetas() { return etiquetas; }
+    public List<String> getFotos() { return fotos; }
     public List<String> getIngredientes() { return ingredientes; }
     public List<String> getAlergenos() { return alergenos; }
-    public List<Integer> getFotos() { return fotos; }
-
-    public void setIngredientes(List<String> ingredientes) { this.ingredientes = ingredientes; }
-    public void setAlergenos(List<String> alergenos) { this.alergenos = alergenos; }
-    public void setFotos(List<Integer> fotos) { this.fotos = fotos; }
 }

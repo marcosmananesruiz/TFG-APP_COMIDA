@@ -14,11 +14,11 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.general.DetalleBomboFragment;
-import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +30,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
 
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
+    private FoodRepository foodRepository;
     private RecyclerView recyclerView;
     private CarritoAdapter adapter;
     private TextView tvVacio;
@@ -50,6 +51,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        foodRepository = FoodRepository.getInstance(requireContext());
 
         adapter = new CarritoAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
@@ -158,22 +160,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
     }
 
     private Bombo buscarBomboPorId(String id) {
-        List<Bombo> todos = new ArrayList<>();
-        todos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", "Fideos de arroz con gambas.", "12.50€"));
-        todos.add(new Bombo("curry_verde", "thai_food", "Green Curry", "Curry verde picante.", "13.90€"));
-        todos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", "Ternera, cheddar, lechuga.", "10.50€"));
-        todos.add(new Bombo("bbq_burger", "burger_place", "BBQ Special", "Ternera, bacon.", "11.90€"));
-        todos.add(new Bombo("pizza_margherita", "pizza_italiana", "Pizza Margherita", "Tomate, mozzarella fresca.", "9.50€"));
-        todos.add(new Bombo("pizza_4_quesos", "pizza_italiana", "Cuatro Quesos", "Varios tipos de queso.", "11.50€"));
-        
-        todos.add(new Bombo("som_tam", "thai_food", "Ensalada Som Tam", "Ensalada de papaya verde.", "8.50€"));
-        todos.add(new Bombo("tom_yum", "thai_food", "Sopa Tom Yum", "Sopa picante de langostinos.", "10.00€"));
-        todos.add(new Bombo("satay_pollo", "thai_food", "Satay de Pollo", "Brochetas con salsa de cacahuete.", "7.50€"));
-
-        for (Bombo b : todos) {
-            if (b.getId().equals(id)) return b;
-        }
-        return null;
+        return foodRepository.getBomboPorId(id);
     }
 
     public void filtrar(String texto) {}

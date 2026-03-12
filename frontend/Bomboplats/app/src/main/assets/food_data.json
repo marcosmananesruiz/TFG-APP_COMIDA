@@ -1,0 +1,90 @@
+{
+  "restaurantes": [
+    {
+      "id": "res_thai_01",
+      "nombre": "Thai Palace",
+      "descripcion": "Auténtica comida tailandesa en el centro.",
+      "etiquetas": ["thai", "asiatica", "picante"],
+      "fotos": ["thai_food", "thai_food_2", "thai_food_3"],
+      "ubicacion": "Calle Real 123, Madrid",
+      "valoracion": 4.8,
+      "rangoPrecio": "€€€",
+      "menu": [
+        {
+          "id": "bombo_thai_01",
+          "nombre": "Pad Thai Classic",
+          "descripcion": "Fideos de arroz con gambas, tofu, huevo y brotes de soja.",
+          "precio": "12.50€",
+          "etiquetas": ["fideos", "marisco", "popular"],
+          "fotos": ["pad_thai", "pad_thai_2"],
+          "ingredientes": ["Fideos de arroz", "Gambas", "Tofu", "Huevo", "Cacahuetes"],
+          "alergenos": ["Crustáceos", "Huevo", "Cacahuetes"]
+        },
+        {
+          "id": "bombo_thai_02",
+          "nombre": "Curry Verde",
+          "descripcion": "Curry verde picante con leche de coco y verduras.",
+          "precio": "13.90€",
+          "etiquetas": ["picante", "coco", "curry"],
+          "fotos": ["curry_verde"],
+          "ingredientes": ["Leche de coco", "Pasta de curry verde", "Bambú", "Albahaca"],
+          "alergenos": ["Pescado"]
+        }
+      ]
+    },
+    {
+      "id": "res_burger_01",
+      "nombre": "The Big Burger",
+      "descripcion": "Las mejores hamburguesas de la ciudad.",
+      "etiquetas": ["burger", "fastfood", "americano"],
+      "fotos": ["burger_place", "burger_place_2"],
+      "ubicacion": "Av. Libertad 45, Madrid",
+      "valoracion": 4.5,
+      "rangoPrecio": "€€",
+      "menu": [
+        {
+          "id": "bombo_burger_01",
+          "nombre": "Clásica con Queso",
+          "descripcion": "Ternera, cheddar, lechuga, tomate y nuestra salsa secreta.",
+          "precio": "10.50€",
+          "etiquetas": ["carne", "queso", "clasico"],
+          "fotos": ["classic_burger", "classic_burger_2"],
+          "ingredientes": ["Carne de ternera", "Queso Cheddar", "Lechuga", "Tomate"],
+          "alergenos": ["Gluten", "Lácteos"]
+        },
+        {
+          "id": "bombo_burger_02",
+          "nombre": "BBQ Special",
+          "descripcion": "Ternera con bacon, cebolla crujiente y mucha salsa barbacoa.",
+          "precio": "11.90€",
+          "etiquetas": ["bacon", "bbq", "contundente"],
+          "fotos": ["bbq_burger"],
+          "ingredientes": ["Carne de ternera", "Bacon", "Cebolla frita", "Salsa BBQ"],
+          "alergenos": ["Gluten", "Soja"]
+        }
+      ]
+    },
+    {
+      "id": "res_pizza_01",
+      "nombre": "Mamma Mia",
+      "descripcion": "Pizzas al horno de leña tradicionales.",
+      "etiquetas": ["pizza", "italiano", "artesanal"],
+      "fotos": ["pizza_place", "pizza_place_2"],
+      "ubicacion": "Plaza Mayor 5, Madrid",
+      "valoracion": 4.2,
+      "rangoPrecio": "€",
+      "menu": [
+        {
+          "id": "bombo_pizza_01",
+          "nombre": "Margherita",
+          "descripcion": "Tomate, mozzarella fresca y albahaca.",
+          "precio": "9.50€",
+          "etiquetas": ["vegetariano", "clasico"],
+          "fotos": ["pizza_margherita"],
+          "ingredientes": ["Masa artesana", "Tomate", "Mozzarella", "Albahaca"],
+          "alergenos": ["Gluten", "Lácteos"]
+        }
+      ]
+    }
+  ]
+}

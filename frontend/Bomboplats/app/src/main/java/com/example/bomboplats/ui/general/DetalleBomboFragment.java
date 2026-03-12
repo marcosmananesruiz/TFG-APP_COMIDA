@@ -14,18 +14,18 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
-import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DetalleBomboFragment extends Fragment {
 
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
+    private FoodRepository foodRepository;
     private TextView tvNombre, tvPrecio, tvDescripcion, tvIngredientes, tvAlergenos, tvCantidad;
     private ImageView ivFavorito;
     private RecyclerView rvFotos;
@@ -40,6 +40,7 @@ public class DetalleBomboFragment extends Fragment {
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        foodRepository = FoodRepository.getInstance(requireContext());
 
         tvNombre = view.findViewById(R.id.tv_bombo_nombre);
         tvPrecio = view.findViewById(R.id.tv_bombo_precio);
@@ -58,7 +59,10 @@ public class DetalleBomboFragment extends Fragment {
             bomboId = getArguments().getString("bomboId");
         }
 
-        cargarDatosEjemplo();
+        if (bomboId != null) {
+            bomboActual = foodRepository.getBomboPorId(bomboId);
+        }
+        
         mostrarInfoBombo();
 
         // Inicializar estado de favorito
@@ -79,9 +83,9 @@ public class DetalleBomboFragment extends Fragment {
         ivFavorito.setOnClickListener(v -> {
             if (bomboId != null) {
                 userViewModel.toggleFavorito(bomboId);
-                boolean esFavorito = userViewModel.esFavorito(bomboId);
                 actualizarIconoFavorito();
-                String mensaje = esFavorito ? "Añadido a favoritos" : "Eliminado de favoritos";
+                boolean esFavoritoNow = userViewModel.esFavorito(bomboId);
+                String mensaje = esFavoritoNow ? "Añadido a favoritos" : "Eliminado de favoritos";
                 Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
             }
         });
@@ -126,40 +130,18 @@ public class DetalleBomboFragment extends Fragment {
                 tvAlergenos.setText("Sin alérgenos conocidos");
             }
 
-            RestauranteFotoAdapter fotoAdapter = new RestauranteFotoAdapter(bomboActual.getFotos());
-            rvFotos.setAdapter(fotoAdapter);
-        }
-    }
-
-    private void cargarDatosEjemplo() {
-        List<Bombo> todosLosBombos = new ArrayList<>();
-        
-        // Thai Food
-        todosLosBombos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", 
-            "Fideos de arroz con gambas, tofu, huevo y brotes de soja.", "12.50€",
-            Arrays.asList("Fideos de arroz", "Gambas", "Tofu", "Huevo", "Cacahuetes", "Brotes de soja", "Salsa de pescado"),
-            Arrays.asList("Crustáceos", "Huevo", "Cacahuetes", "Pescado", "Soja"),
-            Arrays.asList(android.R.drawable.ic_menu_gallery, android.R.drawable.ic_menu_camera)));
-        
-        todosLosBombos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", 
-            "Ternera, cheddar, lechuga, tomate y nuestra salsa secreta.", "10.50€",
-            Arrays.asList("Carne de ternera", "Queso Cheddar", "Lechuga", "Tomate", "Pan de brioche", "Salsa secreta"),
-            Arrays.asList("Gluten", "Lácteos", "Huevo", "Mostaza"),
-            Arrays.asList(android.R.drawable.ic_menu_gallery, android.R.drawable.ic_menu_camera)));
-
-        for (Bombo b : todosLosBombos) {
-            if (b.getId().equals(bomboId)) {
-                bomboActual = b;
-                break;
+            if (bomboActual.getFotos() != null && !bomboActual.getFotos().isEmpty()) {
+                List<String> fotosString = bomboActual.getFotos();
+                List<Integer> resIds = new ArrayList<>();
+                for (String fotoName : fotosString) {
+                    int resId = getContext().getResources().getIdentifier(fotoName, "drawable", getContext().getPackageName());
+                    if (resId != 0) resIds.add(resId);
+                }
+                if (resIds.isEmpty()) resIds.add(R.drawable.ic_launcher_background);
+                
+                RestauranteFotoAdapter fotoAdapter = new RestauranteFotoAdapter(resIds);
+                rvFotos.setAdapter(fotoAdapter);
             }
-        }
-        
-        if (bomboActual == null) {
-            bomboActual = new Bombo(bomboId, "desconocido", "Plato de Ejemplo", 
-                "Descripción detallada del plato.", "9.99€",
-                Arrays.asList("Ingrediente A", "Ingrediente B"),
-                Arrays.asList("Alérgeno X"),
-                Arrays.asList(android.R.drawable.ic_menu_gallery));
         }
     }
 }

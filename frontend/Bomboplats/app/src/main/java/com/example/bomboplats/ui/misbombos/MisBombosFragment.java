@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
@@ -28,6 +29,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     private BomboAdapter adapter;
     private UserViewModel userViewModel;
     private CarritoViewModel carritoViewModel;
+    private FoodRepository foodRepository;
     private TextView tvEmptyFavoritos;
 
     @Nullable
@@ -41,6 +43,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
+        foodRepository = FoodRepository.getInstance(requireContext());
 
         // Al observar favoritos, la lista se actualizará automáticamente cuando cambie el usuario en UserViewModel
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), idsFavoritos -> {
@@ -51,7 +54,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     }
 
     private void actualizarListaFavoritos(List<String> idsFavoritos) {
-        List<Bombo> todosLosBombos = obtenerTodosLosBombos();
+        List<Bombo> todosLosBombos = foodRepository.getBombos();
         List<Bombo> favoritos = new ArrayList<>();
         if (idsFavoritos != null) {
             for (Bombo b : todosLosBombos) {
@@ -104,15 +107,4 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     }
 
     public void filtrar(String texto) {}
-
-    private List<Bombo> obtenerTodosLosBombos() {
-        List<Bombo> todos = new ArrayList<>();
-        todos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", "Fideos de arroz con gambas y cacahuetes.", "12.50€"));
-        todos.add(new Bombo("curry_verde", "thai_food", "Green Curry", "Curry verde picante con leche de coco.", "13.90€"));
-        todos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", "Ternera, cheddar, lechuga y tomate.", "10.50€"));
-        todos.add(new Bombo("bbq_burger", "burger_place", "BBQ Special", "Ternera, bacon y mucha salsa barbacoa.", "11.90€"));
-        todos.add(new Bombo("pizza_margherita", "pizza_italiana", "Pizza Margherita", "Tomate, mozzarella fresca y albahaca.", "9.50€"));
-        todos.add(new Bombo("pizza_4_quesos", "pizza_italiana", "Cuatro Quesos", "Mozzarella, gorgonzola, parmesano y emmental.", "11.50€"));
-        return todos;
-    }
 }

@@ -1,35 +1,38 @@
 package com.example.bomboplats.data.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Restaurante {
     private String id;
     private String nombre;
     private String descripcion;
-    private float estrellas;
-    private String rangoPrecio;
     private List<String> etiquetas;
+    private List<String> fotos;
     private String ubicacion;
-    private List<String> fotosCarrusel;
+    private float valoracion;
+    private String rangoPrecio;
+    private List<Bombo> menu;
 
-    public Restaurante(String id, String nombre, String descripcion, float estrellas, String rangoPrecio, List<String> etiquetas, String ubicacion, List<String> fotosCarrusel) {
+    public Restaurante(String id, String nombre, String descripcion, List<String> etiquetas, List<String> fotos, String ubicacion, float valoracion, String rangoPrecio, List<Bombo> menu) {
         this.id = id;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.estrellas = estrellas;
-        this.rangoPrecio = rangoPrecio;
-        this.etiquetas = etiquetas;
+        this.etiquetas = etiquetas != null ? etiquetas : new ArrayList<>();
+        this.fotos = fotos != null ? fotos : new ArrayList<>();
         this.ubicacion = ubicacion;
-        this.fotosCarrusel = fotosCarrusel;
+        this.valoracion = valoracion;
+        this.rangoPrecio = rangoPrecio;
+        this.menu = menu != null ? menu : new ArrayList<>();
     }
 
-    // Getters
     public String getId() { return id; }
     public String getNombre() { return nombre; }
     public String getDescripcion() { return descripcion; }
-    public float getEstrellas() { return estrellas; }
-    public String getRangoPrecio() { return rangoPrecio; }
     public List<String> getEtiquetas() { return etiquetas; }
+    public List<String> getFotos() { return fotos; }
     public String getUbicacion() { return ubicacion; }
-    public List<String> getFotosCarrusel() { return fotosCarrusel; }
+    public float getValoracion() { return valoracion; }
+    public String getRangoPrecio() { return rangoPrecio; }
+    public List<Bombo> getMenu() { return menu; }
 }

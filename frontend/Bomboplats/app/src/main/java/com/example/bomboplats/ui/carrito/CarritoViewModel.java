@@ -7,27 +7,54 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import com.example.bomboplats.data.LoginDataSource;
+import com.example.bomboplats.data.LoginRepository;
+import com.example.bomboplats.data.model.LoggedInUser;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class CarritoViewModel extends AndroidViewModel {
-    private static final String PREFS_NAME = "user_prefs";
-    private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
-    private static final String PREFIX_CARRITO = "carrito_";
     
     private final MutableLiveData<Map<String, Integer>> itemsCarrito = new MutableLiveData<>(new HashMap<>());
-    private final SharedPreferences sharedPreferences;
+    private final LoginRepository loginRepository;
+    private static final String PREFS_NAME = "user_prefs";
+    private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
 
     public CarritoViewModel(@NonNull Application application) {
         super(application);
-        sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        cargarDatosPersistentes();
+        loginRepository = LoginRepository.getInstance(new LoginDataSource(application));
+        
+        // Intentar restaurar sesión si no hay usuario en el repositorio
+        LoggedInUser user = loginRepository.getUser();
+        if (user == null) {
+            SharedPreferences sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            String savedEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, null);
+            if (savedEmail != null) {
+                loginRepository.loadUserSession(savedEmail);
+            }
+        }
+        
+        cargarDatosDesdeJSON();
     }
 
     public LiveData<Map<String, Integer>> getItemsCarrito() {
         return itemsCarrito;
+    }
+
+    private void cargarDatosDesdeJSON() {
+        LoggedInUser user = loginRepository.getUser();
+        if (user != null) {
+            Map<String, Integer> mapaCargado = new HashMap<>();
+            List<String> cartIds = user.getCartPlateIds();
+            if (cartIds != null) {
+                for (String id : cartIds) {
+                    mapaCargado.put(id, mapaCargado.getOrDefault(id, 0) + 1);
+                }
+            }
+            itemsCarrito.setValue(mapaCargado);
+        }
     }
 
     public void agregarAlCarrito(String bomboId, int cantidad) {
@@ -36,7 +63,7 @@ public class CarritoViewModel extends AndroidViewModel {
             int cantidadExistente = mapaActual.getOrDefault(bomboId, 0);
             mapaActual.put(bomboId, cantidadExistente + cantidad);
             itemsCarrito.setValue(new HashMap<>(mapaActual));
-            guardarCarrito();
+            sincronizarConJSON();
         }
     }
 
@@ -50,42 +77,25 @@ public class CarritoViewModel extends AndroidViewModel {
                 mapaActual.remove(bomboId);
             }
             itemsCarrito.setValue(new HashMap<>(mapaActual));
-            guardarCarrito();
+            sincronizarConJSON();
         }
     }
 
     public void limpiarCarrito() {
         itemsCarrito.setValue(new HashMap<>());
-        guardarCarrito();
+        sincronizarConJSON();
     }
 
-    // Persistencia por usuario
-    private void guardarCarrito() {
-        String currentEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+    private void sincronizarConJSON() {
         Map<String, Integer> mapa = itemsCarrito.getValue();
         if (mapa != null) {
-            Set<String> set = new HashSet<>();
+            List<String> listaIds = new ArrayList<>();
             for (Map.Entry<String, Integer> entry : mapa.entrySet()) {
-                set.add(entry.getKey() + ":" + entry.getValue());
+                for (int i = 0; i < entry.getValue(); i++) {
+                    listaIds.add(entry.getKey());
+                }
             }
-            editor.putStringSet(PREFIX_CARRITO + currentEmail, set);
-            editor.apply();
+            loginRepository.setCart(listaIds);
         }
-    }
-
-    private void cargarDatosPersistentes() {
-        String currentEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, "usuario1@test.com");
-        Set<String> setCarrito = sharedPreferences.getStringSet(PREFIX_CARRITO + currentEmail, new HashSet<>());
-        Map<String, Integer> mapaCargado = new HashMap<>();
-        for (String item : setCarrito) {
-            String[] parts = item.split(":");
-            if (parts.length == 2) {
-                try {
-                    mapaCargado.put(parts[0], Integer.parseInt(parts[1]));
-                } catch (NumberFormatException ignored) {}
-            }
-        }
-        itemsCarrito.setValue(mapaCargado);
     }
 }

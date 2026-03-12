@@ -14,10 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
-import com.example.bomboplats.ui.misbombos.FavoritosViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +32,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private List<Bombo> listaBombosRestaurante;
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
+    private FoodRepository foodRepository;
 
     @Nullable
     @Override
@@ -40,6 +41,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        foodRepository = FoodRepository.getInstance(requireContext());
 
         // Referencias del encabezado
         TextView tvNombre = view.findViewById(R.id.tv_restaurante_nombre);
@@ -67,7 +69,13 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             }
         }
 
-        cargarDatosEjemplo();
+        // Cargar bombos desde el repositorio
+        if (restauranteId != null) {
+            listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
+        } else {
+            listaBombosRestaurante = new ArrayList<>();
+        }
+        
         updateUI(listaBombosRestaurante);
 
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), favs -> {
@@ -75,25 +83,6 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         });
 
         return view;
-    }
-
-    private void cargarDatosEjemplo() {
-        if (listaBombosRestaurante != null && !listaBombosRestaurante.isEmpty()) return;
-
-        List<Bombo> todosLosBombos = new ArrayList<>();
-        todosLosBombos.add(new Bombo("pad_thai", "thai_food", "Pad Thai Classic", "Fideos de arroz con gambas y cacahuetes.", "12.50€"));
-        todosLosBombos.add(new Bombo("curry_verde", "thai_food", "Green Curry", "Curry verde picante con leche de coco.", "13.90€"));
-        todosLosBombos.add(new Bombo("classic_burger", "burger_place", "Clásica con Queso", "Ternera, cheddar, lechuga y tomate.", "10.50€"));
-        todosLosBombos.add(new Bombo("bbq_burger", "burger_place", "BBQ Special", "Ternera, bacon y mucha salsa barbacoa.", "11.90€"));
-        todosLosBombos.add(new Bombo("pizza_margherita", "pizza_italiana", "Pizza Margherita", "Tomate, mozzarella fresca y albahaca.", "9.50€"));
-        todosLosBombos.add(new Bombo("pizza_4_quesos", "pizza_italiana", "Cuatro Quesos", "Mozzarella, gorgonzola, parmesano y emmental.", "11.50€"));
-
-        listaBombosRestaurante = new ArrayList<>();
-        for (Bombo b : todosLosBombos) {
-            if (b.getRestauranteId() != null && b.getRestauranteId().equals(restauranteId)) {
-                listaBombosRestaurante.add(b);
-            }
-        }
     }
 
     @Override
@@ -130,7 +119,17 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             filtrados.addAll(listaBombosRestaurante);
         } else {
             for (Bombo b : listaBombosRestaurante) {
-                if (b.getNombre().toLowerCase().contains(query)) {
+                boolean matchEtiqueta = false;
+                if (b.getEtiquetas() != null) {
+                    for (String tag : b.getEtiquetas()) {
+                        if (tag.toLowerCase().contains(query)) {
+                            matchEtiqueta = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (b.getNombre().toLowerCase().contains(query) || matchEtiqueta) {
                     filtrados.add(b);
                 }
             }
@@ -146,13 +145,11 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             recyclerViewBombos.setVisibility(View.VISIBLE);
             tvEmptyBombos.setVisibility(View.GONE);
             
-            // Si el adaptador no existe, lo creamos. Si existe, solo actualizamos su lista.
             if (adapter == null) {
                 adapter = new BomboAdapter(lista, this, userViewModel);
             } else {
                 adapter.setFilteredList(lista);
             }
-            // LA CLAVE ESTÁ AQUÍ: Siempre (re)asignamos el adaptador al RecyclerView
             recyclerViewBombos.setAdapter(adapter);
         }
     }
