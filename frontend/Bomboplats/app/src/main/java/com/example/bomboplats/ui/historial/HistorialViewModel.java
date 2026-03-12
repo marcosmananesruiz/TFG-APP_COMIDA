@@ -25,7 +25,7 @@ public class HistorialViewModel extends AndroidViewModel {
 
     public HistorialViewModel(@NonNull Application application) {
         super(application);
-        File root = new File(application.getFilesDir(), "documentos");
+        File root = new File(application.getFilesDir(), "documents");
         this.usersDir = new File(root, "users");
         if (!usersDir.exists()) usersDir.mkdirs();
         cargarHistorial();

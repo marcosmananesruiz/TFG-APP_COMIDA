@@ -12,6 +12,7 @@ import com.example.bomboplats.data.LoginRepository;
 import com.example.bomboplats.data.Result;
 import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.ui.general.FavoritosProvider;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,6 @@ import java.util.Map;
 public class UserViewModel extends AndroidViewModel implements FavoritosProvider {
     private static final String PREFS_NAME = "user_prefs";
     private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
-    private static final String PREFIX_PHOTO = "photo_";
 
     private final SharedPreferences sharedPreferences;
     private final LoginRepository loginRepository;
@@ -58,7 +58,18 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         
         String userEmail = user.getEmail();
         sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, userEmail).apply();
-        photoUri.setValue(sharedPreferences.getString(PREFIX_PHOTO + userEmail, null));
+        
+        // Cargar foto desde el objeto de usuario o desde la carpeta users si existe
+        if (user.getPhotoPath() != null) {
+            photoUri.setValue(user.getPhotoPath());
+        } else {
+            File photoFile = loginRepository.getUserPhotoFile();
+            if (photoFile != null && photoFile.exists()) {
+                photoUri.setValue(photoFile.getAbsolutePath());
+            } else {
+                photoUri.setValue(null);
+            }
+        }
         
         favoritos.setValue(new ArrayList<>(user.getFavoritePlateIds()));
 
@@ -90,6 +101,20 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         if (result instanceof Result.Success) {
             this.email.setValue(newEmail);
             sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, newEmail).apply();
+            
+            // Actualizar la ruta de la foto si existe tras el cambio de email
+            File photoFile = loginRepository.getUserPhotoFile();
+            if (photoFile != null && photoFile.exists()) {
+                String newPath = photoFile.getAbsolutePath();
+                photoUri.setValue(newPath);
+                
+                // Asegurarse de que el objeto usuario tenga la nueva ruta y se guarde el JSON
+                LoggedInUser user = loginRepository.getUser();
+                if (user != null) {
+                    user.setPhotoPath(newPath);
+                    loginRepository.saveUser();
+                }
+            }
         }
     }
 
@@ -101,11 +126,16 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     }
 
     public void setPhotoUri(String uri) {
-        String currentEmail = email.getValue();
-        if (currentEmail != null) {
-            photoUri.setValue(uri);
-            sharedPreferences.edit().putString(PREFIX_PHOTO + currentEmail, uri).apply();
+        photoUri.setValue(uri);
+        LoggedInUser user = loginRepository.getUser();
+        if (user != null) {
+            user.setPhotoPath(uri);
+            loginRepository.saveUser(); // Esto forzará el guardado del JSON con la nueva ruta de foto
         }
+    }
+
+    public File getUserPhotoFile() {
+        return loginRepository.getUserPhotoFile();
     }
 
     public void toggleFavorito(String itemId) {

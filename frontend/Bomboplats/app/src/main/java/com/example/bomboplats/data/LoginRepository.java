@@ -1,6 +1,7 @@
 package com.example.bomboplats.data;
 
 import com.example.bomboplats.data.model.LoggedInUser;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,10 +53,6 @@ public class LoginRepository {
         return result;
     }
 
-    /**
-     * Carga la sesión del usuario desde el almacenamiento local (JSON)
-     * basándose en su email.
-     */
     public boolean loadUserSession(String email) {
         if (email == null) return false;
         Result<LoggedInUser> result = dataSource.getUser(email);
@@ -94,21 +91,32 @@ public class LoginRepository {
         return result;
     }
 
+    public void saveUser() {
+        if (user != null) {
+            dataSource.saveUserInternal(user);
+        }
+    }
+
     public void setFavorites(List<String> plateIds) {
         if (user != null) {
             user.setFavoritePlateIds(new ArrayList<>(plateIds));
-            dataSource.saveUserInternal(user);
+            saveUser();
         }
     }
 
     public void setCart(List<String> plateIds) {
         if (user != null) {
             user.setCartPlateIds(new ArrayList<>(plateIds));
-            dataSource.saveUserInternal(user);
+            saveUser();
         }
     }
 
     public LoggedInUser getUser() {
         return user;
+    }
+
+    public File getUserPhotoFile() {
+        if (user == null) return null;
+        return dataSource.getUserPhotoFile(user.getEmail());
     }
 }

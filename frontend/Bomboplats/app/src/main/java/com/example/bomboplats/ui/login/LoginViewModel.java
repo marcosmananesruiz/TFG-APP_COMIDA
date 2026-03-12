@@ -50,7 +50,8 @@ public class LoginViewModel extends ViewModel {
                 email,
                 password,
                 new ArrayList<>(),
-                new ArrayList<>()
+                new ArrayList<>(),
+                null
         );
         loginRepository.register(newUser);
     }

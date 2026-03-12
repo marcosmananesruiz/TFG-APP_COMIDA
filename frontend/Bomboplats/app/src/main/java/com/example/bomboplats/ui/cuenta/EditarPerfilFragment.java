@@ -104,7 +104,9 @@ public class EditarPerfilFragment extends Fragment {
             InputStream inputStream = context.getContentResolver().openInputStream(uri);
             if (inputStream == null) return null;
 
-            File file = new File(context.getFilesDir(), "profile_picture.jpg");
+            File file = userViewModel.getUserPhotoFile();
+            if (file == null) return null;
+
             OutputStream outputStream = new FileOutputStream(file);
 
             byte[] buffer = new byte[1024];

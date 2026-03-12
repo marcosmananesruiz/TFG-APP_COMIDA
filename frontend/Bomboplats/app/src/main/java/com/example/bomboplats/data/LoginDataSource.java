@@ -4,9 +4,11 @@ import android.content.Context;
 import com.example.bomboplats.data.model.LoggedInUser;
 import com.google.gson.Gson;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 
 public class LoginDataSource {
 
@@ -17,10 +19,57 @@ public class LoginDataSource {
     public LoginDataSource(Context context) {
         this.context = context;
         this.gson = new Gson();
-        // Crear estructura de carpetas: documentos/users
+
+        // Carpeta antigua y nueva
+        File oldRoot = new File(context.getFilesDir(), "documents");
         File root = new File(context.getFilesDir(), "documentos");
+
+        // Intentar migración si existe la carpeta antigua
+        if (oldRoot.exists() && oldRoot.isDirectory()) {
+            migrateFolder(oldRoot, root);
+        }
+
         this.usersDir = new File(root, "users");
         if (!usersDir.exists()) usersDir.mkdirs();
+        
+        // Asegurar que los usuarios por defecto existen
+        ensureDefaultUsers();
+    }
+
+    private void migrateFolder(File source, File target) {
+        if (source.isDirectory()) {
+            if (!target.exists()) target.mkdirs();
+            String[] children = source.list();
+            if (children != null) {
+                for (String child : children) {
+                    migrateFolder(new File(source, child), new File(target, child));
+                }
+            }
+        } else {
+            source.renameTo(target);
+        }
+        source.delete();
+    }
+
+    private void ensureDefaultUsers() {
+        String[] emails = {"jorge@test.com", "usuario1@test.com", "usuario2@test.com"};
+        String[] names = {"Jorge", "Usuario 1", "Usuario 2"};
+        
+        for (int i = 0; i < emails.length; i++) {
+            File file = new File(usersDir, emails[i] + ".json");
+            if (!file.exists()) {
+                LoggedInUser user = new LoggedInUser(
+                        String.valueOf(i + 1),
+                        names[i],
+                        emails[i],
+                        "1234",
+                        new ArrayList<>(),
+                        new ArrayList<>(),
+                        null
+                );
+                saveUserInternal(user);
+            }
+        }
     }
 
     public Result<LoggedInUser> login(String username, String password) {
@@ -83,6 +132,14 @@ public class LoginDataSource {
         if (loadResult instanceof Result.Success) {
             LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
             user.setEmail(newEmail);
+            
+            // Mover también la foto si existe
+            File oldPhoto = getUserPhotoFile(oldUsername);
+            if (oldPhoto.exists()) {
+                File newPhoto = getUserPhotoFile(newEmail);
+                oldPhoto.renameTo(newPhoto);
+            }
+
             File oldFile = new File(usersDir, oldUsername + ".json");
             oldFile.delete();
             return saveUserInternal(user);
@@ -100,44 +157,6 @@ public class LoginDataSource {
         return new Result.Error(new IOException("La contraseña antigua no es correcta"));
     }
 
-    public void addFavorite(String username, String plateId) {
-        Result<LoggedInUser> loadResult = getUser(username);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
-            if (!user.getFavoritePlateIds().contains(plateId)) {
-                user.getFavoritePlateIds().add(plateId);
-                saveUserInternal(user);
-            }
-        }
-    }
-
-    public void removeFavorite(String username, String plateId) {
-        Result<LoggedInUser> loadResult = getUser(username);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
-            user.getFavoritePlateIds().remove(plateId);
-            saveUserInternal(user);
-        }
-    }
-
-    public void addToCart(String username, String plateId) {
-        Result<LoggedInUser> loadResult = getUser(username);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
-            user.getCartPlateIds().add(plateId);
-            saveUserInternal(user);
-        }
-    }
-
-    public void removeFromCart(String username, String plateId) {
-        Result<LoggedInUser> loadResult = getUser(username);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
-            user.getCartPlateIds().remove(plateId);
-            saveUserInternal(user);
-        }
-    }
-
     public Result<LoggedInUser> getUser(String username) {
         File file = new File(usersDir, username + ".json");
         if (!file.exists()) return new Result.Error(new IOException("Usuario no encontrado"));
@@ -151,12 +170,25 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
         File file = new File(usersDir, user.getEmail() + ".json");
-        try (FileWriter writer = new FileWriter(file)) {
-            gson.toJson(user, writer);
-            return new Result.Success<>(user);
+        try {
+            if (file.exists()) {
+                file.setWritable(true);
+            }
+            
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 OutputStreamWriter osw = new OutputStreamWriter(fos)) {
+                gson.toJson(user, osw);
+                osw.flush();
+                fos.getFD().sync();
+                return new Result.Success<>(user);
+            }
         } catch (IOException e) {
-            return new Result.Error(new IOException("Error al guardar usuario", e));
+            return new Result.Error(new IOException("Error al guardar usuario: " + e.getMessage(), e));
         }
+    }
+
+    public File getUserPhotoFile(String email) {
+        return new File(usersDir, email + ".jpg");
     }
 
     public void logout() {}
