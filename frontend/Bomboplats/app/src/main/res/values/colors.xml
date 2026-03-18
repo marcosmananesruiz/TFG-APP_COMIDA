@@ -4,4 +4,12 @@
     <color name="white">#FFFFFFFF</color>
     <color name="red">#FF0000</color>
     <color name="teal_700">#00796B</color>
+
+    <!-- Colores base para la App -->
+    <color name="background">#FFFFFF</color>
+    <color name="text_color">#000000</color>
+    <color name="card_background">#F5F5F5</color>
+
+    <!-- Morado del menú (No se cambia) -->
+    <color name="menu_purple">#6200EE</color>
 </resources>

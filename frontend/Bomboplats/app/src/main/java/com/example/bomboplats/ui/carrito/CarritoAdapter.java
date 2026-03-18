@@ -21,8 +21,8 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
     private Set<String> favoritos;
 
     public interface OnCarritoActionListener {
-        void onRestarClick(String bomboId);
-        void onFavoritoClick(String bomboId);
+        void onRestarClick(String itemKey);
+        void onFavoritoClick(String itemKey);
         void onBomboClick(Bombo bombo);
     }
 
@@ -48,6 +48,8 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
     public void onBindViewHolder(@NonNull CarritoViewHolder holder, int position) {
         BomboConCantidad item = listaCarrito.get(position);
         Bombo bombo = item.getBombo();
+        // Usamos la clave compuesta "restauranteId:bomboId" para las acciones
+        String itemKey = bombo.getRestauranteId() + ":" + bombo.getId();
         
         holder.tvNombre.setText(bombo.getNombre());
         holder.tvDescripcion.setText(bombo.getDescripcion());
@@ -63,18 +65,18 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         // Mostramos el botón de restar (el -)
         holder.btnRestar.setVisibility(View.VISIBLE);
         holder.btnRestar.setOnClickListener(v -> {
-            if (listener != null) listener.onRestarClick(bombo.getId());
+            if (listener != null) listener.onRestarClick(itemKey);
         });
 
-        // Configurar favorito
-        if (favoritos != null && favoritos.contains(bombo.getId())) {
+        // Configurar favorito usando la clave compuesta
+        if (favoritos != null && favoritos.contains(itemKey)) {
             holder.ivFavorito.setImageResource(R.drawable.ic_favorite_filled);
         } else {
             holder.ivFavorito.setImageResource(R.drawable.ic_heart_unselected);
         }
 
         holder.ivFavorito.setOnClickListener(v -> {
-            if (listener != null) listener.onFavoritoClick(bombo.getId());
+            if (listener != null) listener.onFavoritoClick(itemKey);
         });
 
         holder.itemView.setOnClickListener(v -> {

@@ -49,8 +49,8 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         holder.tvDescripcion.setText(bombo.getDescripcion());
         holder.tvPrecio.setText(bombo.getPrecio());
 
-        // Actualizado: Usamos ic_heart_unselected cuando no es favorito
-        if (favoritosProvider != null && favoritosProvider.esFavorito(bombo.getId())) {
+        // Actualizado: Pasamos tanto restauranteId como bomboId para validar el favorito
+        if (favoritosProvider != null && favoritosProvider.esFavorito(bombo.getRestauranteId(), bombo.getId())) {
             holder.btnFav.setImageResource(R.drawable.ic_favorite_filled);
         } else {
             holder.btnFav.setImageResource(R.drawable.ic_heart_unselected);

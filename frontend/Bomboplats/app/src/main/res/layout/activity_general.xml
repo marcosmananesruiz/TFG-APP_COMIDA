@@ -95,7 +95,7 @@
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/white"
+            android:background="@color/background"
             />
 
     </LinearLayout>
@@ -106,7 +106,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:orientation="vertical"
-        android:background="@android:color/white"
+        android:background="@color/background"
         android:clickable="true"
         android:focusable="true">
 
@@ -115,8 +115,11 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
+            android:background="@color/background"
             app:menu="@menu/drawer_menu"
             app:itemTextAppearance="@style/NavItemText"
+            app:itemTextColor="@color/text_color"
+            app:itemIconTint="@color/text_color"
             app:itemVerticalPadding="25dp"/>
 
         <View
@@ -128,8 +131,11 @@
             android:id="@+id/navigation_view_bottom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/background"
             app:menu="@menu/drawer_menu_bottom"
             app:itemTextAppearance="@style/NavItemText"
+            app:itemTextColor="@color/text_color"
+            app:itemIconTint="@color/text_color"
             app:itemVerticalPadding="10dp"/>
 
     </LinearLayout>

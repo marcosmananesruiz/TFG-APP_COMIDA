@@ -3,7 +3,9 @@ package com.example.bomboplats.data;
 import com.example.bomboplats.data.model.LoggedInUser;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LoginRepository {
 
@@ -97,16 +99,16 @@ public class LoginRepository {
         }
     }
 
-    public void setFavorites(List<String> plateIds) {
+    public void setFavoritesMap(Map<String, List<String>> favoritePlates) {
         if (user != null) {
-            user.setFavoritePlateIds(new ArrayList<>(plateIds));
+            user.setFavoritePlates(new HashMap<>(favoritePlates));
             saveUser();
         }
     }
 
-    public void setCart(List<String> plateIds) {
+    public void setCartMap(Map<String, List<String>> cartPlates) {
         if (user != null) {
-            user.setCartPlateIds(new ArrayList<>(plateIds));
+            user.setCartPlates(new HashMap<>(cartPlates));
             saveUser();
         }
     }

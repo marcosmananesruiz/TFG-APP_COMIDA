@@ -17,6 +17,7 @@ public class FavoritosViewModel extends AndroidViewModel implements FavoritosPro
     private static final String PREFS_NAME = "bomboplats_prefs";
     private static final String KEY_FAVORITOS = "favoritos_items";
     
+    // Almacena claves compuestas "restauranteId:bomboId"
     private final MutableLiveData<List<String>> idsFavoritos = new MutableLiveData<>(new ArrayList<>());
     private final SharedPreferences sharedPreferences;
 
@@ -30,13 +31,14 @@ public class FavoritosViewModel extends AndroidViewModel implements FavoritosPro
         return idsFavoritos;
     }
 
-    public void toggleFavorito(String bomboId) {
+    public void toggleFavorito(String restauranteId, String bomboId) {
         List<String> listaActual = idsFavoritos.getValue();
         if (listaActual != null) {
-            if (listaActual.contains(bomboId)) {
-                listaActual.remove(bomboId);
+            String key = restauranteId + ":" + bomboId;
+            if (listaActual.contains(key)) {
+                listaActual.remove(key);
             } else {
-                listaActual.add(bomboId);
+                listaActual.add(key);
             }
             idsFavoritos.setValue(new ArrayList<>(listaActual)); // Notificar observadores
             guardarFavoritos();
@@ -44,9 +46,10 @@ public class FavoritosViewModel extends AndroidViewModel implements FavoritosPro
     }
 
     @Override
-    public boolean esFavorito(String bomboId) {
+    public boolean esFavorito(String restauranteId, String bomboId) {
         List<String> listaActual = idsFavoritos.getValue();
-        return listaActual != null && listaActual.contains(bomboId);
+        String key = restauranteId + ":" + bomboId;
+        return listaActual != null && listaActual.contains(key);
     }
 
     private void guardarFavoritos() {

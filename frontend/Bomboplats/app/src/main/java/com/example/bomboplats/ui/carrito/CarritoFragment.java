@@ -58,7 +58,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
 
         // Observar cambios en el carrito
         carritoViewModel.getItemsCarrito().observe(getViewLifecycleOwner(), items -> {
-            userViewModel.setCarrito(items);
+            userViewModel.setCarritoUI(items);
             actualizarUI();
         });
 
@@ -115,10 +115,13 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         double totalCompra = 0.0;
 
         for (Map.Entry<String, Integer> entry : items.entrySet()) {
-            String id = entry.getKey();
+            String key = entry.getKey(); // Formato "restauranteId:bomboId"
             int cantidad = entry.getValue();
             
-            Bombo b = buscarBomboPorId(id);
+            String[] parts = key.split(":");
+            String bomboId = parts.length == 2 ? parts[1] : key;
+            
+            Bombo b = buscarBomboPorId(bomboId);
             if (b != null) {
                 listaFinal.add(new BomboConCantidad(b, cantidad));
                 try {
@@ -135,13 +138,16 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
     }
 
     @Override
-    public void onRestarClick(String bomboId) {
-        carritoViewModel.removerDelCarrito(bomboId);
+    public void onRestarClick(String itemKey) {
+        carritoViewModel.removerDelCarrito(itemKey);
     }
 
     @Override
-    public void onFavoritoClick(String bomboId) {
-        userViewModel.toggleFavorito(bomboId);
+    public void onFavoritoClick(String itemKey) {
+        String[] parts = itemKey.split(":");
+        if (parts.length == 2) {
+            userViewModel.toggleFavorito(parts[0], parts[1]);
+        }
     }
 
     @Override

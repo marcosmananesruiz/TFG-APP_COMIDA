@@ -9,6 +9,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoginDataSource {
 
@@ -63,8 +65,8 @@ public class LoginDataSource {
                         names[i],
                         emails[i],
                         "1234",
-                        new ArrayList<>(),
-                        new ArrayList<>(),
+                        new HashMap<>(),
+                        new HashMap<>(),
                         null
                 );
                 saveUserInternal(user);

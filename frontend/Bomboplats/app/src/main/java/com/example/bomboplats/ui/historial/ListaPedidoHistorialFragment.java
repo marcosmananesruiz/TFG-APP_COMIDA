@@ -94,12 +94,13 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
 
     @Override
     public void onFavoritoClick(Bombo b) {
-        userViewModel.toggleFavorito(b.getId());
+        userViewModel.toggleFavorito(b.getRestauranteId(), b.getId());
     }
 
     @Override
     public void onAgregarCarritoClick(Bombo b) {
-        carritoViewModel.agregarAlCarrito(b.getId(), 1);
+        String itemKey = b.getRestauranteId() + ":" + b.getId();
+        carritoViewModel.agregarAlCarrito(itemKey, 1);
         Toast.makeText(getContext(), "¡" + b.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
     }
 }

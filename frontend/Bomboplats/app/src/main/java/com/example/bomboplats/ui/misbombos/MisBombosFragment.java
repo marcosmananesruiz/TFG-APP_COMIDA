@@ -58,7 +58,9 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         List<Bombo> favoritos = new ArrayList<>();
         if (idsFavoritos != null) {
             for (Bombo b : todosLosBombos) {
-                if (idsFavoritos.contains(b.getId())) {
+                // Ahora comparamos con la clave compuesta restauranteId:bomboId
+                String key = b.getRestauranteId() + ":" + b.getId();
+                if (idsFavoritos.contains(key)) {
                     favoritos.add(b);
                 }
             }
@@ -97,12 +99,15 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
 
     @Override
     public void onFavoritoClick(Bombo b) {
-        userViewModel.toggleFavorito(b.getId());
+        // Pasamos ambos IDs para la nueva lógica de favoritos
+        userViewModel.toggleFavorito(b.getRestauranteId(), b.getId());
     }
 
     @Override
     public void onAgregarCarritoClick(Bombo b) {
-        carritoViewModel.agregarAlCarrito(b.getId(), 1);
+        // Usamos la clave compuesta para el carrito
+        String itemKey = b.getRestauranteId() + ":" + b.getId();
+        carritoViewModel.agregarAlCarrito(itemKey, 1);
         Toast.makeText(getContext(), "¡" + b.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
     }
 

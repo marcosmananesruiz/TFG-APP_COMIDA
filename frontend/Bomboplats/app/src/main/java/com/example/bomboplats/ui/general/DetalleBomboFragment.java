@@ -81,10 +81,10 @@ public class DetalleBomboFragment extends Fragment {
         });
 
         ivFavorito.setOnClickListener(v -> {
-            if (bomboId != null) {
-                userViewModel.toggleFavorito(bomboId);
+            if (bomboActual != null) {
+                userViewModel.toggleFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
                 actualizarIconoFavorito();
-                boolean esFavoritoNow = userViewModel.esFavorito(bomboId);
+                boolean esFavoritoNow = userViewModel.esFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
                 String mensaje = esFavoritoNow ? "Añadido a favoritos" : "Eliminado de favoritos";
                 Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
             }
@@ -92,7 +92,9 @@ public class DetalleBomboFragment extends Fragment {
 
         btnPedido.setOnClickListener(v -> {
             if (bomboActual != null) {
-                carritoViewModel.agregarAlCarrito(bomboActual.getId(), cantidad);
+                // Formato compuesto "restauranteId:bomboId" para evitar conflictos
+                String itemKey = bomboActual.getRestauranteId() + ":" + bomboActual.getId();
+                carritoViewModel.agregarAlCarrito(itemKey, cantidad);
                 Toast.makeText(getContext(), "¡" + cantidad + " x " + bomboActual.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
             }
         });
@@ -106,8 +108,8 @@ public class DetalleBomboFragment extends Fragment {
     }
 
     private void actualizarIconoFavorito() {
-        if (bomboId != null && ivFavorito != null && userViewModel != null) {
-            boolean esFav = userViewModel.esFavorito(bomboId);
+        if (bomboActual != null && ivFavorito != null && userViewModel != null) {
+            boolean esFav = userViewModel.esFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
             ivFavorito.setImageResource(esFav ? R.drawable.ic_favorite_filled : R.drawable.ic_favorite_border);
         }
     }

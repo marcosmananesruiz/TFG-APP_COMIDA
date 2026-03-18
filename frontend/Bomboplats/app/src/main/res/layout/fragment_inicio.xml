@@ -4,12 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".ui.general.GeneralFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_restaurantes"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/background"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -22,6 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="No se han podido cargar los restaurantes"
+        android:textColor="@color/text_color"
         android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -17,6 +17,7 @@ import java.util.Map;
 
 public class CarritoViewModel extends AndroidViewModel {
     
+    // Clave: "restauranteId:bomboId", Valor: cantidad
     private final MutableLiveData<Map<String, Integer>> itemsCarrito = new MutableLiveData<>(new HashMap<>());
     private final LoginRepository loginRepository;
     private static final String PREFS_NAME = "user_prefs";
@@ -47,34 +48,39 @@ public class CarritoViewModel extends AndroidViewModel {
         LoggedInUser user = loginRepository.getUser();
         if (user != null) {
             Map<String, Integer> mapaCargado = new HashMap<>();
-            List<String> cartIds = user.getCartPlateIds();
-            if (cartIds != null) {
-                for (String id : cartIds) {
-                    mapaCargado.put(id, mapaCargado.getOrDefault(id, 0) + 1);
+            // Nueva estructura: Map<RestauranteId, List<BomboId>>
+            Map<String, List<String>> cartMap = user.getCartPlates();
+            if (cartMap != null) {
+                for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
+                    String restauranteId = entry.getKey();
+                    for (String bomboId : entry.getValue()) {
+                        String key = restauranteId + ":" + bomboId;
+                        mapaCargado.put(key, mapaCargado.getOrDefault(key, 0) + 1);
+                    }
                 }
             }
             itemsCarrito.setValue(mapaCargado);
         }
     }
 
-    public void agregarAlCarrito(String bomboId, int cantidad) {
+    public void agregarAlCarrito(String itemKey, int cantidad) {
         Map<String, Integer> mapaActual = itemsCarrito.getValue();
         if (mapaActual != null) {
-            int cantidadExistente = mapaActual.getOrDefault(bomboId, 0);
-            mapaActual.put(bomboId, cantidadExistente + cantidad);
+            int cantidadExistente = mapaActual.getOrDefault(itemKey, 0);
+            mapaActual.put(itemKey, cantidadExistente + cantidad);
             itemsCarrito.setValue(new HashMap<>(mapaActual));
             sincronizarConJSON();
         }
     }
 
-    public void removerDelCarrito(String bomboId) {
+    public void removerDelCarrito(String itemKey) {
         Map<String, Integer> mapaActual = itemsCarrito.getValue();
-        if (mapaActual != null && mapaActual.containsKey(bomboId)) {
-            int cantidadActual = mapaActual.get(bomboId);
+        if (mapaActual != null && mapaActual.containsKey(itemKey)) {
+            int cantidadActual = mapaActual.get(itemKey);
             if (cantidadActual > 1) {
-                mapaActual.put(bomboId, cantidadActual - 1);
+                mapaActual.put(itemKey, cantidadActual - 1);
             } else {
-                mapaActual.remove(bomboId);
+                mapaActual.remove(itemKey);
             }
             itemsCarrito.setValue(new HashMap<>(mapaActual));
             sincronizarConJSON();
@@ -87,15 +93,21 @@ public class CarritoViewModel extends AndroidViewModel {
     }
 
     private void sincronizarConJSON() {
-        Map<String, Integer> mapa = itemsCarrito.getValue();
-        if (mapa != null) {
-            List<String> listaIds = new ArrayList<>();
-            for (Map.Entry<String, Integer> entry : mapa.entrySet()) {
-                for (int i = 0; i < entry.getValue(); i++) {
-                    listaIds.add(entry.getKey());
+        Map<String, Integer> mapaUI = itemsCarrito.getValue();
+        if (mapaUI != null) {
+            // Convertir el mapa plano "restauranteId:bomboId" al mapa jerárquico para el JSON
+            Map<String, List<String>> mapParaJSON = new HashMap<>();
+            for (Map.Entry<String, Integer> entry : mapaUI.entrySet()) {
+                String[] parts = entry.getKey().split(":");
+                if (parts.length == 2) {
+                    String restauranteId = parts[0];
+                    String bomboId = parts[1];
+                    for (int i = 0; i < entry.getValue(); i++) {
+                        mapParaJSON.computeIfAbsent(restauranteId, k -> new ArrayList<>()).add(bomboId);
+                    }
                 }
             }
-            loginRepository.setCart(listaIds);
+            loginRepository.setCartMap(mapParaJSON);
         }
     }
 }

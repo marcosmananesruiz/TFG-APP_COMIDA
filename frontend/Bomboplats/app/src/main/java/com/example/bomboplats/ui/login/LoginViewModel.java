@@ -12,6 +12,7 @@ import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.R;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class LoginViewModel extends ViewModel {
 
@@ -49,8 +50,8 @@ public class LoginViewModel extends ViewModel {
                 displayName,
                 email,
                 password,
-                new ArrayList<>(),
-                new ArrayList<>(),
+                new HashMap<>(),
+                new HashMap<>(),
                 null
         );
         loginRepository.register(newUser);

@@ -28,7 +28,10 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private final MutableLiveData<String> email = new MutableLiveData<>();
     private final MutableLiveData<String> password = new MutableLiveData<>();
     private final MutableLiveData<String> photoUri = new MutableLiveData<>();
+    
+    // Lista plana de IDs (restauranteId:bomboId) para observar fácilmente desde la UI
     private final MutableLiveData<List<String>> favoritos = new MutableLiveData<>(new ArrayList<>());
+    // Mapa plano de IDs (restauranteId:bomboId) -> cantidad para observar fácilmente desde la UI
     private final MutableLiveData<Map<String, Integer>> carrito = new MutableLiveData<>(new HashMap<>());
 
     public UserViewModel(@NonNull Application application) {
@@ -36,7 +39,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         loginRepository = LoginRepository.getInstance(new LoginDataSource(application));
 
-        // Intentar restaurar sesión si no hay usuario
         LoggedInUser user = loginRepository.getUser();
         if (user == null) {
             String savedEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, null);
@@ -56,10 +58,8 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         this.name.setValue(user.getDisplayName());
         this.password.setValue(user.getPassword());
         
-        String userEmail = user.getEmail();
-        sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, userEmail).apply();
+        sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, user.getEmail()).apply();
         
-        // Cargar foto desde el objeto de usuario o desde la carpeta users si existe
         if (user.getPhotoPath() != null) {
             photoUri.setValue(user.getPhotoPath());
         } else {
@@ -71,15 +71,26 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
             }
         }
         
-        favoritos.setValue(new ArrayList<>(user.getFavoritePlateIds()));
-
-        Map<String, Integer> mapaCarrito = new HashMap<>();
-        if (user.getCartPlateIds() != null) {
-            for (String id : user.getCartPlateIds()) {
-                mapaCarrito.put(id, mapaCarrito.getOrDefault(id, 0) + 1);
+        // Cargar favoritos del mapa estructurado a una lista plana "restauranteId:bomboId"
+        List<String> listaFavs = new ArrayList<>();
+        Map<String, List<String>> favMap = user.getFavoritePlates();
+        for (Map.Entry<String, List<String>> entry : favMap.entrySet()) {
+            for (String bomboId : entry.getValue()) {
+                listaFavs.add(entry.getKey() + ":" + bomboId);
             }
         }
-        carrito.setValue(mapaCarrito);
+        favoritos.setValue(listaFavs);
+
+        // Cargar carrito del mapa estructurado a un mapa plano "restauranteId:bomboId" -> cantidad
+        Map<String, Integer> mapaCarritoUI = new HashMap<>();
+        Map<String, List<String>> cartMap = user.getCartPlates();
+        for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
+            for (String bomboId : entry.getValue()) {
+                String key = entry.getKey() + ":" + bomboId;
+                mapaCarritoUI.put(key, mapaCarritoUI.getOrDefault(key, 0) + 1);
+            }
+        }
+        carrito.setValue(mapaCarritoUI);
     }
 
     public LiveData<String> getName() { return name; }
@@ -91,9 +102,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
 
     public void setName(String newName) {
         Result<LoggedInUser> result = loginRepository.updateName(newName);
-        if (result instanceof Result.Success) {
-            name.setValue(newName);
-        }
+        if (result instanceof Result.Success) name.setValue(newName);
     }
 
     public void setEmail(String newEmail) {
@@ -101,28 +110,16 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         if (result instanceof Result.Success) {
             this.email.setValue(newEmail);
             sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, newEmail).apply();
-            
-            // Actualizar la ruta de la foto si existe tras el cambio de email
             File photoFile = loginRepository.getUserPhotoFile();
             if (photoFile != null && photoFile.exists()) {
-                String newPath = photoFile.getAbsolutePath();
-                photoUri.setValue(newPath);
-                
-                // Asegurarse de que el objeto usuario tenga la nueva ruta y se guarde el JSON
-                LoggedInUser user = loginRepository.getUser();
-                if (user != null) {
-                    user.setPhotoPath(newPath);
-                    loginRepository.saveUser();
-                }
+                photoUri.setValue(photoFile.getAbsolutePath());
             }
         }
     }
 
     public void setPassword(String oldPassword, String newPassword) {
         Result<LoggedInUser> result = loginRepository.updatePassword(oldPassword, newPassword);
-        if (result instanceof Result.Success) {
-            password.setValue(newPassword);
-        }
+        if (result instanceof Result.Success) password.setValue(newPassword);
     }
 
     public void setPhotoUri(String uri) {
@@ -130,42 +127,55 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         LoggedInUser user = loginRepository.getUser();
         if (user != null) {
             user.setPhotoPath(uri);
-            loginRepository.saveUser(); // Esto forzará el guardado del JSON con la nueva ruta de foto
+            loginRepository.saveUser();
         }
     }
 
-    public File getUserPhotoFile() {
-        return loginRepository.getUserPhotoFile();
-    }
+    public File getUserPhotoFile() { return loginRepository.getUserPhotoFile(); }
 
-    public void toggleFavorito(String itemId) {
-        List<String> lista = favoritos.getValue();
-        if (lista == null) lista = new ArrayList<>();
+    public void toggleFavorito(String restauranteId, String bomboId) {
+        List<String> listaPlana = favoritos.getValue();
+        if (listaPlana == null) listaPlana = new ArrayList<>();
         
-        if (lista.contains(itemId)) {
-            lista.remove(itemId);
+        String key = restauranteId + ":" + bomboId;
+        if (listaPlana.contains(key)) {
+            listaPlana.remove(key);
         } else {
-            lista.add(itemId);
+            listaPlana.add(key);
         }
         
-        favoritos.setValue(new ArrayList<>(lista));
-        loginRepository.setFavorites(lista);
-    }
-
-    public void setCarrito(Map<String, Integer> nuevoCarrito) {
-        carrito.setValue(new HashMap<>(nuevoCarrito));
-        List<String> listaIds = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : nuevoCarrito.entrySet()) {
-            for (int i = 0; i < entry.getValue(); i++) {
-                listaIds.add(entry.getKey());
+        favoritos.setValue(new ArrayList<>(listaPlana));
+        
+        // Reconstruir el mapa estructurado para el JSON
+        Map<String, List<String>> mapParaJSON = new HashMap<>();
+        for (String item : listaPlana) {
+            String[] parts = item.split(":");
+            if (parts.length == 2) {
+                mapParaJSON.computeIfAbsent(parts[0], k -> new ArrayList<>()).add(parts[1]);
             }
         }
-        loginRepository.setCart(listaIds);
+        loginRepository.setFavoritesMap(mapParaJSON);
+    }
+
+    public void setCarritoUI(Map<String, Integer> nuevoCarritoPlano) {
+        carrito.setValue(new HashMap<>(nuevoCarritoPlano));
+        
+        // Reconstruir el mapa estructurado para el JSON
+        Map<String, List<String>> mapParaJSON = new HashMap<>();
+        for (Map.Entry<String, Integer> entry : nuevoCarritoPlano.entrySet()) {
+            String[] parts = entry.getKey().split(":");
+            if (parts.length == 2) {
+                for (int i = 0; i < entry.getValue(); i++) {
+                    mapParaJSON.computeIfAbsent(parts[0], k -> new ArrayList<>()).add(parts[1]);
+                }
+            }
+        }
+        loginRepository.setCartMap(mapParaJSON);
     }
 
     @Override
-    public boolean esFavorito(String itemId) {
+    public boolean esFavorito(String restauranteId, String bomboId) {
         List<String> lista = favoritos.getValue();
-        return lista != null && lista.contains(itemId);
+        return lista != null && lista.contains(restauranteId + ":" + bomboId);
     }
 }
