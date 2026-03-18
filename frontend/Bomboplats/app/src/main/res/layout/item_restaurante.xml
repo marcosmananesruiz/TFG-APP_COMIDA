@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/card_background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -31,7 +32,7 @@
             android:layout_marginStart="12dp"
             android:layout_marginEnd="8dp"
             android:text="Nombre Restaurante"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_color"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/tv_estrellas"
@@ -45,6 +46,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Descripción rápida del lugar..."
+            android:textColor="@color/text_color"
+            android:alpha="0.7"
             android:textSize="14sp"
             app:layout_constraintStart_toEndOf="@+id/img_restaurante"
             app:layout_constraintStart_toStartOf="@+id/tv_nombre"
@@ -68,12 +71,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="€€"
-            android:textColor="#4CAF50"
+            android:textColor="@color/price_green"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-
-        <!-- Corazón Favoritos -->
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

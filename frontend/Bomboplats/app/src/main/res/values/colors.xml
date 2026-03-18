@@ -9,6 +9,9 @@
     <color name="background">#FFFFFF</color>
     <color name="text_color">#000000</color>
     <color name="card_background">#F5F5F5</color>
+    <color name="price_green">#4CAF50</color>
+    <color name="logout_red">#F44336</color>
+    <color name="divider_color">#E0E0E0</color>
 
     <!-- Morado del menú (No se cambia) -->
     <color name="menu_purple">#6200EE</color>

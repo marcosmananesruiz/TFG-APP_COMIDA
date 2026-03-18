@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F8F8">
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,13 +17,14 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:text="Cambiar Correo"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_color"
             android:textSize="24sp"
             android:textStyle="bold" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="16dp"
             app:cardElevation="2dp">
 
@@ -37,6 +38,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Correo actual"
+                    android:textColor="@color/text_color"
                     android:textStyle="bold" />
 
                 <EditText
@@ -45,12 +47,16 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:hint="Introduce tu correo actual"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/text_color"
+                    android:alpha="0.6"
                     android:inputType="textEmailAddress" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Nuevo correo electrónico"
+                    android:textColor="@color/text_color"
                     android:textStyle="bold" />
 
                 <EditText
@@ -58,6 +64,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Introduce el nuevo correo"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/text_color"
+                    android:alpha="0.6"
                     android:inputType="textEmailAddress" />
 
             </LinearLayout>

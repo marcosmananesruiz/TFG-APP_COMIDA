@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@color/background">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll_view"
@@ -26,7 +26,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Nombre del Plato"
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toStartOf="@+id/tv_bombo_precio"
@@ -64,7 +64,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:text="Descripción del plato."
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -76,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Ingredientes:"
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -88,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Lista de ingredientes..."
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -100,7 +100,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Alérgenos:"
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -112,7 +112,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Lista de alérgenos..."
-                android:textColor="@color/black"
+                android:textColor="@color/text_color"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -154,7 +154,7 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="-"
-                        android:textColor="@color/black"
+                        android:textColor="@color/text_color"
                         android:textSize="20sp"
                         android:textStyle="bold" />
 
@@ -164,7 +164,7 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:text="1"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_color"
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
@@ -174,7 +174,7 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="+"
-                        android:textColor="@color/black"
+                        android:textColor="@color/text_color"
                         android:textSize="20sp"
                         android:textStyle="bold" />
                 </LinearLayout>
