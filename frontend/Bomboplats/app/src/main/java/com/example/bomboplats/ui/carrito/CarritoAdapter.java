@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
@@ -68,11 +69,14 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
             if (listener != null) listener.onRestarClick(itemKey);
         });
 
-        // Configurar favorito usando la clave compuesta
-        if (favoritos != null && favoritos.contains(itemKey)) {
+        // Configurar favorito usando la clave compuesta y aplicando color
+        boolean esFav = favoritos != null && favoritos.contains(itemKey);
+        if (esFav) {
             holder.ivFavorito.setImageResource(R.drawable.ic_favorite_filled);
+            holder.ivFavorito.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.favorite_red));
         } else {
             holder.ivFavorito.setImageResource(R.drawable.ic_heart_unselected);
+            holder.ivFavorito.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_color));
         }
 
         holder.ivFavorito.setOnClickListener(v -> {

@@ -3,10 +3,10 @@ package com.example.bomboplats.ui.general;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
@@ -49,11 +49,14 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         holder.tvDescripcion.setText(bombo.getDescripcion());
         holder.tvPrecio.setText(bombo.getPrecio());
 
-        // Actualizado: Pasamos tanto restauranteId como bomboId para validar el favorito
-        if (favoritosProvider != null && favoritosProvider.esFavorito(bombo.getRestauranteId(), bombo.getId())) {
+        // Aplicar icono y color según si es favorito
+        boolean esFav = favoritosProvider != null && favoritosProvider.esFavorito(bombo.getRestauranteId(), bombo.getId());
+        if (esFav) {
             holder.btnFav.setImageResource(R.drawable.ic_favorite_filled);
+            holder.btnFav.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.favorite_red));
         } else {
             holder.btnFav.setImageResource(R.drawable.ic_heart_unselected);
+            holder.btnFav.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_color));
         }
 
         int resID = holder.itemView.getContext().getResources().getIdentifier(

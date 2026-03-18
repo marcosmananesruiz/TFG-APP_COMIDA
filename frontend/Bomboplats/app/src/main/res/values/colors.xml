@@ -1,18 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="red">#FF0000</color>
-    <color name="teal_700">#00796B</color>
-
-    <!-- Colores base para la App -->
+    <!-- Material 2 Baseline Light Colors -->
+    <color name="primary">#6200EE</color>
+    <color name="primary_variant">#3700B3</color>
+    <color name="secondary">#03DAC6</color>
+    <color name="secondary_variant">#018786</color>
     <color name="background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="error">#B00020</color>
+
+    <!-- On Colors (Text/Icons on top of backgrounds) -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#000000</color>
+    <color name="on_background">#000000</color>
+    <color name="on_surface">#000000</color>
+    <color name="on_error">#FFFFFF</color>
+
+    <!-- App Specific Semantic Colors -->
     <color name="text_color">#000000</color>
-    <color name="card_background">#F5F5F5</color>
+    <color name="text_color_secondary">#757575</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="price_color">#4CAF50</color>
     <color name="price_green">#4CAF50</color>
-    <color name="logout_red">#F44336</color>
+    <color name="logout_red">#B00020</color>
+    <color name="favorite_red">#E91E63</color>
     <color name="divider_color">#E0E0E0</color>
 
-    <!-- Morado del menú (No se cambia) -->
+    <!-- Legacy/Fixed Colors -->
     <color name="menu_purple">#6200EE</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="teal_700">#018786</color>
 </resources>
