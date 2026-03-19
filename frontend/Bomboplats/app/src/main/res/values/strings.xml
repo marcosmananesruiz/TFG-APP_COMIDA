@@ -17,4 +17,43 @@
     <string name="confirmar_cambio">CONFIRMAR CAMBIO</string>
     <string name="cambiar_correo_electronico">CAMBIAR CORREO ELECTRÓNICO</string>
     <string name="cambiar_contrasena">CAMBIAR CONTRASEÑA</string>
+
+    <!-- Menú Lateral -->
+    <string name="nav_inicio">Inicio</string>
+    <string name="nav_cuenta">Cuenta</string>
+    <string name="nav_favoritos">Mis bombos favoritos</string>
+    <string name="nav_estado">Estado de mis bombos</string>
+    <string name="nav_historial">Historial de bombos</string>
+    <string name="nav_notificaciones">Notificaciones</string>
+    <string name="nav_configuracion">Configuración</string>
+    <string name="nav_cerrar_sesion">Cerrar Sesión</string>
+
+    <!-- Configuración -->
+    <string name="config_titulo">Configuración</string>
+    <string name="config_modo_oscuro">Modo Oscuro</string>
+    <string name="config_idioma">Idioma</string>
+    <string name="idioma_es">Español</string>
+    <string name="idioma_en">Inglés</string>
+
+    <!-- Perfil -->
+    <string name="perfil_editar">Editar Perfil</string>
+    <string name="perfil_nombre">Nombre</string>
+    <string name="perfil_mail_actual">Correo actual</string>
+    <string name="perfil_mail_nuevo">Nuevo correo electrónico</string>
+    <string name="perfil_pass_actual">Contraseña actual</string>
+    <string name="perfil_pass_nueva">Nueva contraseña</string>
+
+    <!-- Carrito y Pedidos -->
+    <string name="carrito_vacio">Tu carrito está vacío</string>
+    <string name="total">TOTAL</string>
+    <string name="finalizar_pedido">Finalizar Pedido</string>
+    <string name="direccion_entrega">Dirección de entrega</string>
+    <string name="metodo_pago">Método de pago</string>
+    <string name="datos_tarjeta">Datos de la tarjeta</string>
+
+    <!-- Inicio -->
+    <string name="inicio_error_carga">No se han podido cargar los restaurantes</string>
+
+    <!-- Barra de búsqueda -->
+    <string name="buscar_bomboplats">Buscar bomboplats...</string>
 </resources>

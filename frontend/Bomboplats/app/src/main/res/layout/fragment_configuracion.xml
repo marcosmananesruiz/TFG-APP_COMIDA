@@ -3,13 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:padding="24dp"
+    android:background="@color/background">
 
     <TextView
         android:id="@+id/tv_config_titulo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Configuración"
+        android:text="@string/config_titulo"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/text_color"
@@ -21,9 +22,45 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:text="Modo Oscuro"
+        android:text="@string/config_modo_oscuro"
         android:textSize="18sp"
         android:textColor="@color/text_color"
         app:layout_constraintTop_toBottomOf="@id/tv_config_titulo" />
+
+    <TextView
+        android:id="@+id/tv_idioma_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/config_idioma"
+        android:textSize="18sp"
+        android:textColor="@color/text_color"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/switch_dark_mode" />
+
+    <RadioGroup
+        android:id="@+id/rg_idioma"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/tv_idioma_label">
+
+        <RadioButton
+            android:id="@+id/rb_es"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/idioma_es"
+            android:textColor="@color/text_color" />
+
+        <RadioButton
+            android:id="@+id/rb_en"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/idioma_en"
+            android:textColor="@color/text_color" />
+    </RadioGroup>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

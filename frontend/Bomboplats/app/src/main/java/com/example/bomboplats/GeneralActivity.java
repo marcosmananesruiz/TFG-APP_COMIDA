@@ -1,6 +1,9 @@
 package com.example.bomboplats;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -36,6 +39,8 @@ import com.example.bomboplats.ui.notificaciones.NotificacionesFragment;
 import com.example.bomboplats.utils.NotificationHelper;
 import com.google.android.material.navigation.NavigationView;
 
+import java.util.Locale;
+
 public class GeneralActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
@@ -49,6 +54,23 @@ public class GeneralActivity extends AppCompatActivity {
     private ImageView cartButton;
     private CarritoViewModel carritoViewModel;
     private EstadoBombosViewModel estadoBombosViewModel;
+
+    private static final String PREFS_NAME = "app_settings";
+    private static final String KEY_LANGUAGE = "language";
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        SharedPreferences prefs = newBase.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String lang = prefs.getString(KEY_LANGUAGE, "es");
+        
+        Locale locale = new Locale(lang);
+        Locale.setDefault(locale);
+        
+        Configuration config = new Configuration();
+        config.setLocale(locale);
+        
+        super.attachBaseContext(newBase.createConfigurationContext(config));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

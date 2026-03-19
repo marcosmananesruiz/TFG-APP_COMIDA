@@ -1,0 +1,59 @@
+<resources>
+    <string name="app_name">Bomboplats</string>
+    <string name="title_activity_login">Bomboplats</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome, "</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="drawer_open">Open menu</string>
+    <string name="drawer_close">Close menu</string>
+    <string name="pagar_ahora">PAY NOW</string>
+    <string name="confirmar_pedido">CONFIRM ORDER</string>
+    <string name="guardar_cambios">SAVE CHANGES</string>
+    <string name="confirmar_cambio">CONFIRM CHANGE</string>
+    <string name="cambiar_correo_electronico">CHANGE EMAIL ADDRESS</string>
+    <string name="cambiar_contrasena">CHANGE PASSWORD</string>
+
+    <!-- Navigation Drawer -->
+    <string name="nav_inicio">Home</string>
+    <string name="nav_cuenta">Account</string>
+    <string name="nav_favoritos">My favorite bombos</string>
+    <string name="nav_estado">My bombos status</string>
+    <string name="nav_historial">Bombos history</string>
+    <string name="nav_notificaciones">Notifications</string>
+    <string name="nav_configuracion">Settings</string>
+    <string name="nav_cerrar_sesion">Logout</string>
+
+    <!-- Settings -->
+    <string name="config_titulo">Settings</string>
+    <string name="config_modo_oscuro">Dark Mode</string>
+    <string name="config_idioma">Language</string>
+    <string name="idioma_es">Spanish</string>
+    <string name="idioma_en">English</string>
+
+    <!-- Profile -->
+    <string name="perfil_editar">Edit Profile</string>
+    <string name="perfil_nombre">Name</string>
+    <string name="perfil_mail_actual">Current email</string>
+    <string name="perfil_mail_nuevo">New email address</string>
+    <string name="perfil_pass_actual">Current password</string>
+    <string name="perfil_pass_nueva">New password</string>
+
+    <!-- Cart and Orders -->
+    <string name="carrito_vacio">Your cart is empty</string>
+    <string name="total">TOTAL</string>
+    <string name="finalizar_pedido">Complete Order</string>
+    <string name="direccion_entrega">Delivery address</string>
+    <string name="metodo_pago">Payment method</string>
+    <string name="datos_tarjeta">Card details</string>
+
+    <!-- Home -->
+    <string name="inicio_error_carga">Could not load restaurants</string>
+
+    <!-- Search Bar -->
+    <string name="buscar_bomboplats">Search bomboplats…</string>
+</resources>

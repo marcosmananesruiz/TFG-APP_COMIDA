@@ -23,7 +23,7 @@
         android:id="@+id/tv_empty_error"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No se han podido cargar los restaurantes"
+        android:text="@string/inicio_error_carga"
         android:textColor="@color/text_color"
         android:textSize="16sp"
         android:visibility="gone"

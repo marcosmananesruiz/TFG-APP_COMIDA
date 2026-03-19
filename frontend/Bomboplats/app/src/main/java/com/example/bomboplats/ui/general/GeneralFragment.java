@@ -15,8 +15,12 @@ import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Restaurante;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRestauranteClickListener {
 
@@ -25,6 +29,7 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
     private RestauranteAdapter adapter;
     private List<Restaurante> listaCompleta;
     private FoodRepository foodRepository;
+    private Map<String, String> mapaEtiquetas = new HashMap<>();
 
     @Nullable
     @Override
@@ -37,6 +42,8 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
 
         foodRepository = FoodRepository.getInstance(requireContext());
         listaCompleta = foodRepository.getRestaurantes();
+        
+        cargarMapaEtiquetas();
 
         if (listaCompleta == null || listaCompleta.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -51,6 +58,20 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         return view;
     }
 
+    private void cargarMapaEtiquetas() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(requireContext().getAssets().open("etiquetas.txt")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length == 2) {
+                    mapaEtiquetas.put(parts[0].trim().toLowerCase(), parts[1].trim().toLowerCase());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void onRestauranteClick(Restaurante restaurante) {
         BombosFragment fragment = new BombosFragment();
@@ -59,7 +80,6 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         args.putString("nombre", restaurante.getNombre());
         args.putString("ubicacion", restaurante.getUbicacion());
         args.putString("descripcion", restaurante.getDescripcion());
-        // Pasamos las fotos como un ArrayList de Strings
         args.putStringArrayList("fotos", new ArrayList<>(restaurante.getFotos()));
         fragment.setArguments(args);
 
@@ -72,25 +92,47 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         if (listaCompleta == null || adapter == null) return;
         List<Restaurante> filtrados = new ArrayList<>();
         String query = texto.toLowerCase().trim();
+        
         if (query.isEmpty()) {
             filtrados.addAll(listaCompleta);
         } else {
+            // Buscamos todas las posibles etiquetas finales basadas en lo que el usuario está escribiendo (prefijo)
+            List<String> querysExpandidas = new ArrayList<>();
+            querysExpandidas.add(query);
+            for (Map.Entry<String, String> entry : mapaEtiquetas.entrySet()) {
+                if (entry.getKey().startsWith(query)) {
+                    querysExpandidas.add(entry.getValue());
+                }
+            }
+
             for (Restaurante r : listaCompleta) {
-                boolean matchEtiqueta = false;
-                if (r.getEtiquetas() != null) {
+                boolean match = false;
+                
+                // 1. Comprobar nombre
+                if (r.getNombre().toLowerCase().contains(query)) {
+                    match = true;
+                }
+                
+                // 2. Comprobar etiquetas del restaurante contra todas las querys expandidas
+                if (!match && r.getEtiquetas() != null) {
                     for (String tag : r.getEtiquetas()) {
-                        if (tag.toLowerCase().contains(query)) {
-                            matchEtiqueta = true;
-                            break;
+                        String tagLower = tag.toLowerCase();
+                        for (String qExp : querysExpandidas) {
+                            if (tagLower.contains(qExp)) {
+                                match = true;
+                                break;
+                            }
                         }
+                        if (match) break;
                     }
                 }
 
-                if (r.getNombre().toLowerCase().contains(query) || matchEtiqueta) {
+                if (match) {
                     filtrados.add(r);
                 }
             }
         }
+
         if (filtrados.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyError.setVisibility(View.VISIBLE);

@@ -18,8 +18,13 @@ import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClickListener {
 
@@ -33,6 +38,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
+    private Map<String, String> mapaEtiquetas = new HashMap<>();
 
     @Nullable
     @Override
@@ -43,18 +49,15 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         foodRepository = FoodRepository.getInstance(requireContext());
 
-        // Referencias del encabezado
         TextView tvNombre = view.findViewById(R.id.tv_restaurante_nombre);
         TextView tvUbicacion = view.findViewById(R.id.tv_restaurante_ubicacion);
         TextView tvDescripcion = view.findViewById(R.id.tv_restaurante_descripcion);
         recyclerViewFotos = view.findViewById(R.id.rv_restaurante_fotos);
         
-        // Referencias de la lista
         recyclerViewBombos = view.findViewById(R.id.rv_bombos);
         tvEmptyBombos = view.findViewById(R.id.tv_empty_bombos);
         recyclerViewBombos.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Recuperar datos
         if (getArguments() != null) {
             restauranteId = getArguments().getString("restauranteId");
             tvNombre.setText(getArguments().getString("nombre"));
@@ -69,7 +72,8 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             }
         }
 
-        // Cargar bombos desde el repositorio
+        cargarMapaEtiquetas();
+
         if (restauranteId != null) {
             listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
         } else {
@@ -83,6 +87,20 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         });
 
         return view;
+    }
+
+    private void cargarMapaEtiquetas() {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(requireContext().getAssets().open("etiquetas.txt")))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                if (parts.length == 2) {
+                    mapaEtiquetas.put(parts[0].trim().toLowerCase(), parts[1].trim().toLowerCase());
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -102,13 +120,11 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
 
     @Override
     public void onFavoritoClick(Bombo bombo) {
-        // Ahora pasamos tanto restauranteId como bomboId para evitar conflictos
         userViewModel.toggleFavorito(bombo.getRestauranteId(), bombo.getId());
     }
 
     @Override
     public void onAgregarCarritoClick(Bombo bombo) {
-        // Formato compuesto "restauranteId:bomboId" para el carrito
         String itemKey = bombo.getRestauranteId() + ":" + bombo.getId();
         carritoViewModel.agregarAlCarrito(itemKey, 1);
         Toast.makeText(getContext(), "¡" + bombo.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
@@ -118,21 +134,42 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         if (listaBombosRestaurante == null) return;
         List<Bombo> filtrados = new ArrayList<>();
         String query = texto.toLowerCase().trim();
+        
         if (query.isEmpty()) {
             filtrados.addAll(listaBombosRestaurante);
         } else {
+            // Buscamos todas las posibles etiquetas finales basadas en prefijos del mapa
+            List<String> querysExpandidas = new ArrayList<>();
+            querysExpandidas.add(query);
+            for (Map.Entry<String, String> entry : mapaEtiquetas.entrySet()) {
+                if (entry.getKey().startsWith(query)) {
+                    querysExpandidas.add(entry.getValue());
+                }
+            }
+
             for (Bombo b : listaBombosRestaurante) {
-                boolean matchEtiqueta = false;
-                if (b.getEtiquetas() != null) {
+                boolean match = false;
+                
+                // 1. Comprobar nombre
+                if (b.getNombre().toLowerCase().contains(query)) {
+                    match = true;
+                }
+                
+                // 2. Comprobar etiquetas expandidas
+                if (!match && b.getEtiquetas() != null) {
                     for (String tag : b.getEtiquetas()) {
-                        if (tag.toLowerCase().contains(query)) {
-                            matchEtiqueta = true;
-                            break;
+                        String tagLower = tag.toLowerCase();
+                        for (String qExp : querysExpandidas) {
+                            if (tagLower.contains(qExp)) {
+                                match = true;
+                                break;
+                            }
                         }
+                        if (match) break;
                     }
                 }
                 
-                if (b.getNombre().toLowerCase().contains(query) || matchEtiqueta) {
+                if (match) {
                     filtrados.add(b);
                 }
             }
