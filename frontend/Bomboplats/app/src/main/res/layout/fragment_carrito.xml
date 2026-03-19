@@ -71,7 +71,8 @@
             android:id="@+id/btn_pagar"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:text="PAGAR AHORA"
+            android:text="@string/pagar_ahora"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 

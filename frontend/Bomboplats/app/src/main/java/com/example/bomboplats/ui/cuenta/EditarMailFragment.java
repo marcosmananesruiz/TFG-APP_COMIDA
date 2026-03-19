@@ -40,7 +40,8 @@ public class EditarMailFragment extends Fragment {
             }
 
             String mailGuardado = userViewModel.getEmail().getValue();
-            if (actual.equals(mailGuardado)) {
+            if (actual.equalsIgnoreCase(mailGuardado)) {
+                // El cambio ya se encarga de actualizar el JSON a través del ViewModel -> Repository -> DataSource
                 userViewModel.setEmail(nuevo);
                 Toast.makeText(getContext(), "Correo actualizado con éxito", Toast.LENGTH_SHORT).show();
                 requireActivity().getSupportFragmentManager().popBackStack();

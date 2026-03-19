@@ -45,6 +45,12 @@ public class LoginViewModel extends ViewModel {
     }
 
     public void registerTestUser(String email, String password, String displayName) {
+        // Solo intentamos registrar si no existe ya el usuario, 
+        // para no sobreescribir sus favoritos/carrito con mapas vacíos.
+        if (loginRepository.loadUserSession(email)) {
+            return; 
+        }
+
         LoggedInUser newUser = new LoggedInUser(
                 java.util.UUID.randomUUID().toString(),
                 displayName,

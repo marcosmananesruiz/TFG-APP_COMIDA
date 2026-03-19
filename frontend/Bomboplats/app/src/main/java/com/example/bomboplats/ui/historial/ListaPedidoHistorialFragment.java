@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
@@ -80,16 +81,22 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
     public void onBomboClick(Bombo b) {
         DetalleBomboFragment fragment = new DetalleBomboFragment();
         Bundle args = new Bundle();
+        // Pasamos tanto restauranteId como bomboId para mantener consistencia con los arreglos anteriores
+        args.putString("restauranteId", b.getRestauranteId());
         args.putString("bomboId", b.getId());
         args.putString("nombre", b.getNombre());
         args.putString("precio", b.getPrecio());
         args.putString("desc", b.getDescripcion());
         fragment.setArguments(args);
 
-        requireActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, fragment)
-                .addToBackStack(null)
-                .commit();
+        if (getActivity() instanceof GeneralActivity) {
+            ((GeneralActivity) getActivity()).onRestauranteClickFromFragment(fragment);
+        } else {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     @Override

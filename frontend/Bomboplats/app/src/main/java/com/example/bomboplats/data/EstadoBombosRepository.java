@@ -35,7 +35,8 @@ public class EstadoBombosRepository {
     }
 
     private File getUsersDir(Context context) {
-        File root = new File(context.getFilesDir(), "documents");
+        // Unificado a "documentos" para que coincida con LoginDataSource
+        File root = new File(context.getFilesDir(), "documentos");
         File usersDir = new File(root, "users");
         if (!usersDir.exists()) usersDir.mkdirs();
         return usersDir;

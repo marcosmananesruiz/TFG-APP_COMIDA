@@ -75,10 +75,11 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
             
             if (adapter == null) {
                 adapter = new BomboAdapter(favoritos, this, userViewModel);
-                recyclerView.setAdapter(adapter);
             } else {
                 adapter.setFilteredList(favoritos);
             }
+            // Aseguramos que el adaptador esté siempre vinculado al RecyclerView actual (importante tras popBackStack)
+            recyclerView.setAdapter(adapter);
         }
     }
 
@@ -86,6 +87,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     public void onBomboClick(Bombo b) {
         DetalleBomboFragment fragment = new DetalleBomboFragment();
         Bundle args = new Bundle();
+        args.putString("restauranteId", b.getRestauranteId());
         args.putString("bomboId", b.getId());
         args.putString("nombre", b.getNombre());
         args.putString("precio", b.getPrecio());
@@ -111,5 +113,9 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         Toast.makeText(getContext(), "¡" + b.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
     }
 
-    public void filtrar(String texto) {}
+    public void filtrar(String texto) {
+        // Implementar filtrado si es necesario para favoritos
+        if (adapter == null) return;
+        // ... lógica similar a BombosFragment si se desea filtrar en favoritos
+    }
 }

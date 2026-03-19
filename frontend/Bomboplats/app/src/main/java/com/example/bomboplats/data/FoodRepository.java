@@ -111,8 +111,24 @@ public class FoodRepository {
 
     public Bombo getBomboPorId(String id) {
         if (id == null) return null;
+        
+        // Soporte para IDs compuestos "restauranteId:bomboId"
+        String restauranteId = null;
+        String actualBomboId = id;
+        if (id.contains(":")) {
+            String[] parts = id.split(":");
+            restauranteId = parts[0];
+            actualBomboId = parts[1];
+        }
+
         for (Bombo b : allBombos) {
-            if (id.equals(b.getId())) return b;
+            if (restauranteId != null) {
+                if (actualBomboId.equals(b.getId()) && restauranteId.equals(b.getRestauranteId())) {
+                    return b;
+                }
+            } else {
+                if (actualBomboId.equals(b.getId())) return b;
+            }
         }
         return null;
     }

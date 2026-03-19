@@ -221,7 +221,8 @@
             android:id="@+id/btn_confirmar_pedido"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:text="CONFIRMAR PEDIDO"
+            android:text="@string/confirmar_pedido"
+            android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 

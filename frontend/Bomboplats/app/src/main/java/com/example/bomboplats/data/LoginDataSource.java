@@ -1,6 +1,7 @@
 package com.example.bomboplats.data;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import com.example.bomboplats.data.model.LoggedInUser;
 import com.google.gson.Gson;
 import java.io.File;
@@ -8,52 +9,31 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 public class LoginDataSource {
 
     private final Context context;
     private final Gson gson;
     private final File usersDir;
+    private static final String PREFS_NAME = "login_prefs";
+    private static final String KEY_DEFAULTS_CREATED = "defaults_created";
 
     public LoginDataSource(Context context) {
         this.context = context;
         this.gson = new Gson();
 
-        // Carpeta antigua y nueva
-        File oldRoot = new File(context.getFilesDir(), "documents");
         File root = new File(context.getFilesDir(), "documentos");
-
-        // Intentar migración si existe la carpeta antigua
-        if (oldRoot.exists() && oldRoot.isDirectory()) {
-            migrateFolder(oldRoot, root);
-        }
-
         this.usersDir = new File(root, "users");
         if (!usersDir.exists()) usersDir.mkdirs();
         
-        // Asegurar que los usuarios por defecto existen
         ensureDefaultUsers();
     }
 
-    private void migrateFolder(File source, File target) {
-        if (source.isDirectory()) {
-            if (!target.exists()) target.mkdirs();
-            String[] children = source.list();
-            if (children != null) {
-                for (String child : children) {
-                    migrateFolder(new File(source, child), new File(target, child));
-                }
-            }
-        } else {
-            source.renameTo(target);
-        }
-        source.delete();
-    }
-
     private void ensureDefaultUsers() {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        if (prefs.getBoolean(KEY_DEFAULTS_CREATED, false)) return;
+
         String[] emails = {"jorge@test.com", "usuario1@test.com", "usuario2@test.com"};
         String[] names = {"Jorge", "Usuario 1", "Usuario 2"};
         
@@ -72,13 +52,12 @@ public class LoginDataSource {
                 saveUserInternal(user);
             }
         }
+        prefs.edit().putBoolean(KEY_DEFAULTS_CREATED, true).apply();
     }
 
     public Result<LoggedInUser> login(String username, String password) {
         File file = new File(usersDir, username + ".json");
-        if (!file.exists()) {
-            return new Result.Error(new IOException("Usuario no encontrado"));
-        }
+        if (!file.exists()) return new Result.Error(new IOException("Usuario no encontrado"));
 
         try (FileReader reader = new FileReader(file)) {
             LoggedInUser user = gson.fromJson(reader, LoggedInUser.class);
@@ -88,63 +67,47 @@ public class LoginDataSource {
                 return new Result.Error(new IOException("Contraseña incorrecta"));
             }
         } catch (IOException e) {
-            return new Result.Error(new IOException("Error al leer datos del usuario", e));
+            return new Result.Error(e);
         }
     }
 
-    public Result<LoggedInUser> register(LoggedInUser user) {
-        File[] files = usersDir.listFiles((dir, name) -> name.endsWith(".json"));
-        if (files != null) {
-            for (File f : files) {
-                try (FileReader reader = new FileReader(f)) {
-                    LoggedInUser existingUser = gson.fromJson(reader, LoggedInUser.class);
-                    if (existingUser != null && existingUser.getEmail().equalsIgnoreCase(user.getEmail())) {
-                        return new Result.Error(new IOException("El email ya está registrado"));
-                    }
-                } catch (IOException ignored) {}
-            }
-        }
-        return saveUserInternal(user);
-    }
-
-    public Result<LoggedInUser> updateName(String username, String newName) {
-        Result<LoggedInUser> loadResult = getUser(username);
+    public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
+        // 1. Cargamos el usuario desde el archivo actual
+        Result<LoggedInUser> loadResult = getUser(oldEmail);
         if (loadResult instanceof Result.Success) {
             LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
-            user.setDisplayName(newName);
-            return saveUserInternal(user);
-        }
-        return loadResult;
-    }
+            File existingFile = new File(usersDir, oldEmail + ".json");
 
-    public Result<LoggedInUser> updateEmail(String oldUsername, String newEmail) {
-        File[] files = usersDir.listFiles((dir, name) -> name.endsWith(".json"));
-        if (files != null) {
-            for (File f : files) {
-                try (FileReader reader = new FileReader(f)) {
-                    LoggedInUser existingUser = gson.fromJson(reader, LoggedInUser.class);
-                    if (existingUser != null && existingUser.getEmail().equalsIgnoreCase(newEmail)) {
-                        return new Result.Error(new IOException("El nuevo email ya está en uso"));
-                    }
-                } catch (IOException ignored) {}
-            }
-        }
-
-        Result<LoggedInUser> loadResult = getUser(oldUsername);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
+            // 2. MODIFICAMOS LA PROPIEDAD INTERNA DEL OBJETO
             user.setEmail(newEmail);
             
-            // Mover también la foto si existe
-            File oldPhoto = getUserPhotoFile(oldUsername);
-            if (oldPhoto.exists()) {
-                File newPhoto = getUserPhotoFile(newEmail);
-                oldPhoto.renameTo(newPhoto);
+            // 3. SOBREESCRIBIMOS EL ARCHIVO EXISTENTE (Igual que con la contraseña)
+            // Esto edita el JSON jorge1@test.com.json directamente.
+            try (FileOutputStream fos = new FileOutputStream(existingFile);
+                 OutputStreamWriter osw = new OutputStreamWriter(fos)) {
+                gson.toJson(user, osw);
+                osw.flush();
+                fos.getFD().sync();
+            } catch (IOException e) {
+                return new Result.Error(new IOException("Error al editar el archivo", e));
             }
 
-            File oldFile = new File(usersDir, oldUsername + ".json");
-            oldFile.delete();
-            return saveUserInternal(user);
+            // 4. AHORA RENOMBRAMOS EL ARCHIVO PARA ACTUALIZAR LA IDENTIDAD
+            File newFile = new File(usersDir, newEmail + ".json");
+            if (existingFile.renameTo(newFile)) {
+                // Migrar historial si existe
+                File oldHistory = new File(usersDir, oldEmail + "_history.json");
+                if (oldHistory.exists()) {
+                    oldHistory.renameTo(new File(usersDir, newEmail + "_history.json"));
+                }
+                // Migrar foto si existe
+                File oldPhoto = new File(usersDir, oldEmail + ".jpg");
+                if (oldPhoto.exists()) {
+                    oldPhoto.renameTo(new File(usersDir, newEmail + ".jpg"));
+                }
+                return new Result.Success<>(user);
+            }
+            return new Result.Success<>(user); // El contenido se cambió aunque el rename fallara
         }
         return loadResult;
     }
@@ -172,21 +135,29 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
         File file = new File(usersDir, user.getEmail() + ".json");
-        try {
-            if (file.exists()) {
-                file.setWritable(true);
-            }
-            
-            try (FileOutputStream fos = new FileOutputStream(file);
-                 OutputStreamWriter osw = new OutputStreamWriter(fos)) {
-                gson.toJson(user, osw);
-                osw.flush();
-                fos.getFD().sync();
-                return new Result.Success<>(user);
-            }
+        try (FileOutputStream fos = new FileOutputStream(file);
+             OutputStreamWriter osw = new OutputStreamWriter(fos)) {
+            gson.toJson(user, osw);
+            osw.flush();
+            fos.getFD().sync();
+            return new Result.Success<>(user);
         } catch (IOException e) {
-            return new Result.Error(new IOException("Error al guardar usuario: " + e.getMessage(), e));
+            return new Result.Error(new IOException("Error al guardar: " + e.getMessage()));
         }
+    }
+
+    public Result<LoggedInUser> updateName(String username, String newName) {
+        Result<LoggedInUser> loadResult = getUser(username);
+        if (loadResult instanceof Result.Success) {
+            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
+            user.setDisplayName(newName);
+            return saveUserInternal(user);
+        }
+        return loadResult;
+    }
+
+    public Result<LoggedInUser> register(LoggedInUser user) {
+        return saveUserInternal(user);
     }
 
     public File getUserPhotoFile(String email) {
