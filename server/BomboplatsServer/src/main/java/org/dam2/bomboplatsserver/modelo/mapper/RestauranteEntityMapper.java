@@ -14,16 +14,17 @@ import java.util.List;
 public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, Restaurante> {
 
     @Autowired
-    private PlatoEntityMapper platoMapper; // Para convertir platos si los necesitas
+    private PlatoEntityMapper platoMapper; // Para mapear los platos si los necesitas más adelante
 
     @Override
     public Mono<RestauranteEntity> map(Mono<Restaurante> o) {
         return o.map(restaurante -> RestauranteEntity.builder()
                 .id(restaurante.getId())
                 .nombre(restaurante.getNombre())
-                .description(restaurante.getDescription())
-                .iconUrl(restaurante.getIconUrl() != null ? new String[]{restaurante.getIconUrl()} : new String[0])
                 .tags(restaurante.getTags() != null ? restaurante.getTags().toArray(new String[0]) : new String[0])
+                .iconUrl(restaurante.getIconUrl() != null ? new String[]{restaurante.getIconUrl()} : new String[0])
+                .description(restaurante.getDescription())
+                .rating(restaurante.getRating())
                 .build());
     }
 
@@ -32,9 +33,10 @@ public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, 
         return o.map(entity -> Restaurante.builder()
                 .id(entity.getId())
                 .nombre(entity.getNombre())
-                .description(entity.getDescription())
-                .iconUrl(entity.getIconUrl() != null && entity.getIconUrl().length > 0 ? entity.getIconUrl()[0] : null)
                 .tags(entity.getTags() != null ? Arrays.asList(entity.getTags()) : List.of())
+                .iconUrl(entity.getIconUrl() != null && entity.getIconUrl().length > 0 ? entity.getIconUrl()[0] : null)
+                .description(entity.getDescription())
+                .rating(entity.getRating())
                 .build());
     }
 
