@@ -22,9 +22,9 @@ public class PlatoEntity {
     private String nombre; // Length = 32
     private String description; // Length = 128
     private String[] tags; // Length = 32
-    //Alomejor deberiamos meter array? Depende de las fotos que queramos meter.
     private String iconUrl; // Length = 255
     private String[] possibleModifications; // Length = 32
+    private float precio; // no mas de 2 decimales
 
     private String idRestaurante; //relacion con RestauranteEntity, Length = 8. Borrar los platos no borrara los restaurantes.
 

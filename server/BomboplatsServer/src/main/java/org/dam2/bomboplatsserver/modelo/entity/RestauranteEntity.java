@@ -19,7 +19,7 @@ public class RestauranteEntity {
     private String nombre; // Length = 32
 
     private String[] tags; // Length = 16
-    private String iconUrl; // Length = 255
+    private String[] iconUrl; // Length = 255
     private String description; // Length = 64
 
 
