@@ -15,7 +15,7 @@
         android:id="@+id/tv_no_notis"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No tienes notificaciones de ningún bombo aún"
+        android:text="@string/notificaciones_vacia"
         android:textColor="@color/text_color"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

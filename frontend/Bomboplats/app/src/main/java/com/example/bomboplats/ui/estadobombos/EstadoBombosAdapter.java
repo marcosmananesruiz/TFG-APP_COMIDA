@@ -1,5 +1,6 @@
 package com.example.bomboplats.ui.estadobombos;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,8 +43,11 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
     @Override
     public void onBindViewHolder(@NonNull EstadoViewHolder holder, int position) {
         EstadoPedido item = lista.get(position);
+        Context context = holder.itemView.getContext();
         
-        holder.tvNombre.setText("Pedido #" + item.getPedido().getId());
+        // Cargar prefijo de pedido desde recursos
+        String prefixId = context.getString(R.string.prefix_pedido_id);
+        holder.tvNombre.setText(prefixId + item.getPedido().getId());
         
         StringBuilder sb = new StringBuilder();
         for (BomboConCantidad bcc : item.getPedido().getItems()) {
@@ -53,20 +57,32 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
         if (resumen.length() > 2) resumen = resumen.substring(0, resumen.length() - 2);
         
         holder.tvDescripcion.setText(resumen);
-        holder.tvPrecio.setText("Total: " + String.format(Locale.getDefault(), "%.2f€", item.getPedido().getTotal()));
+        
+        // Cargar prefijo total desde recursos
+        String prefixTotal = context.getString(R.string.label_total);
+        holder.tvPrecio.setText(prefixTotal + String.format(Locale.getDefault(), "%.2f€", item.getPedido().getTotal()));
         
         holder.tvCantidad.setVisibility(View.VISIBLE);
-        holder.tvCantidad.setText(item.getEstado());
+        
+        // Traducir el estado dinámicamente usando las constantes de EstadoPedido
+        String estadoRaw = item.getEstado();
+        String estadoTraducido = estadoRaw;
 
-        if ("Entregado".equals(item.getEstado())) {
+        if (EstadoPedido.ESTADO_ENTREGADO.equalsIgnoreCase(estadoRaw)) {
+            estadoTraducido = context.getString(R.string.estado_entregado);
             holder.tvCantidad.setTextColor(Color.parseColor("#4CAF50"));
-        } else if ("De camino".equals(item.getEstado())) {
+        } else if (EstadoPedido.ESTADO_CAMINO.equalsIgnoreCase(estadoRaw)) {
+            estadoTraducido = context.getString(R.string.estado_de_camino);
             holder.tvCantidad.setTextColor(Color.parseColor("#FF9800"));
+        } else if (EstadoPedido.ESTADO_PREPARACION.equalsIgnoreCase(estadoRaw)) {
+            estadoTraducido = context.getString(R.string.estado_en_preparacion);
+            holder.tvCantidad.setTextColor(Color.GRAY);
         } else {
             holder.tvCantidad.setTextColor(Color.GRAY);
         }
+        
+        holder.tvCantidad.setText(estadoTraducido);
 
-        // Detectar clic en toda la tarjeta
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onPedidoClick(item);
@@ -90,7 +106,6 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
             if (v.findViewById(R.id.img_bombo) != null) {
                 v.findViewById(R.id.img_bombo).setVisibility(View.GONE);
             }
-            // Ocultamos botones de acción si existieran en este layout
             if (v.findViewById(R.id.btn_fav_bombo) != null) v.findViewById(R.id.btn_fav_bombo).setVisibility(View.GONE);
             if (v.findViewById(R.id.btn_agregar_carrito_rapido) != null) v.findViewById(R.id.btn_agregar_carrito_rapido).setVisibility(View.GONE);
         }

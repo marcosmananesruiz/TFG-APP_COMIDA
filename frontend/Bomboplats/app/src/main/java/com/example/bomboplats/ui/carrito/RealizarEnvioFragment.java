@@ -97,7 +97,8 @@ public class RealizarEnvioFragment extends Fragment {
         
         estadoBombosViewModel.agregarPedidoAEstado(nuevoPedido);
         
-        Toast.makeText(getContext(), "¡Pedido " + idPedido + " realizado!", Toast.LENGTH_LONG).show();
+        // Uso de string resource con ID de pedido dinámico
+        Toast.makeText(getContext(), getString(R.string.toast_pedido_realizado_exito, idPedido), Toast.LENGTH_LONG).show();
         carritoViewModel.limpiarCarrito();
         
         if (getParentFragmentManager() != null) {
@@ -111,7 +112,7 @@ public class RealizarEnvioFragment extends Fragment {
 
     private boolean validarCampos() {
         if (etDireccion.getText().toString().trim().isEmpty()) {
-            etDireccion.setError("Introduce una dirección");
+            etDireccion.setError(getString(R.string.hint_direccion));
             return false;
         }
         return true;

@@ -21,7 +21,7 @@
         android:id="@+id/tv_carrito_vacio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tu carrito está vacío"
+        android:text="@string/carrito_vacio"
         android:textColor="@color/text_color"
         android:textSize="18sp"
         android:visibility="gone"
@@ -52,7 +52,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="TOTAL"
+                android:text="@string/total"
                 android:textColor="@color/text_color"
                 android:textSize="18sp"
                 android:textStyle="bold" />

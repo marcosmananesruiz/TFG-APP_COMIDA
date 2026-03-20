@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -16,7 +15,6 @@ import com.example.bomboplats.R;
 public class EditarPasswordFragment extends Fragment {
 
     private EditText etPassActual, etPassNueva;
-    private Button btnConfirmar;
     private UserViewModel userViewModel;
 
     @Nullable
@@ -26,31 +24,20 @@ public class EditarPasswordFragment extends Fragment {
 
         etPassActual = view.findViewById(R.id.et_pass_actual);
         etPassNueva = view.findViewById(R.id.et_pass_nueva);
-        btnConfirmar = view.findViewById(R.id.btn_confirmar_pass);
-
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
-        btnConfirmar.setOnClickListener(v -> {
-            String actual = etPassActual.getText().toString().trim();
-            String nueva = etPassNueva.getText().toString().trim();
+        view.findViewById(R.id.btn_confirmar_pass).setOnClickListener(v -> {
+            String actual = etPassActual.getText().toString();
+            String nueva = etPassNueva.getText().toString();
 
             if (actual.isEmpty() || nueva.isEmpty()) {
-                Toast.makeText(getContext(), "Rellena todos los campos", Toast.LENGTH_SHORT).show();
-                return;
+                Toast.makeText(getContext(), getString(R.string.toast_rellenar_campos), Toast.LENGTH_SHORT).show();
+            } else {
+                // El método correcto es setPassword(old, new)
+                userViewModel.setPassword(actual, nueva);
+                Toast.makeText(getContext(), getString(R.string.toast_pass_actualizada), Toast.LENGTH_SHORT).show();
+                getParentFragmentManager().popBackStack();
             }
-
-            if (nueva.length() < 6) {
-                etPassNueva.setError("La nueva contraseña debe tener al menos 6 caracteres");
-                return;
-            }
-
-            // Llamamos al ViewModel pasando ambos para que actualice el JSON físico
-            userViewModel.setPassword(actual, nueva);
-            
-            // Nota: En una versión ideal, observaríamos un LiveData de "éxito" del VM
-            // Por simplicidad, asumimos éxito y volvemos atrás
-            Toast.makeText(getContext(), "Contraseña actualizada correctamente", Toast.LENGTH_SHORT).show();
-            requireActivity().getSupportFragmentManager().popBackStack();
         });
 
         return view;

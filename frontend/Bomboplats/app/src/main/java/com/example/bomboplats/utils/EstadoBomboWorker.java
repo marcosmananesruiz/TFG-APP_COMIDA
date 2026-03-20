@@ -6,6 +6,7 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
+import com.example.bomboplats.R;
 import com.example.bomboplats.data.EstadoBombosRepository;
 import com.example.bomboplats.data.NotificationRepository;
 import com.example.bomboplats.data.model.EstadoPedido;
@@ -41,7 +42,7 @@ public class EstadoBomboWorker extends Worker {
             String estadoAnterior = ep.getEstado();
 
             // 1. Lógica de limpieza: si lleva > 30s entregado, se borra el pedido Y sus notificaciones
-            if ("Entregado".equals(ep.getEstado()) && transcurrido >= 30000) {
+            if (EstadoPedido.ESTADO_ENTREGADO.equals(ep.getEstado()) && transcurrido >= 30000) {
                 String orderId = ep.getPedido().getId();
                 // Borramos las notificaciones relacionadas del historial persistente
                 notiRepo.removeNotificationsByOrderId(context, orderId);
@@ -52,20 +53,24 @@ public class EstadoBomboWorker extends Worker {
 
             // 2. Lógica de evolución de estados
             if (transcurrido >= 30000) {
-                ep.setEstado("Entregado");
+                ep.setEstado(EstadoPedido.ESTADO_ENTREGADO);
             } else if (transcurrido >= 15000) {
-                ep.setEstado("De camino");
+                ep.setEstado(EstadoPedido.ESTADO_CAMINO);
             }
 
             if (!estadoAnterior.equals(ep.getEstado())) {
                 huboCambios = true;
-                String msg = "De camino".equals(ep.getEstado()) ? 
-                    "Tu pedido #" + ep.getPedido().getId() + " está de camino 🛵" :
-                    "¡Tu pedido #" + ep.getPedido().getId() + " ha sido entregado! 😋";
-                NotificationHelper.showNotification(context, "Estado de tus Bombos", msg);
+                String titulo = context.getString(R.string.noti_titulo_estado);
+                String msg;
+                if (EstadoPedido.ESTADO_CAMINO.equals(ep.getEstado())) {
+                    msg = context.getString(R.string.noti_msg_de_camino, ep.getPedido().getId());
+                } else {
+                    msg = context.getString(R.string.noti_msg_entregado, ep.getPedido().getId());
+                }
+                NotificationHelper.showNotification(context, titulo, msg);
             }
 
-            if (!"Entregado".equals(ep.getEstado())) pendientes = true;
+            if (!EstadoPedido.ESTADO_ENTREGADO.equals(ep.getEstado())) pendientes = true;
         }
 
         if (huboCambios) {

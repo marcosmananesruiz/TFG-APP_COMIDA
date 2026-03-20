@@ -45,7 +45,11 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
     @Override
     public void onBindViewHolder(@NonNull PedidoViewHolder holder, int position) {
         Pedido pedido = listaPedidos.get(position);
-        holder.tvId.setText("Pedido #" + pedido.getId());
+        
+        // Cargar prefijo desde strings.xml para evitar hardcodeo
+        String prefix = holder.itemView.getContext().getString(R.string.prefix_pedido_id);
+        holder.tvId.setText(prefix + pedido.getId());
+        
         holder.tvFecha.setText(pedido.getFecha());
         holder.tvTotal.setText(String.format(Locale.getDefault(), "%.2f€", pedido.getTotal()));
         holder.tvDireccion.setText(pedido.getDireccion());
@@ -62,12 +66,15 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
         holder.ivExpand.setRotation(isExpanded ? 180 : 0);
 
         holder.itemView.setOnClickListener(v -> {
-            if (isExpanded) {
-                expandidos.remove(position);
+            int currentPos = holder.getAdapterPosition();
+            if (currentPos == RecyclerView.NO_POSITION) return;
+            
+            if (expandidos.contains(currentPos)) {
+                expandidos.remove(currentPos);
             } else {
-                expandidos.add(position);
+                expandidos.add(currentPos);
             }
-            notifyItemChanged(position);
+            notifyItemChanged(currentPos);
         });
 
         holder.tvProductos.setOnClickListener(v -> {

@@ -21,7 +21,7 @@
         android:id="@+id/tv_estado_vacio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="No tienes pedidos en curso ahora mismo"
+        android:text="@string/estado_vacio"
         android:textColor="@color/text_color"
         android:textSize="16sp"
         android:visibility="gone"

@@ -85,8 +85,8 @@ public class DetalleBomboFragment extends Fragment {
                 userViewModel.toggleFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
                 actualizarIconoFavorito();
                 boolean esFavoritoNow = userViewModel.esFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
-                String mensaje = esFavoritoNow ? "Añadido a favoritos" : "Eliminado de favoritos";
-                Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
+                int resId = esFavoritoNow ? R.string.toast_fav_add : R.string.toast_fav_rem;
+                Toast.makeText(getContext(), getString(resId), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -95,7 +95,8 @@ public class DetalleBomboFragment extends Fragment {
                 // Formato compuesto "restauranteId:bomboId" para evitar conflictos
                 String itemKey = bomboActual.getRestauranteId() + ":" + bomboActual.getId();
                 carritoViewModel.agregarAlCarrito(itemKey, cantidad);
-                Toast.makeText(getContext(), "¡" + cantidad + " x " + bomboActual.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
+                String mensaje = getString(R.string.carrito_item_added, cantidad, bomboActual.getNombre());
+                Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -123,13 +124,13 @@ public class DetalleBomboFragment extends Fragment {
             if (bomboActual.getIngredientes() != null && !bomboActual.getIngredientes().isEmpty()) {
                 tvIngredientes.setText(String.join(", ", bomboActual.getIngredientes()));
             } else {
-                tvIngredientes.setText("No especificados");
+                tvIngredientes.setText(getString(R.string.no_especificados));
             }
 
             if (bomboActual.getAlergenos() != null && !bomboActual.getAlergenos().isEmpty()) {
                 tvAlergenos.setText(String.join(", ", bomboActual.getAlergenos()));
             } else {
-                tvAlergenos.setText("Sin alérgenos conocidos");
+                tvAlergenos.setText(getString(R.string.sin_alergenos));
             }
 
             if (bomboActual.getFotos() != null && !bomboActual.getFotos().isEmpty()) {

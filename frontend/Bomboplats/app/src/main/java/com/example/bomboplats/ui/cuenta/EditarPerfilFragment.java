@@ -38,7 +38,7 @@ public class EditarPerfilFragment extends Fragment {
                     if (localPath != null) {
                         ivFoto.setImageURI(Uri.fromFile(new File(localPath)));
                         userViewModel.setPhotoUri(localPath);
-                        Toast.makeText(getContext(), "Foto seleccionada", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), getString(R.string.toast_foto_seleccionada), Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -79,10 +79,11 @@ public class EditarPerfilFragment extends Fragment {
             String nuevoNombre = etNombre.getText().toString().trim();
             if (!nuevoNombre.isEmpty()) {
                 userViewModel.setName(nuevoNombre);
-                Toast.makeText(getContext(), "Perfil actualizado correctamente", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.toast_perfil_guardado), Toast.LENGTH_SHORT).show();
                 requireActivity().getSupportFragmentManager().popBackStack();
             } else {
-                etNombre.setError("El nombre no puede estar vacío");
+                // El error de validación también debe estar en recursos
+                etNombre.setError(getString(R.string.invalid_username));
             }
         });
 

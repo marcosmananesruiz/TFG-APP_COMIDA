@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+import com.example.bomboplats.R;
 import com.example.bomboplats.data.EstadoBombosRepository;
 import com.example.bomboplats.data.model.EstadoPedido;
 import com.example.bomboplats.ui.historial.Pedido;
@@ -34,7 +35,7 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         List<EstadoPedido> listaActual = repository.getListaActual();
         if (listaActual.isEmpty()) return true;
         for (EstadoPedido ep : listaActual) {
-            if (!"Entregado".equals(ep.getEstado())) return false;
+            if (!EstadoPedido.ESTADO_ENTREGADO.equals(ep.getEstado())) return false;
         }
         return true;
     }
@@ -45,7 +46,7 @@ public class EstadoBombosViewModel extends AndroidViewModel {
 
     public void agregarPedidoAEstado(Pedido pedido) {
         List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
-        listaActual.add(new EstadoPedido(pedido, "Preparando"));
+        listaActual.add(new EstadoPedido(pedido, EstadoPedido.ESTADO_PREPARACION));
         repository.guardarEnDisco(getApplication(), listaActual);
         lanzarWorkerDeEstado();
     }
@@ -54,15 +55,19 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
         boolean huboCambios = false;
 
+        String tituloNoti = getApplication().getString(R.string.noti_titulo_estado);
+
         for (EstadoPedido ep : listaActual) {
-            if ("Preparando".equals(ep.getEstado())) {
-                ep.setEstado("De camino");
+            if (EstadoPedido.ESTADO_PREPARACION.equals(ep.getEstado())) {
+                ep.setEstado(EstadoPedido.ESTADO_CAMINO);
                 huboCambios = true;
-                NotificationHelper.showNotification(getApplication(), "Simulación: Estado de tus Bombos", "Tu pedido #" + ep.getPedido().getId() + " está de camino 🛵");
-            } else if ("De camino".equals(ep.getEstado())) {
-                ep.setEstado("Entregado");
+                String mensaje = getApplication().getString(R.string.noti_msg_de_camino, String.valueOf(ep.getPedido().getId()));
+                NotificationHelper.showNotification(getApplication(), tituloNoti, mensaje);
+            } else if (EstadoPedido.ESTADO_CAMINO.equals(ep.getEstado())) {
+                ep.setEstado(EstadoPedido.ESTADO_ENTREGADO);
                 huboCambios = true;
-                NotificationHelper.showNotification(getApplication(), "Simulación: Estado de tus Bombos", "¡Tu pedido #" + ep.getPedido().getId() + " ha sido entregado! 😋");
+                String mensaje = getApplication().getString(R.string.noti_msg_entregado, String.valueOf(ep.getPedido().getId()));
+                NotificationHelper.showNotification(getApplication(), tituloNoti, mensaje);
             }
         }
 

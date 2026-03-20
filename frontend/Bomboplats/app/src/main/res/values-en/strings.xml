@@ -5,14 +5,15 @@
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in or register</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome, "</string>
+    <string name="welcome">Welcome, %s</string>
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
+    <string name="login_failed">Login failed</string>
     <string name="drawer_open">Open menu</string>
     <string name="drawer_close">Close menu</string>
     <string name="pagar_ahora">PAY NOW</string>
     <string name="confirmar_pedido">CONFIRM ORDER</string>
+    <string name="realizar_pedido">PLACE ORDER</string>
     <string name="guardar_cambios">SAVE CHANGES</string>
     <string name="confirmar_cambio">CONFIRM CHANGE</string>
     <string name="cambiar_correo_electronico">CHANGE EMAIL ADDRESS</string>
@@ -42,18 +43,71 @@
     <string name="perfil_mail_nuevo">New email address</string>
     <string name="perfil_pass_actual">Current password</string>
     <string name="perfil_pass_nueva">New password</string>
+    <string name="hint_nombre">Your name</string>
+    <string name="toast_perfil_guardado">Profile updated successfully</string>
+    <string name="toast_fav_add">Added to favorites</string>
+    <string name="toast_fav_rem">Removed from favorites</string>
+    <string name="default_nombre_usuario">User Name</string>
+    <string name="cambiar_correo_titulo">Change Email</string>
+    <string name="hint_mail_actual">Enter your current email</string>
+    <string name="hint_mail_nuevo">Enter the new email</string>
+    <string name="cambiar_pass_titulo">Change Password</string>
+    <string name="hint_pass_actual">Enter your current password</string>
+    <string name="hint_pass_nueva">Enter the new password</string>
+    <string name="toast_foto_seleccionada">Photo selected</string>
+    <string name="toast_rellenar_campos">Please fill in all fields</string>
+    <string name="toast_correo_actualizado">Email updated successfully</string>
+    <string name="toast_pass_actualizada">Password updated successfully</string>
 
     <!-- Cart and Orders -->
     <string name="carrito_vacio">Your cart is empty</string>
     <string name="total">TOTAL</string>
+    <string name="label_total">Total: </string>
     <string name="finalizar_pedido">Complete Order</string>
     <string name="direccion_entrega">Delivery address</string>
+    <string name="hint_direccion">Street, number, floor…</string>
     <string name="metodo_pago">Payment method</string>
+    <string name="pago_tarjeta">Credit/Debit Card</string>
+    <string name="pago_paypal">PayPal</string>
+    <string name="pago_efectivo">Cash to delivery person</string>
     <string name="datos_tarjeta">Card details</string>
+    <string name="hint_numero_tarjeta">Card number</string>
+    <string name="hint_exp">MM/YY</string>
+    <string name="hint_cvv">CVV</string>
+    <string name="toast_carrito_vaciado">Cart emptied</string>
+    <string name="toast_pedido_realizado_exito">Order %1$s placed successfully!</string>
+    <string name="carrito_item_added">%1$d x %2$s added to cart!</string>
+    <string name="estado_vacio">You have no orders in progress right now</string>
+    <string name="label_estado">Status: </string>
+    <string name="estado_en_preparacion">In preparation</string>
+    <string name="estado_entregado">Delivered</string>
+    <string name="estado_de_camino">On the way</string>
+    <string name="prefix_pedido_id">Order #</string>
+    <string name="label_productos">Products:</string>
+    <string name="label_historial_titulo">My Orders</string>
+    <string name="historial_vacio">You haven\'t made any orders yet</string>
+    <string name="notificaciones_vacia">No notifications for any bombos yet</string>
+    <string name="favoritos_vacio">No favorite dishes yet</string>
+
+    <!-- Notificaciones dinámicas -->
+    <string name="noti_titulo_estado">Bombos Status</string>
+    <string name="noti_msg_de_camino">Your order #%1$s is on the way 🛵</string>
+    <string name="noti_msg_entregado">Your order #%1$s has been delivered! 😋</string>
+
+    <!-- Plato Detail -->
+    <string name="label_ingredientes">Ingredients:</string>
+    <string name="label_alergenos">Allergens:</string>
+    <string name="no_especificados">Not specified</string>
+    <string name="sin_alergenos">No known allergens</string>
+    <string name="placeholder_nombre_plato">Dish Name</string>
+    <string name="placeholder_descripcion_plato">Dish description…</string>
 
     <!-- Home -->
     <string name="inicio_error_carga">Could not load restaurants</string>
 
     <!-- Search Bar -->
     <string name="buscar_bomboplats">Search bomboplats…</string>
+
+    <!-- UI Generals -->
+    <string name="atras_salir">Press again to exit</string>
 </resources>

@@ -33,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Nombre de Usuario"
+        android:text="@string/default_nombre_usuario"
         android:textColor="@color/text_color"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -62,11 +62,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="Editar Perfil"
+        android:text="@string/perfil_editar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_perfil_email" />
-
-    <!-- Lista de Opciones -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

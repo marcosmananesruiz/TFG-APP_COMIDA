@@ -110,7 +110,8 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         // Usamos la clave compuesta para el carrito
         String itemKey = b.getRestauranteId() + ":" + b.getId();
         carritoViewModel.agregarAlCarrito(itemKey, 1);
-        Toast.makeText(getContext(), "¡" + b.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
+        String mensaje = getString(R.string.carrito_item_added, 1, b.getNombre());
+        Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
     public void filtrar(String texto) {

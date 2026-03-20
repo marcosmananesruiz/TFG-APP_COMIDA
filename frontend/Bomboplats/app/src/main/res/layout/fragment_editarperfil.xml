@@ -21,7 +21,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:text="Editar Perfil"
+                android:text="@string/perfil_editar"
                 android:textColor="@color/text_color"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -72,7 +72,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Nombre"
+                        android:text="@string/perfil_nombre"
                         android:textColor="@color/text_color"
                         android:textStyle="bold" />
 
@@ -81,7 +81,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="24dp"
-                        android:hint="Tu nombre"
+                        android:hint="@string/hint_nombre"
                         android:textColor="@color/text_color"
                         android:textColorHint="@color/text_color_secondary"
                         android:inputType="textPersonName" />

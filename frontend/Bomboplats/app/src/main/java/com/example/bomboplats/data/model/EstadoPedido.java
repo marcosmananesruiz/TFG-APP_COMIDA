@@ -4,6 +4,10 @@ import com.example.bomboplats.ui.historial.Pedido;
 import java.io.Serializable;
 
 public class EstadoPedido implements Serializable {
+    public static final String ESTADO_PREPARACION = "En preparación";
+    public static final String ESTADO_CAMINO = "De camino";
+    public static final String ESTADO_ENTREGADO = "Entregado";
+
     private Pedido pedido;
     private String estado;
     private long timestampCreacion; // El "reloj" interno del pedido

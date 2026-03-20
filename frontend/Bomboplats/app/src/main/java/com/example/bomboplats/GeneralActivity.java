@@ -77,7 +77,7 @@ public class GeneralActivity extends AppCompatActivity {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
             if (currentFragment instanceof CarritoFragment) {
                 carritoViewModel.limpiarCarrito();
-                Toast.makeText(this, "Carrito vaciado", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.toast_carrito_vaciado), Toast.LENGTH_SHORT).show();
             } else {
                 loadFragment(new CarritoFragment());
             }
@@ -214,7 +214,7 @@ public class GeneralActivity extends AppCompatActivity {
                     }
                     finishAffinity();
                 } else {
-                    backToast = Toast.makeText(GeneralActivity.this, "Pulsa otra vez para salir", Toast.LENGTH_SHORT);
+                    backToast = Toast.makeText(GeneralActivity.this, getString(R.string.atras_salir), Toast.LENGTH_SHORT);
                     backToast.show();
                     backPressedTime = System.currentTimeMillis();
                 }

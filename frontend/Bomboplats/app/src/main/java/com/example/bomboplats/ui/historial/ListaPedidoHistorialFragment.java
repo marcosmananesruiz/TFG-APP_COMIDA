@@ -58,7 +58,9 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
 
         if (pedido != null) {
-            tvId.setText("Pedido #" + pedido.getId());
+            // Usamos el recurso prefix_pedido_id para evitar hardcodeo
+            String prefixId = getString(R.string.prefix_pedido_id);
+            tvId.setText(prefixId + pedido.getId());
             tvFecha.setText(pedido.getFecha());
 
             List<Bombo> bombos = new ArrayList<>();
@@ -81,7 +83,6 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
     public void onBomboClick(Bombo b) {
         DetalleBomboFragment fragment = new DetalleBomboFragment();
         Bundle args = new Bundle();
-        // Pasamos tanto restauranteId como bomboId para mantener consistencia con los arreglos anteriores
         args.putString("restauranteId", b.getRestauranteId());
         args.putString("bomboId", b.getId());
         args.putString("nombre", b.getNombre());
@@ -108,6 +109,9 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
     public void onAgregarCarritoClick(Bombo b) {
         String itemKey = b.getRestauranteId() + ":" + b.getId();
         carritoViewModel.agregarAlCarrito(itemKey, 1);
-        Toast.makeText(getContext(), "¡" + b.getNombre() + " añadido al carrito!", Toast.LENGTH_SHORT).show();
+        
+        // Usamos el recurso carrito_item_added para evitar hardcodeo en el Toast
+        String mensaje = getString(R.string.carrito_item_added, 1, b.getNombre());
+        Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 }

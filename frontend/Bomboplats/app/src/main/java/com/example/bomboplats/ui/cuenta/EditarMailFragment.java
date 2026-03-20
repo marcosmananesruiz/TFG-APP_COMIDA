@@ -35,18 +35,17 @@ public class EditarMailFragment extends Fragment {
             String nuevo = etMailNuevo.getText().toString().trim();
 
             if (actual.isEmpty() || nuevo.isEmpty()) {
-                Toast.makeText(getContext(), "Rellena todos los campos", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.toast_rellenar_campos), Toast.LENGTH_SHORT).show();
                 return;
             }
 
             String mailGuardado = userViewModel.getEmail().getValue();
             if (actual.equalsIgnoreCase(mailGuardado)) {
-                // El cambio ya se encarga de actualizar el JSON a través del ViewModel -> Repository -> DataSource
                 userViewModel.setEmail(nuevo);
-                Toast.makeText(getContext(), "Correo actualizado con éxito", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.toast_correo_actualizado), Toast.LENGTH_SHORT).show();
                 requireActivity().getSupportFragmentManager().popBackStack();
             } else {
-                etMailActual.setError("El correo actual no coincide");
+                etMailActual.setError(getString(R.string.error_mail_no_coincide));
             }
         });
 

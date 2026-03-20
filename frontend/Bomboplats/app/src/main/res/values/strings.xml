@@ -2,17 +2,18 @@
     <string name="app_name">Bomboplats</string>
     <string name="title_activity_login">Bomboplats</string>
     <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome, "</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
+    <string name="prompt_password">Contraseña</string>
+    <string name="action_sign_in">Iniciar sesión o registrarse</string>
+    <string name="action_sign_in_short">Entrar</string>
+    <string name="welcome">Bienvenido, %s</string>
+    <string name="invalid_username">Nombre de usuario no válido</string>
+    <string name="invalid_password">La contraseña debe tener más de 5 caracteres</string>
+    <string name="login_failed">Error al iniciar sesión</string>
     <string name="drawer_open">Abrir menú</string>
     <string name="drawer_close">Cerrar menú</string>
     <string name="pagar_ahora">PAGAR AHORA</string>
     <string name="confirmar_pedido">CONFIRMAR PEDIDO</string>
+    <string name="realizar_pedido">REALIZAR PEDIDO</string>
     <string name="guardar_cambios">GUARDAR CAMBIOS</string>
     <string name="confirmar_cambio">CONFIRMAR CAMBIO</string>
     <string name="cambiar_correo_electronico">CAMBIAR CORREO ELECTRÓNICO</string>
@@ -42,18 +43,73 @@
     <string name="perfil_mail_nuevo">Nuevo correo electrónico</string>
     <string name="perfil_pass_actual">Contraseña actual</string>
     <string name="perfil_pass_nueva">Nueva contraseña</string>
+    <string name="hint_nombre">Tu nombre</string>
+    <string name="toast_perfil_guardado">Perfil actualizado correctamente</string>
+    <string name="toast_fav_add">Añadido a favoritos</string>
+    <string name="toast_fav_rem">Eliminado de favoritos</string>
+    <string name="default_nombre_usuario">Nombre de Usuario</string>
+    <string name="cambiar_correo_titulo">Cambiar Correo</string>
+    <string name="hint_mail_actual">Introduce tu correo actual</string>
+    <string name="hint_mail_nuevo">Introduce el nuevo correo</string>
+    <string name="cambiar_pass_titulo">Cambiar Contraseña</string>
+    <string name="hint_pass_actual">Introduce tu contraseña actual</string>
+    <string name="hint_pass_nueva">Introduce la nueva contraseña</string>
+    <string name="toast_foto_seleccionada">Foto seleccionada</string>
+    <string name="toast_rellenar_campos">Rellena todos los campos</string>
+    <string name="toast_correo_actualizado">Correo actualizado con éxito</string>
+    <string name="toast_pass_actualizada">Contraseña actualizada correctamente</string>
+    <string name="error_mail_no_coincide">El correo actual no coincide</string>
+    <string name="error_nombre_vacio">El nombre no puede estar vacío</string>
 
     <!-- Carrito y Pedidos -->
     <string name="carrito_vacio">Tu carrito está vacío</string>
     <string name="total">TOTAL</string>
+    <string name="label_total">Total: </string>
     <string name="finalizar_pedido">Finalizar Pedido</string>
     <string name="direccion_entrega">Dirección de entrega</string>
+    <string name="hint_direccion">Calle, número, piso…</string>
     <string name="metodo_pago">Método de pago</string>
+    <string name="pago_tarjeta">Tarjeta de crédito/débito</string>
+    <string name="pago_paypal">PayPal</string>
+    <string name="pago_efectivo">Efectivo al repartidor</string>
     <string name="datos_tarjeta">Datos de la tarjeta</string>
+    <string name="hint_numero_tarjeta">Número de tarjeta</string>
+    <string name="hint_exp">MM/AA</string>
+    <string name="hint_cvv">CVV</string>
+    <string name="toast_carrito_vaciado">Carrito vaciado</string>
+    <string name="toast_pedido_realizado_exito">¡Pedido %1$s realizado con éxito!</string>
+    <string name="carrito_item_added">¡%1$d x %2$s añadido al carrito!</string>
+    <string name="estado_vacio">No tienes pedidos en curso ahora mismo</string>
+    <string name="label_estado">Estado: </string>
+    <string name="estado_en_preparacion">En preparación</string>
+    <string name="estado_entregado">Entregado</string>
+    <string name="estado_de_camino">De camino</string>
+    <string name="prefix_pedido_id">Pedido #</string>
+    <string name="label_productos">Productos:</string>
+    <string name="label_historial_titulo">Mis Pedidos</string>
+    <string name="historial_vacio">Aún no has realizado ningún pedido</string>
+    <string name="notificaciones_vacia">No tienes notificaciones de ningún bombo aún</string>
+    <string name="favoritos_vacio">Aún no tienes platos favoritos</string>
+
+    <!-- Detalle Plato -->
+    <string name="label_ingredientes">Ingredientes:</string>
+    <string name="label_alergenos">Alérgenos:</string>
+    <string name="no_especificados">No especificados</string>
+    <string name="sin_alergenos">Sin alérgenos conocidos</string>
+    <string name="placeholder_nombre_plato">Nombre del Plato</string>
+    <string name="placeholder_descripcion_plato">Descripción del plato…</string>
+
+    <!-- Notificaciones dinámicas -->
+    <string name="noti_titulo_estado">Estado de tus Bombos</string>
+    <string name="noti_msg_de_camino">Tu pedido #%1$s está de camino 🛵</string>
+    <string name="noti_msg_entregado">¡Tu pedido #%1$s ha sido entregado! 😋</string>
 
     <!-- Inicio -->
     <string name="inicio_error_carga">No se han podido cargar los restaurantes</string>
 
     <!-- Barra de búsqueda -->
-    <string name="buscar_bomboplats">Buscar bomboplats...</string>
+    <string name="buscar_bomboplats">Buscar bomboplats…</string>
+
+    <!-- Generales UI -->
+    <string name="atras_salir">Pulsa otra vez para salir</string>
 </resources>
