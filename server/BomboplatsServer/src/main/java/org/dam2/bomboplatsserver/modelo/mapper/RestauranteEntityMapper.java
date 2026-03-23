@@ -8,6 +8,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.Flux;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -22,7 +23,7 @@ public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, 
                 .id(restaurante.getId())
                 .nombre(restaurante.getNombre())
                 .tags(restaurante.getTags() != null ? restaurante.getTags().toArray(new String[0]) : new String[0])
-                .iconUrl(restaurante.getIconUrl() != null ? new String[]{restaurante.getIconUrl()} : new String[0])
+                .iconUrl(restaurante.getIconUrls() != null ? (String[]) restaurante.getIconUrls().toArray() : new String[0])
                 .description(restaurante.getDescription())
                 .rating(restaurante.getRating())
                 .build());
@@ -34,7 +35,7 @@ public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, 
                 .id(entity.getId())
                 .nombre(entity.getNombre())
                 .tags(entity.getTags() != null ? Arrays.asList(entity.getTags()) : List.of())
-                .iconUrl(entity.getIconUrl() != null && entity.getIconUrl().length > 0 ? entity.getIconUrl()[0] : null)
+                .iconUrls(entity.getIconUrl() != null && entity.getIconUrl().length > 0 ? Collections.singletonList(entity.getIconUrl()[0]) : null)
                 .description(entity.getDescription())
                 .rating(entity.getRating())
                 .build());
