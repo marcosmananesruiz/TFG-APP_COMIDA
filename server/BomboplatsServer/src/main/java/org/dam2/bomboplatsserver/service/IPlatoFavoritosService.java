@@ -11,4 +11,5 @@ public interface IPlatoFavoritosService {
     Flux<PlatoFavoritosEntity> findAll();
     Mono<Boolean> register(PlatoFavoritosEntity platoFavoritosEntity);
     Mono<Boolean> delete(Long id);
+    Mono<Void> deleteByUserIdAndPlatoId(String userId, String platoId);
 }

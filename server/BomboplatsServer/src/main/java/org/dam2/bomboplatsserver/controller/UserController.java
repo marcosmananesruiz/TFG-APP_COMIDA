@@ -15,6 +15,8 @@ import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
 import org.dam2.bomboplats.api.login.UserRegister;
 import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
+import org.dam2.bomboplatsserver.modelo.entity.PlatoEntity;
+import org.dam2.bomboplatsserver.modelo.entity.PlatoFavoritosEntity;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
@@ -28,6 +30,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -109,14 +115,13 @@ public class UserController {
     @Operation(summary = "Actualizar información de un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario actualizado. false: Usuario no existía o hubo un error")
     public Mono<Boolean> updateUser(@RequestBody User user) {
-        return this.mapper.map(Mono.just(user)).flatMap(userEntity ->
-                Flux.fromIterable(user.getDirecciones()).flatMap(direccion ->
-                        this.direccionMapper.map(Mono.just(direccion)).flatMap(direccionEntity -> {
-                            direccionEntity.setIdUser(user.getId());
-                            return this.direccionService.update(direccionEntity);
-                        })
 
-                ).then(this.service.update(userEntity)));
+        Mono<UserEntity> userEntityMono = this.mapper.map(Mono.just(user));
+        Mono<Void> direccionesMono = syncDirecciones(user);
+        Mono<Void> platosFavoritos = syncPlatosFavoritos(user);
+
+        return userEntityMono.flatMap(userEntity -> Mono.when(direccionesMono, platosFavoritos)
+                .then(this.service.update(userEntity)));
     }
 
     @GetMapping(value = "imageUrl", params = "id")
@@ -163,5 +168,58 @@ public class UserController {
                return "No se registro al usuario";
            }
         });
+    }
+
+    private Mono<Void> syncDirecciones(User user) {
+        return Flux.fromIterable(user.getDirecciones())
+                .flatMap(direccion -> this.direccionMapper.map(Mono.just(direccion))
+                        .flatMap(direccionEntity -> {
+                            direccionEntity.setIdUser(user.getId());
+                            return this.direccionService.update(direccionEntity);
+                        })
+                ).then();
+    }
+
+    private Mono<Void> syncPlatosFavoritos(User user) {
+
+        String userId = user.getId();
+
+        Set<String> nuevosIds = user.getPlatosFavoritos()
+                .stream()
+                .map(Plato::getId)
+                .collect(Collectors.toSet());
+
+        return this.platoFavoritosService.getPlatosFavoritosOf(userId)
+                .map(PlatoEntity::getId)
+                .collect(Collectors.toSet())
+                .flatMap(actualesIds -> {
+
+
+                    Set<String> aInsertar = new HashSet<>(nuevosIds);
+                    aInsertar.removeAll(actualesIds);
+
+
+                    Set<String> aEliminar = new HashSet<>(actualesIds);
+                    aEliminar.removeAll(nuevosIds);
+
+                    Mono<Void> insertMono =
+                            Flux.fromIterable(aInsertar)
+                                    .flatMap(idPlato -> {
+                                        PlatoFavoritosEntity entity = new PlatoFavoritosEntity();
+                                        entity.setUserId(userId);
+                                        entity.setPlatoId(idPlato);
+                                        return this.platoFavoritosService.register(entity);
+                                    })
+                                    .then();
+
+                    Mono<Void> deleteMono =
+                            Flux.fromIterable(aEliminar)
+                                    .flatMap(idPlato ->
+                                            this.platoFavoritosService.deleteByUserIdAndPlatoId(userId, idPlato)
+                                    )
+                                    .then();
+
+                    return Mono.when(insertMono, deleteMono);
+                });
     }
 }

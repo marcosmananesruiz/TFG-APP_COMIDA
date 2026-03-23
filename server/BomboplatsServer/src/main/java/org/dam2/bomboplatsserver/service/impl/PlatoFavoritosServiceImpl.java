@@ -38,4 +38,9 @@ public class PlatoFavoritosServiceImpl implements IPlatoFavoritosService {
     public Mono<Boolean> delete(Long id) {
         return this.repo.deleteById(id).thenReturn(true);
     }
+
+    @Override
+    public Mono<Void> deleteByUserIdAndPlatoId(String userId, String platoId) {
+        return this.repo.deleteByUserIdAndPlatoId(userId, platoId);
+    }
 }

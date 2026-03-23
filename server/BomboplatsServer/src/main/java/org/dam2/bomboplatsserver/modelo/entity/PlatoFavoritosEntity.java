@@ -12,11 +12,11 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Table("platos_favoritos")
 public class PlatoFavoritosEntity {
-
+    // Relacion Many to Many
     @EqualsAndHashCode.Include
     @Id
-    private long id;
+    private Long id; // Autogenerado aparte
 
-    private String userId;
-    private String platoId;
+    private String userId; // Relacion con UserEntity. Lenght = 8
+    private String platoId; // Relacion con PlatoEntity. Length = 8
 }
