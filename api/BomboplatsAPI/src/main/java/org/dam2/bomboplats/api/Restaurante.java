@@ -17,10 +17,11 @@ public class Restaurante {
     private String id;
     private String nombre;
     private String description;
-    private String iconUrl;
+    private List<String> iconUrls;
     private List<String> tags;
     private Set<Plato> platos;
     private List<Direccion> direcciones;
+    private int rating;
 
 
 }

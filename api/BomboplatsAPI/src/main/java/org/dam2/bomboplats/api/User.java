@@ -18,10 +18,6 @@ public class User {
     private String email;
     private String iconUrl;
     private Set<Direccion> direcciones;
-
-
-    public static User testUser() {
-        return new User("U00000", "Usuario Test", "test@bomboplats.es", "icon/fail", Set.of(Direccion.testDirecccion()));
-    }
+    private Set<Plato> platosFavoritos;
 
 }

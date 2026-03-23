@@ -18,5 +18,7 @@ public class Plato {
     private String iconUrl;
     private List<String> tags;
     private List<String> possibleModifications;
+    private float precio;
+
 
 }
