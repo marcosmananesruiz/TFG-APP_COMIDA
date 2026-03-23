@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
 import org.dam2.bomboplatsserver.service.IPlatoService;
+import org.dam2.bomboplatsserver.service.IS3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ public class PlatoController {
 
     @Autowired private IPlatoService service;
     @Autowired private PlatoEntityMapper mapper;
+    @Autowired private IS3Service s3Service;
 
     // TODOS
     @GetMapping("/get")
@@ -131,5 +133,16 @@ public class PlatoController {
     })
     public Flux<Plato> getByTag(@RequestParam String tag) {
         return this.mapper.mapFlux(this.service.findByTag(tag));
+    }
+    @GetMapping("/icon-upload-url/{id}")
+    @Operation(summary = "Obtener URL prefirmada para subir foto de plato")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "URL generada"),
+            @ApiResponse(responseCode = "404", description = "Plato no encontrado")
+    })
+    public Mono<String> getPlatoIconUploadUrl(@PathVariable String id) {
+        return this.service.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(p -> this.s3Service.generatePlatoIconUrl(id));
     }
 }

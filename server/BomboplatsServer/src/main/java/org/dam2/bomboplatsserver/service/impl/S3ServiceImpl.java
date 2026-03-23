@@ -45,4 +45,13 @@ public class S3ServiceImpl implements IS3Service {
     public Mono<String> generateUserIconUrl(String userId) {
         return this.generateUpdloadUrl("profile/" + userId + ".jpg");
     }
+    @Override
+    public Mono<String> generateRestauranteIconUrl(String restauranteId, int index) {
+        return this.generateUpdloadUrl("restaurantes/" + restauranteId + "/" + index + ".jpg");
+    }
+
+    @Override
+    public Mono<String> generatePlatoIconUrl(String platoId) {
+        return this.generateUpdloadUrl("platos/" + platoId + ".jpg");
+    }
 }

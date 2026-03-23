@@ -9,6 +9,7 @@ import org.dam2.bomboplats.api.Restaurante;
 import org.dam2.bomboplatsserver.modelo.mapper.RestauranteEntityMapper;
 import org.dam2.bomboplatsserver.modelo.entity.RestauranteEntity;
 import org.dam2.bomboplatsserver.service.IRestauranteService;
+import org.dam2.bomboplatsserver.service.IS3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ public class RestauranteController {
 
     @Autowired private IRestauranteService service;
     @Autowired private RestauranteEntityMapper mapper;
+    @Autowired private IS3Service s3Service;
 
     @GetMapping("/get")
     @Operation(summary = "Obtener todos los restaurantes o filtrar por parámetros")
@@ -109,5 +111,19 @@ public class RestauranteController {
     })
     public Flux<Restaurante> getByTag(@RequestParam String tag) {
         return this.mapper.mapFlux(this.service.findByTag(tag));
+    }
+    @GetMapping("/icon-upload-url/{id}")
+    @Operation(summary = "Obtener URL prefirmada para subir foto de restaurante")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "URL generada"),
+            @ApiResponse(responseCode = "404", description = "Restaurante no encontrado")
+    })
+    public Mono<String> getRestauranteIconUploadUrl(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "0") int index) {
+
+        return this.service.findById(id)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(r -> this.s3Service.generateRestauranteIconUrl(id, index));
     }
 }
