@@ -2,23 +2,27 @@ package org.dam2.bomboplatsserver.controller;
 
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import io.swagger.v3.oas.annotations.OpenAPI31;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
 import org.dam2.bomboplats.api.login.UserRegister;
 import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
+import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
-import org.dam2.bomboplatsserver.service.IDireccionService;
-import org.dam2.bomboplatsserver.service.IS3Service;
-import org.dam2.bomboplatsserver.service.IUserService;
+import org.dam2.bomboplatsserver.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,6 +39,8 @@ public class UserController {
     @Autowired private DireccionEntityMapper direccionMapper;
     @Autowired private PasswordEncoder encoder;
     @Autowired private IS3Service s3Service;
+    @Autowired private IPlatoFavoritosService platoFavoritosService;
+    @Autowired private PlatoEntityMapper platoMapper;
     private final String DEFAULT_ICON = "profile/default.jpg"; // En el almacenamiento de imagenes, tendremos una por defecto y palante
 
     @PutMapping("/login")
@@ -109,6 +115,7 @@ public class UserController {
                             direccionEntity.setIdUser(user.getId());
                             return this.direccionService.update(direccionEntity);
                         })
+
                 ).then(this.service.update(userEntity)));
     }
 
@@ -117,6 +124,31 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "Se genero el link")
     public Mono<String> createImageUrl(@RequestParam String id) { // Este no va a funcionar hasta que esté en un ECS
         return this.s3Service.generateUserIconUrl(id);
+    }
+
+    @GetMapping(value = "/updatePass", params = {"userId", "password"})
+    @Operation(summary = "Actualizar la contraseña de un usuario segun su id")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "true: Se actualizo la contraseña correctamente"),
+        @ApiResponse(responseCode = "404", description = "No se ha encontrado al usuario con ese ID")
+    })
+    public Mono<Boolean> updatePassword(@RequestParam String userId, @RequestParam String password) {
+        return this.service.findByID(userId).map(userEntity -> {
+            userEntity.setPassword(this.encoder.encode(password));
+            return true;
+        }).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    @GetMapping(value = "platosfavoritos", params = "id")
+    @Operation(summary = "Obtener los platos favoritos de un usuario")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Platos favoritos del usuario encontrados correctamente"),
+            @ApiResponse(responseCode = "404", description = "No se ha encontrado el usuario")
+    })
+    public Flux<Plato> getPlatosFavoritos(@RequestParam String id) {
+        return this.platoFavoritosService.getPlatosFavoritosOf(id)
+                .flatMap(platoEntity -> this.platoMapper.unmap(Mono.just(platoEntity)))
+                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     // FUNCION UNICAMENTE PARA TESTEO

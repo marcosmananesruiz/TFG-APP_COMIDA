@@ -24,4 +24,5 @@ public class UserEntity {
     private String password; // Length = 60
     private String iconUrl; // Length = 32
 
+
 }
