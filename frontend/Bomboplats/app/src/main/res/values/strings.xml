@@ -80,6 +80,13 @@
     <string name="toast_pass_actualizada">Contraseña actualizada correctamente</string>
     <string name="error_mail_no_coincide">El correo actual no coincide</string>
     <string name="error_nombre_vacio">El nombre no puede estar vacío</string>
+    <string name="error_image_too_large">La imagen es demasiado pesada y no se cambiará</string>
+    <string name="eliminar_cuenta">ELIMINAR CUENTA</string>
+    <string name="dialog_eliminar_cuenta_titulo">¿Seguro que quieres eliminar tu cuenta?</string>
+    <string name="dialog_eliminar_cuenta_mensaje">Esta accion sera permanente.</string>
+    <string name="si">SÍ</string>
+    <string name="no">NO</string>
+    <string name="cuenta_eliminada">Cuenta eliminada correctamente</string>
 
     <!-- Carrito y Pedidos -->
     <string name="carrito_vacio">Tu carrito está vacío</string>

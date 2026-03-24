@@ -209,4 +209,9 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public void clearError() {
         error.setValue(null);
     }
+
+    public void deleteAccount() {
+        loginRepository.deleteAccount();
+        sharedPreferences.edit().remove(KEY_CURRENT_USER_EMAIL).apply();
+    }
 }

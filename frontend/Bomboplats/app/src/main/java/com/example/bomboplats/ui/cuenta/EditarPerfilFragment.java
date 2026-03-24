@@ -1,6 +1,7 @@
 package com.example.bomboplats.ui.cuenta;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,10 +16,12 @@ import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.bomboplats.R;
+import com.example.bomboplats.ui.login.LoginActivity;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -28,17 +31,19 @@ public class EditarPerfilFragment extends Fragment {
 
     private EditText etNombre;
     private ImageView ivFoto;
-    private Button btnGuardar, btnEditarEmail, btnEditarPassword;
+    private Button btnGuardar, btnEditarEmail, btnEditarPassword, btnEliminarCuenta;
     private UserViewModel userViewModel;
+    private Uri pendingPhotoUri;
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
             registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
                 if (uri != null) {
-                    String localPath = saveImageLocally(uri);
-                    if (localPath != null) {
-                        ivFoto.setImageURI(Uri.fromFile(new File(localPath)));
-                        userViewModel.setPhotoUri(localPath);
+                    if (isImageSizeValid(uri)) {
+                        pendingPhotoUri = uri;
+                        ivFoto.setImageURI(uri);
                         Toast.makeText(getContext(), getString(R.string.toast_foto_seleccionada), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), getString(R.string.error_image_too_large), Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -53,6 +58,7 @@ public class EditarPerfilFragment extends Fragment {
         btnGuardar = view.findViewById(R.id.btn_guardar_perfil);
         btnEditarEmail = view.findViewById(R.id.btn_ir_editar_email);
         btnEditarPassword = view.findViewById(R.id.btn_ir_editar_password);
+        btnEliminarCuenta = view.findViewById(R.id.btn_eliminar_cuenta);
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
@@ -65,7 +71,7 @@ public class EditarPerfilFragment extends Fragment {
 
         // Cargar foto actual
         userViewModel.getPhotoUri().observe(getViewLifecycleOwner(), uriString -> {
-            if (uriString != null) {
+            if (uriString != null && pendingPhotoUri == null) {
                 File file = new File(uriString);
                 if (file.exists()) {
                     ivFoto.setImageURI(Uri.fromFile(file));
@@ -78,17 +84,24 @@ public class EditarPerfilFragment extends Fragment {
         btnGuardar.setOnClickListener(v -> {
             String nuevoNombre = etNombre.getText().toString().trim();
             if (!nuevoNombre.isEmpty()) {
+                if (pendingPhotoUri != null) {
+                    String localPath = saveImageLocally(pendingPhotoUri);
+                    if (localPath != null) {
+                        userViewModel.setPhotoUri(localPath);
+                    }
+                }
                 userViewModel.setName(nuevoNombre);
                 Toast.makeText(getContext(), getString(R.string.toast_perfil_guardado), Toast.LENGTH_SHORT).show();
                 requireActivity().getSupportFragmentManager().popBackStack();
             } else {
-                // El error de validación también debe estar en recursos
                 etNombre.setError(getString(R.string.invalid_username));
             }
         });
 
         btnEditarEmail.setOnClickListener(v -> loadFragment(new EditarMailFragment()));
         btnEditarPassword.setOnClickListener(v -> loadFragment(new EditarPasswordFragment()));
+
+        btnEliminarCuenta.setOnClickListener(v -> mostrarDialogoEliminar());
 
         ivFoto.setOnClickListener(v -> {
             pickMedia.launch(new PickVisualMediaRequest.Builder()
@@ -97,6 +110,37 @@ public class EditarPerfilFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void mostrarDialogoEliminar() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.dialog_eliminar_cuenta_titulo)
+                .setMessage(R.string.dialog_eliminar_cuenta_mensaje)
+                .setPositiveButton(R.string.si, (dialog, which) -> {
+                    userViewModel.deleteAccount();
+                    Toast.makeText(getContext(), R.string.cuenta_eliminada, Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(getActivity(), LoginActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                })
+                .setNegativeButton(R.string.no, null)
+                .show();
+    }
+
+    private boolean isImageSizeValid(Uri uri) {
+        try {
+            Context context = requireContext();
+            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            if (inputStream != null) {
+                long fileSize = inputStream.available();
+                inputStream.close();
+                // 1 MB = 1024 * 1024 bytes
+                return fileSize <= (1024 * 1024);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private String saveImageLocally(Uri uri) {

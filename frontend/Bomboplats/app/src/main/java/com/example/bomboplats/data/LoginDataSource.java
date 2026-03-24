@@ -72,7 +72,6 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
-        // Verificar si el nuevo email ya existe
         if (new File(usersDir, newEmail + ".json").exists()) {
             return new Result.Error(new IOException("El nuevo correo ya está registrado"));
         }
@@ -98,6 +97,10 @@ public class LoginDataSource {
                 File oldHistory = new File(usersDir, oldEmail + "_history.json");
                 if (oldHistory.exists()) {
                     oldHistory.renameTo(new File(usersDir, newEmail + "_history.json"));
+                }
+                File oldStates = new File(usersDir, oldEmail + "_states.json");
+                if (oldStates.exists()) {
+                    oldStates.renameTo(new File(usersDir, newEmail + "_states.json"));
                 }
                 File oldPhoto = new File(usersDir, oldEmail + ".jpg");
                 if (oldPhoto.exists()) {
@@ -160,6 +163,13 @@ public class LoginDataSource {
             return new Result.Error(new IOException("USUARIO_EXISTE"));
         }
         return saveUserInternal(user);
+    }
+
+    public void deleteUser(String email) {
+        new File(usersDir, email + ".json").delete();
+        new File(usersDir, email + "_history.json").delete();
+        new File(usersDir, email + "_states.json").delete();
+        new File(usersDir, email + ".jpg").delete();
     }
 
     public File getUserPhotoFile(String email) {

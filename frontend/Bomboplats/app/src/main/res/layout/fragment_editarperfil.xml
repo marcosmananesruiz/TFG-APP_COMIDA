@@ -101,9 +101,18 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="24dp"
                         android:text="@string/cambiar_contrasena"
                         android:textColor="@color/teal_700"
                         app:strokeColor="@color/teal_700" />
+
+                    <Button
+                        android:id="@+id/btn_eliminar_cuenta"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/eliminar_cuenta"
+                        android:textColor="@color/logout_red" />
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -125,7 +134,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:text="@string/guardar_cambios"
-            android:textColor="@color/white"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 

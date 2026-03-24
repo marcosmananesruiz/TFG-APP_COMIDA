@@ -121,4 +121,11 @@ public class LoginRepository {
         if (user == null) return null;
         return dataSource.getUserPhotoFile(user.getEmail());
     }
+
+    public void deleteAccount() {
+        if (user != null) {
+            dataSource.deleteUser(user.getEmail());
+            user = null;
+        }
+    }
 }
