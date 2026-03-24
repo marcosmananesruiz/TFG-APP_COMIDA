@@ -8,6 +8,7 @@ import android.util.Patterns;
 
 import com.example.bomboplats.data.LoginRepository;
 import com.example.bomboplats.data.Result;
+import com.example.bomboplats.data.model.Cuenta;
 import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.R;
 
@@ -32,9 +33,9 @@ public class LoginViewModel extends ViewModel {
         return loginResult;
     }
 
-    public void login(String username, String password) {
+    public void login(Cuenta cuenta) {
         // can be launched in a separate asynchronous job
-        Result<LoggedInUser> result = loginRepository.login(username, password);
+        Result<LoggedInUser> result = loginRepository.login(cuenta.getEmail(), cuenta.getPassword());
 
         if (result instanceof Result.Success) {
             LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();

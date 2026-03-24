@@ -8,8 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
-import com.example.bomboplats.data.model.BomboConCantidad;
-import java.util.ArrayList;
+import com.example.bomboplats.data.FoodRepository;
+import com.example.bomboplats.data.model.Bombo;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -20,6 +20,7 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
     private List<Pedido> listaPedidos;
     private final Set<Integer> expandidos = new HashSet<>();
     private OnPedidoClickListener listener;
+    private FoodRepository foodRepository;
 
     public interface OnPedidoClickListener {
         void onProductosClick(Pedido pedido);
@@ -38,6 +39,9 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
     @NonNull
     @Override
     public PedidoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (foodRepository == null) {
+            foodRepository = FoodRepository.getInstance(parent.getContext());
+        }
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_pedido_padre, parent, false);
         return new PedidoViewHolder(view);
     }
@@ -46,7 +50,6 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
     public void onBindViewHolder(@NonNull PedidoViewHolder holder, int position) {
         Pedido pedido = listaPedidos.get(position);
         
-        // Cargar prefijo desde strings.xml para evitar hardcodeo
         String prefix = holder.itemView.getContext().getString(R.string.prefix_pedido_id);
         holder.tvId.setText(prefix + pedido.getId());
         
@@ -55,9 +58,16 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
         holder.tvDireccion.setText(pedido.getDireccion());
 
         StringBuilder sb = new StringBuilder();
-        for (BomboConCantidad item : pedido.getItems()) {
-            sb.append("• ").append(item.getCantidad()).append("x ")
-              .append(item.getBombo().getNombre()).append("\n");
+        if (pedido.getItems() != null) {
+            for (PedidoItem item : pedido.getItems()) {
+                // Rehidratamos el nombre del bombo usando el repositorio
+                String itemKey = item.getRestauranteId() + ":" + item.getBomboId();
+                Bombo bombo = foodRepository.getBomboPorId(itemKey);
+                String nombre = (bombo != null) ? bombo.getNombre() : "Plato desconocido";
+                
+                sb.append("• ").append(item.getCantidad()).append("x ")
+                  .append(nombre).append("\n");
+            }
         }
         holder.tvProductos.setText(sb.toString().trim());
 

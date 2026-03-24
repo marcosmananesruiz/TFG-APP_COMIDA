@@ -9,8 +9,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
-import com.example.bomboplats.data.model.BomboConCantidad;
+import com.example.bomboplats.data.FoodRepository;
+import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.EstadoPedido;
+import com.example.bomboplats.ui.historial.PedidoItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -19,6 +21,7 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
 
     private List<EstadoPedido> lista = new ArrayList<>();
     private OnEstadoPedidoClickListener listener;
+    private FoodRepository foodRepository;
 
     public interface OnEstadoPedidoClickListener {
         void onPedidoClick(EstadoPedido estadoPedido);
@@ -36,6 +39,9 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
     @NonNull
     @Override
     public EstadoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (foodRepository == null) {
+            foodRepository = FoodRepository.getInstance(parent.getContext());
+        }
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_bombo, parent, false);
         return new EstadoViewHolder(v);
     }
@@ -45,26 +51,31 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
         EstadoPedido item = lista.get(position);
         Context context = holder.itemView.getContext();
         
-        // Cargar prefijo de pedido desde recursos
         String prefixId = context.getString(R.string.prefix_pedido_id);
         holder.tvNombre.setText(prefixId + item.getPedido().getId());
         
         StringBuilder sb = new StringBuilder();
-        for (BomboConCantidad bcc : item.getPedido().getItems()) {
-            sb.append(bcc.getCantidad()).append("x ").append(bcc.getBombo().getNombre()).append(", ");
+        if (item.getPedido().getItems() != null) {
+            for (PedidoItem pi : item.getPedido().getItems()) {
+                // Rehidratamos el nombre del plato usando el repositorio
+                String itemKey = pi.getRestauranteId() + ":" + pi.getBomboId();
+                Bombo bombo = foodRepository.getBomboPorId(itemKey);
+                String nombre = (bombo != null) ? bombo.getNombre() : "Plato desconocido";
+                
+                sb.append(pi.getCantidad()).append("x ").append(nombre).append(", ");
+            }
         }
+        
         String resumen = sb.toString();
         if (resumen.length() > 2) resumen = resumen.substring(0, resumen.length() - 2);
         
         holder.tvDescripcion.setText(resumen);
         
-        // Cargar prefijo total desde recursos
         String prefixTotal = context.getString(R.string.label_total);
         holder.tvPrecio.setText(prefixTotal + String.format(Locale.getDefault(), "%.2f€", item.getPedido().getTotal()));
         
         holder.tvCantidad.setVisibility(View.VISIBLE);
         
-        // Traducir el estado dinámicamente usando las constantes de EstadoPedido
         String estadoRaw = item.getEstado();
         String estadoTraducido = estadoRaw;
 

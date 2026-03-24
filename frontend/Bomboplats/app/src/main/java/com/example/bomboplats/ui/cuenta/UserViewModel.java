@@ -29,10 +29,9 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private final MutableLiveData<String> password = new MutableLiveData<>();
     private final MutableLiveData<String> photoUri = new MutableLiveData<>();
     
-    // Lista plana de IDs (restauranteId:bomboId) para observar fácilmente desde la UI
     private final MutableLiveData<List<String>> favoritos = new MutableLiveData<>(new ArrayList<>());
-    // Mapa plano de IDs (restauranteId:bomboId) -> cantidad para observar fácilmente desde la UI
     private final MutableLiveData<Map<String, Integer>> carrito = new MutableLiveData<>(new HashMap<>());
+    private final MutableLiveData<List<String>> addresses = new MutableLiveData<>(new ArrayList<>());
 
     public UserViewModel(@NonNull Application application) {
         super(application);
@@ -57,6 +56,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         this.email.setValue(user.getEmail());
         this.name.setValue(user.getDisplayName());
         this.password.setValue(user.getPassword());
+        this.addresses.setValue(new ArrayList<>(user.getAddresses()));
         
         sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, user.getEmail()).apply();
         
@@ -71,7 +71,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
             }
         }
         
-        // Cargar favoritos del mapa estructurado a una lista plana "restauranteId:bomboId"
         List<String> listaFavs = new ArrayList<>();
         Map<String, List<String>> favMap = user.getFavoritePlates();
         for (Map.Entry<String, List<String>> entry : favMap.entrySet()) {
@@ -81,7 +80,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         }
         favoritos.setValue(listaFavs);
 
-        // Cargar carrito del mapa estructurado a un mapa plano "restauranteId:bomboId" -> cantidad
         Map<String, Integer> mapaCarritoUI = new HashMap<>();
         Map<String, List<String>> cartMap = user.getCartPlates();
         for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
@@ -99,6 +97,32 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<String> getPhotoUri() { return photoUri; }
     public LiveData<List<String>> getFavoritos() { return favoritos; }
     public LiveData<Map<String, Integer>> getCarrito() { return carrito; }
+    public LiveData<List<String>> getAddresses() { return addresses; }
+
+    public void addAddress(String address) {
+        List<String> current = addresses.getValue();
+        if (current == null) current = new ArrayList<>();
+        current.add(address);
+        addresses.setValue(new ArrayList<>(current));
+        saveAddressesToUser(current);
+    }
+
+    public void removeAddress(int index) {
+        List<String> current = addresses.getValue();
+        if (current != null && index >= 0 && index < current.size()) {
+            current.remove(index);
+            addresses.setValue(new ArrayList<>(current));
+            saveAddressesToUser(current);
+        }
+    }
+
+    private void saveAddressesToUser(List<String> list) {
+        LoggedInUser user = loginRepository.getUser();
+        if (user != null) {
+            user.setAddresses(new ArrayList<>(list));
+            loginRepository.saveUser();
+        }
+    }
 
     public void setName(String newName) {
         Result<LoggedInUser> result = loginRepository.updateName(newName);
@@ -146,7 +170,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         
         favoritos.setValue(new ArrayList<>(listaPlana));
         
-        // Reconstruir el mapa estructurado para el JSON
         Map<String, List<String>> mapParaJSON = new HashMap<>();
         for (String item : listaPlana) {
             String[] parts = item.split(":");
@@ -160,7 +183,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public void setCarritoUI(Map<String, Integer> nuevoCarritoPlano) {
         carrito.setValue(new HashMap<>(nuevoCarritoPlano));
         
-        // Reconstruir el mapa estructurado para el JSON
         Map<String, List<String>> mapParaJSON = new HashMap<>();
         for (Map.Entry<String, Integer> entry : nuevoCarritoPlano.entrySet()) {
             String[] parts = entry.getKey().split(":");

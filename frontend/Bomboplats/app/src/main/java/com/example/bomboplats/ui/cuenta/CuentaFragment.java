@@ -22,6 +22,7 @@ public class CuentaFragment extends Fragment {
     private TextView tvPerfilNombre;
     private TextView tvPerfilEmail;
     private Button btnEditar;
+    private Button btnDirecciones;
     private UserViewModel userViewModel;
 
     @Nullable
@@ -33,6 +34,7 @@ public class CuentaFragment extends Fragment {
         tvPerfilNombre = view.findViewById(R.id.tv_perfil_nombre);
         tvPerfilEmail = view.findViewById(R.id.tv_perfil_email);
         btnEditar = view.findViewById(R.id.btn_editar_perfil);
+        btnDirecciones = view.findViewById(R.id.btn_direcciones);
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
@@ -54,6 +56,15 @@ public class CuentaFragment extends Fragment {
 
         btnEditar.setOnClickListener(v -> {
             EditarPerfilFragment fragment = new EditarPerfilFragment();
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+            transaction.replace(R.id.container, fragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+        btnDirecciones.setOnClickListener(v -> {
+            DireccionesCuentaFragment fragment = new DireccionesCuentaFragment();
             FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
             transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
             transaction.replace(R.id.container, fragment);

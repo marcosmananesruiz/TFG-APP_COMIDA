@@ -21,17 +21,13 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
-import com.example.bomboplats.data.Result;
-import com.example.bomboplats.data.model.LoggedInUser;
+import com.example.bomboplats.data.model.Cuenta;
 import com.example.bomboplats.databinding.ActivityLoginBinding;
-
-import java.util.ArrayList;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -45,7 +41,6 @@ public class LoginActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
-        // Inicializar movidas
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -57,8 +52,8 @@ public class LoginActivity extends AppCompatActivity {
         final Button loginButton = binding.login;
         final ProgressBar loadingProgressBar = binding.loading;
         final ImageView catImageView = binding.imageView;
+        final TextView registerLink = binding.registerLink;
 
-        // Manejar el botón de "atrás"
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
@@ -69,27 +64,31 @@ public class LoginActivity extends AppCompatActivity {
                     finishAffinity();
                     return;
                 }
-                backToast = Toast.makeText(LoginActivity.this, "Pulsa otra vez para salir", Toast.LENGTH_SHORT);
+                backToast = Toast.makeText(LoginActivity.this, getString(R.string.atras_salir), Toast.LENGTH_SHORT);
                 backToast.show();
                 backPressedTime = System.currentTimeMillis();
             }
         });
 
-        // Configurar el "login rápido" al pulsar el gato
         catImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Primero intentamos registrar a los usuarios de prueba si no existen
                 loginViewModel.registerTestUser("usuario1@test.com", "juan123", "Juan Pérez");
                 loginViewModel.registerTestUser("usuario2@test.com", "maria456", "María García");
 
-                // Rellenamos los campos con la primera cuenta de prueba
                 usernameEditText.setText("usuario1@test.com");
                 passwordEditText.setText("juan123");
                 
-                // Ejecutamos el login
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login("usuario1@test.com", "juan123");
+                loginViewModel.login(new Cuenta("usuario1@test.com", "juan123"));
+            }
+        });
+
+        registerLink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -120,7 +119,6 @@ public class LoginActivity extends AppCompatActivity {
                     showLoginFailed(loginResult.getError());
                 }
                 if (loginResult.getSuccess() != null) {
-                    // PERSISTENCIA DEL USUARIO LOGUEADO
                     String email = usernameEditText.getText().toString();
                     SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
                     prefs.edit().putString("current_user_email", email).apply();
@@ -138,10 +136,8 @@ public class LoginActivity extends AppCompatActivity {
         TextWatcher afterTextChangedListener = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
-
             @Override
             public void afterTextChanged(Editable s) {
                 loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
@@ -154,8 +150,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(usernameEditText.getText().toString(),
-                            passwordEditText.getText().toString());
+                    loginViewModel.login(new Cuenta(usernameEditText.getText().toString(),
+                            passwordEditText.getText().toString()));
                 }
                 return false;
             }
@@ -165,14 +161,14 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                loginViewModel.login(new Cuenta(usernameEditText.getText().toString(),
+                        passwordEditText.getText().toString()));
             }
         });
     }
 
     private void updateUiWithUser(LoggedInUserView model) {
-        String welcome = getString(R.string.welcome) + model.getDisplayName();
+        String welcome = getString(R.string.welcome, model.getDisplayName());
         Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
     }
 

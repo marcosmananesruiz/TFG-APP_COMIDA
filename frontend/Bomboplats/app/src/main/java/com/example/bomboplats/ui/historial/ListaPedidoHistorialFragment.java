@@ -14,8 +14,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
-import com.example.bomboplats.data.model.BomboConCantidad;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.general.BomboAdapter;
@@ -31,6 +31,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
     private Pedido pedido;
     private UserViewModel userViewModel;
     private CarritoViewModel carritoViewModel;
+    private FoodRepository foodRepository;
 
     public static ListaPedidoHistorialFragment newInstance(Pedido pedido) {
         ListaPedidoHistorialFragment fragment = new ListaPedidoHistorialFragment();
@@ -56,6 +57,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
+        foodRepository = FoodRepository.getInstance(requireContext());
 
         if (pedido != null) {
             // Usamos el recurso prefix_pedido_id para evitar hardcodeo
@@ -64,8 +66,14 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
             tvFecha.setText(pedido.getFecha());
 
             List<Bombo> bombos = new ArrayList<>();
-            for (BomboConCantidad item : pedido.getItems()) {
-                bombos.add(item.getBombo());
+            if (pedido.getItems() != null) {
+                for (PedidoItem item : pedido.getItems()) {
+                    String itemKey = item.getRestauranteId() + ":" + item.getBomboId();
+                    Bombo b = foodRepository.getBomboPorId(itemKey);
+                    if (b != null) {
+                        bombos.add(b);
+                    }
+                }
             }
 
             adapter = new BomboAdapter(bombos, this, userViewModel);

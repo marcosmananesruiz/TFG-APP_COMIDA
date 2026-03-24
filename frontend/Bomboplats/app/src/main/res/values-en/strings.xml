@@ -19,6 +19,25 @@
     <string name="cambiar_correo_electronico">CHANGE EMAIL ADDRESS</string>
     <string name="cambiar_contrasena">CHANGE PASSWORD</string>
 
+    <!-- Registration -->
+    <string name="title_register">Create Account</string>
+    <string name="prompt_name">Full name</string>
+    <string name="prompt_confirm_password">Confirm password</string>
+    <string name="action_register">Register</string>
+    <string name="login_link">Already have an account? Sign in</string>
+    <string name="register_link">Don\'t have an account? Register here</string>
+    <string name="error_passwords_dont_match">Passwords do not match</string>
+    <string name="registration_complete">Registration complete</string>
+
+    <!-- Addresses -->
+    <string name="titulo_direcciones">My Addresses</string>
+    <string name="hint_nueva_direccion">Add new address...</string>
+    <string name="btn_mis_direcciones">My Addresses</string>
+    <string name="toast_direccion_vacia">Address cannot be empty</string>
+    <string name="toast_direccion_borrada">Address deleted</string>
+    <string name="toast_direccion_guardada">Address saved</string>
+    <string name="label_no_direcciones">You don\'t have saved addresses yet</string>
+
     <!-- Navigation Drawer -->
     <string name="nav_inicio">Home</string>
     <string name="nav_cuenta">Account</string>
@@ -58,6 +77,8 @@
     <string name="toast_rellenar_campos">Please fill in all fields</string>
     <string name="toast_correo_actualizado">Email updated successfully</string>
     <string name="toast_pass_actualizada">Password updated successfully</string>
+    <string name="error_mail_no_coincide">Current email doesn\'t match</string>
+    <string name="error_nombre_vacio">Name cannot be empty</string>
 
     <!-- Cart and Orders -->
     <string name="carrito_vacio">Your cart is empty</string>

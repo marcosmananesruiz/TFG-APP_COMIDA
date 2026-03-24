@@ -1,5 +1,6 @@
 package com.example.bomboplats.data.model;
 
+import com.example.bomboplats.ui.historial.Pedido;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,10 +13,10 @@ public class LoggedInUser {
     private String email;
     private String password;
     private String photoPath;
-    // Estructura: Map<RestauranteId, List<BomboId>>
     private Map<String, List<String>> favoritePlates = new HashMap<>();
-    // Estructura: Map<RestauranteId, List<BomboId>>
     private Map<String, List<String>> cartPlates = new HashMap<>();
+    private List<Pedido> orderHistory = new ArrayList<>();
+    private List<String> addresses = new ArrayList<>();
 
     public LoggedInUser(String userId, String displayName, String email, String password, Map<String, List<String>> favoritePlates, Map<String, List<String>> cartPlates, String photoPath) {
         this.userId = userId;
@@ -24,6 +25,8 @@ public class LoggedInUser {
         this.password = password;
         this.favoritePlates = favoritePlates != null ? favoritePlates : new HashMap<>();
         this.cartPlates = cartPlates != null ? cartPlates : new HashMap<>();
+        this.orderHistory = new ArrayList<>();
+        this.addresses = new ArrayList<>();
         this.photoPath = photoPath;
     }
 
@@ -43,6 +46,16 @@ public class LoggedInUser {
         return cartPlates;
     }
 
+    public List<Pedido> getOrderHistory() {
+        if (orderHistory == null) orderHistory = new ArrayList<>();
+        return orderHistory;
+    }
+
+    public List<String> getAddresses() {
+        if (addresses == null) addresses = new ArrayList<>();
+        return addresses;
+    }
+
     public void setUserId(String userId) { this.userId = userId; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     public void setEmail(String email) { this.email = email; }
@@ -50,4 +63,6 @@ public class LoggedInUser {
     public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
     public void setFavoritePlates(Map<String, List<String>> favoritePlates) { this.favoritePlates = favoritePlates; }
     public void setCartPlates(Map<String, List<String>> cartPlates) { this.cartPlates = cartPlates; }
+    public void setOrderHistory(List<Pedido> orderHistory) { this.orderHistory = orderHistory; }
+    public void setAddresses(List<String> addresses) { this.addresses = addresses; }
 }
