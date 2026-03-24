@@ -44,7 +44,7 @@ public class LoginDataSource {
                         String.valueOf(i + 1),
                         names[i],
                         emails[i],
-                        "1234",
+                        "jorge123",
                         new HashMap<>(),
                         new HashMap<>(),
                         null
@@ -72,17 +72,18 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
-        // 1. Cargamos el usuario desde el archivo actual
+        // Verificar si el nuevo email ya existe
+        if (new File(usersDir, newEmail + ".json").exists()) {
+            return new Result.Error(new IOException("El nuevo correo ya está registrado"));
+        }
+
         Result<LoggedInUser> loadResult = getUser(oldEmail);
         if (loadResult instanceof Result.Success) {
             LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
             File existingFile = new File(usersDir, oldEmail + ".json");
 
-            // 2. MODIFICAMOS LA PROPIEDAD INTERNA DEL OBJETO
             user.setEmail(newEmail);
             
-            // 3. SOBREESCRIBIMOS EL ARCHIVO EXISTENTE (Igual que con la contraseña)
-            // Esto edita el JSON jorge1@test.com.json directamente.
             try (FileOutputStream fos = new FileOutputStream(existingFile);
                  OutputStreamWriter osw = new OutputStreamWriter(fos)) {
                 gson.toJson(user, osw);
@@ -92,22 +93,19 @@ public class LoginDataSource {
                 return new Result.Error(new IOException("Error al editar el archivo", e));
             }
 
-            // 4. AHORA RENOMBRAMOS EL ARCHIVO PARA ACTUALIZAR LA IDENTIDAD
             File newFile = new File(usersDir, newEmail + ".json");
             if (existingFile.renameTo(newFile)) {
-                // Migrar historial si existe
                 File oldHistory = new File(usersDir, oldEmail + "_history.json");
                 if (oldHistory.exists()) {
                     oldHistory.renameTo(new File(usersDir, newEmail + "_history.json"));
                 }
-                // Migrar foto si existe
                 File oldPhoto = new File(usersDir, oldEmail + ".jpg");
                 if (oldPhoto.exists()) {
                     oldPhoto.renameTo(new File(usersDir, newEmail + ".jpg"));
                 }
                 return new Result.Success<>(user);
             }
-            return new Result.Success<>(user); // El contenido se cambió aunque el rename fallara
+            return new Result.Success<>(user);
         }
         return loadResult;
     }
@@ -157,6 +155,10 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> register(LoggedInUser user) {
+        File file = new File(usersDir, user.getEmail() + ".json");
+        if (file.exists()) {
+            return new Result.Error(new IOException("USUARIO_EXISTE"));
+        }
         return saveUserInternal(user);
     }
 

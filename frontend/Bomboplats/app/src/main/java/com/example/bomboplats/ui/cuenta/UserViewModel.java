@@ -32,6 +32,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private final MutableLiveData<List<String>> favoritos = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Map<String, Integer>> carrito = new MutableLiveData<>(new HashMap<>());
     private final MutableLiveData<List<String>> addresses = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<String> error = new MutableLiveData<>();
 
     public UserViewModel(@NonNull Application application) {
         super(application);
@@ -98,6 +99,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<List<String>> getFavoritos() { return favoritos; }
     public LiveData<Map<String, Integer>> getCarrito() { return carrito; }
     public LiveData<List<String>> getAddresses() { return addresses; }
+    public LiveData<String> getError() { return error; }
 
     public void addAddress(String address) {
         List<String> current = addresses.getValue();
@@ -129,7 +131,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         if (result instanceof Result.Success) name.setValue(newName);
     }
 
-    public void setEmail(String newEmail) {
+    public Result<LoggedInUser> setEmail(String newEmail) {
         Result<LoggedInUser> result = loginRepository.updateEmail(newEmail);
         if (result instanceof Result.Success) {
             this.email.setValue(newEmail);
@@ -138,7 +140,10 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
             if (photoFile != null && photoFile.exists()) {
                 photoUri.setValue(photoFile.getAbsolutePath());
             }
+        } else if (result instanceof Result.Error) {
+            error.setValue(((Result.Error) result).getError().getMessage());
         }
+        return result;
     }
 
     public void setPassword(String oldPassword, String newPassword) {
@@ -199,5 +204,9 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public boolean esFavorito(String restauranteId, String bomboId) {
         List<String> lista = favoritos.getValue();
         return lista != null && lista.contains(restauranteId + ":" + bomboId);
+    }
+
+    public void clearError() {
+        error.setValue(null);
     }
 }

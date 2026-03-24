@@ -10,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bomboplats.R;
@@ -35,6 +36,22 @@ public class RegisterActivity extends AppCompatActivity {
         editTextConfirmPassword = findViewById(R.id.editTextConfirmPassword);
         buttonRegister = findViewById(R.id.buttonRegister);
         textViewLoginLink = findViewById(R.id.textViewLoginLink);
+
+        loginViewModel.getLoginResult().observe(this, new Observer<LoginResult>() {
+            @Override
+            public void onChanged(LoginResult loginResult) {
+                if (loginResult == null) {
+                    return;
+                }
+                if (loginResult.getError() != null) {
+                    Toast.makeText(getApplicationContext(), loginResult.getError(), Toast.LENGTH_SHORT).show();
+                }
+                if (loginResult.getSuccess() != null) {
+                    Toast.makeText(getApplicationContext(), R.string.registration_complete, Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+            }
+        });
 
         buttonRegister.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,7 +91,5 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         loginViewModel.registerTestUser(email, password, name);
-        Toast.makeText(this, getString(R.string.registration_complete), Toast.LENGTH_SHORT).show();
-        finish(); // Volver al login para entrar
     }
 }

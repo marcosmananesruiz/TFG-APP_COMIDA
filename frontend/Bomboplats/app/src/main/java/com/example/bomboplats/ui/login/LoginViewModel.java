@@ -12,6 +12,7 @@ import com.example.bomboplats.data.model.Cuenta;
 import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.R;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -46,12 +47,6 @@ public class LoginViewModel extends ViewModel {
     }
 
     public void registerTestUser(String email, String password, String displayName) {
-        // Solo intentamos registrar si no existe ya el usuario, 
-        // para no sobreescribir sus favoritos/carrito con mapas vacíos.
-        if (loginRepository.loadUserSession(email)) {
-            return; 
-        }
-
         LoggedInUser newUser = new LoggedInUser(
                 java.util.UUID.randomUUID().toString(),
                 displayName,
@@ -61,7 +56,18 @@ public class LoginViewModel extends ViewModel {
                 new HashMap<>(),
                 null
         );
-        loginRepository.register(newUser);
+        
+        Result<LoggedInUser> result = loginRepository.register(newUser);
+        if (result instanceof Result.Error) {
+            String errorMsg = ((Result.Error) result).getError().getMessage();
+            if ("USUARIO_EXISTE".equals(errorMsg)) {
+                loginResult.setValue(new LoginResult(R.string.error_email_exists));
+            } else {
+                loginResult.setValue(new LoginResult(R.string.login_failed));
+            }
+        } else {
+            loginResult.setValue(new LoginResult(new LoggedInUserView(displayName)));
+        }
     }
 
     public void loginDataChanged(String username, String password) {

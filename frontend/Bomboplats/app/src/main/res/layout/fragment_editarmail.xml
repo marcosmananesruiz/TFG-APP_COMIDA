@@ -37,24 +37,6 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/perfil_mail_actual"
-                    android:textColor="@color/text_color"
-                    android:textStyle="bold" />
-
-                <EditText
-                    android:id="@+id/et_mail_actual"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    android:hint="@string/hint_mail_actual"
-                    android:textColor="@color/text_color"
-                    android:textColorHint="@color/text_color_secondary"
-                    android:alpha="0.6"
-                    android:inputType="textEmailAddress" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="@string/perfil_mail_nuevo"
                     android:textColor="@color/text_color"
                     android:textStyle="bold" />
@@ -66,7 +48,7 @@
                     android:hint="@string/hint_mail_nuevo"
                     android:textColor="@color/text_color"
                     android:textColorHint="@color/text_color_secondary"
-                    android:alpha="0.6"
+                    android:alpha="0.8"
                     android:inputType="textEmailAddress" />
 
             </LinearLayout>
@@ -88,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="60dp"
             android:text="@string/confirmar_cambio"
-            android:textColor="@color/white"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:textStyle="bold" />
 
