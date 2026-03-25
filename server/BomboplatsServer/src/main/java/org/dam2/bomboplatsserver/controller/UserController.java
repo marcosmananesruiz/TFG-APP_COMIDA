@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.OpenAPI31;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,6 +61,7 @@ public class UserController {
     }
 
     @GetMapping( value = "/get", params = "id")
+    @Operation(summary = "Obtener un usuario por su ID")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Usuario encontrado",
@@ -73,6 +75,7 @@ public class UserController {
     }
 
     @GetMapping(value = "/get", params = "email")
+    @Operation(summary = "Obtener un usuario por su Email")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Usuario encontrado",
@@ -102,9 +105,11 @@ public class UserController {
     }
 
     @GetMapping("/get")
-    @Operation(summary = "Obtener todos los usuarios, o por su id/email")
+    @Operation(summary = "Obtener todos los usuarios")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuarios encontrados", content = @Content(schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "200",
+                    description = "Usuarios encontrados",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = User.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado usuarios")
     })
     public Flux<User> findAll() {
@@ -131,7 +136,7 @@ public class UserController {
         return this.s3Service.generateUserIconUrl(id);
     }
 
-    @GetMapping(value = "/updatePass", params = {"userId", "password"})
+    @PutMapping(value = "/updatePass", params = {"userId", "password"})
     @Operation(summary = "Actualizar la contraseña de un usuario segun su id")
     @ApiResponses({
         @ApiResponse(responseCode = "200", description = "true: Se actualizo la contraseña correctamente"),

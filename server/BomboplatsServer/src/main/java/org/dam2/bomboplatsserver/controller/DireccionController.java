@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +29,7 @@ public class DireccionController {
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Direcciones encontradas",
-                    content = @Content(schema = @Schema(implementation = Direccion.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Direccion.class)))),
             @ApiResponse(responseCode = "404", description = "No se encontraron direcciones")
     })
     public Flux<Direccion> findAll() {

@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +29,7 @@ public class PedidoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Pedidos encontrados",
-                    content = @Content(schema = @Schema(implementation = Pedido.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Pedido.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado pedidos")
     })
     public Flux<Pedido> findAll() {
