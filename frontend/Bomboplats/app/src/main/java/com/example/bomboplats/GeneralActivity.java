@@ -176,7 +176,16 @@ public class GeneralActivity extends AppCompatActivity {
 
         navigationViewBottom.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_cerrarSesion) {
+                // --- CERRAR SESIÓN (BORRAR TOKEN SIMULADO) ---
+                SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                prefs.edit()
+                        .remove("current_user_email")
+                        .remove("session_expiration")
+                        .apply();
+                // ---------------------------------------------
+
                 Intent intent = new Intent(GeneralActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 finish();
             }

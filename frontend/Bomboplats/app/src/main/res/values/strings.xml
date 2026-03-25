@@ -3,10 +3,10 @@
     <string name="title_activity_login">Bomboplats</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Contraseña</string>
-    <string name="action_sign_in">Iniciar sesión o registrarse</string>
-    <string name="action_sign_in_short">Entrar</string>
-    <string name="welcome">Bienvenido, %s</string>
-    <string name="invalid_username">Nombre de usuario no válido</string>
+    <string name="action_sign_in">Inicia sesión o regístrate</string>
+    <string name="action_sign_in_short">Inicia sesión</string>
+    <string name="welcome">¡Bienvenido/a, %s!</string>
+    <string name="invalid_username">No es un email válido</string>
     <string name="invalid_password">La contraseña debe tener más de 5 caracteres</string>
     <string name="login_failed">Error al iniciar sesión</string>
     <string name="drawer_open">Abrir menú</string>
@@ -19,6 +19,9 @@
     <string name="cambiar_correo_electronico">CAMBIAR CORREO ELECTRÓNICO</string>
     <string name="cambiar_contrasena">CAMBIAR CONTRASEÑA</string>
 
+    <!-- Mantener sesión -->
+    <string name="mantener_sesion">Mantener la sesión iniciada</string>
+
     <!-- Registro -->
     <string name="title_register">Crear Cuenta</string>
     <string name="prompt_name">Nombre completo</string>
@@ -28,7 +31,7 @@
     <string name="register_link">¿No tienes cuenta? Regístrate aquí</string>
     <string name="error_passwords_dont_match">Las contraseñas no coinciden</string>
     <string name="registration_complete">Registro completado</string>
-    <string name="error_email_exists">El correo electrónico ya está en uso</string>
+    <string name="error_email_exists">Ese email ya está en uso por otra cuenta</string>
 
     <!-- Direcciones -->
     <string name="titulo_direcciones">Mis Direcciones</string>
@@ -39,7 +42,7 @@
     <string name="toast_direccion_guardada">Dirección guardada</string>
     <string name="label_no_direcciones">Aún no tienes direcciones guardadas</string>
 
-    <!-- Menú Lateral -->
+    <!-- Navigation Drawer -->
     <string name="nav_inicio">Inicio</string>
     <string name="nav_cuenta">Cuenta</string>
     <string name="nav_favoritos">Mis bombos favoritos</string>
@@ -47,7 +50,7 @@
     <string name="nav_historial">Historial de bombos</string>
     <string name="nav_notificaciones">Notificaciones</string>
     <string name="nav_configuracion">Configuración</string>
-    <string name="nav_cerrar_sesion">Cerrar Sesión</string>
+    <string name="nav_cerrar_sesion">Cerrar sesión</string>
 
     <!-- Configuración -->
     <string name="config_titulo">Configuración</string>
@@ -75,18 +78,18 @@
     <string name="hint_pass_actual">Introduce tu contraseña actual</string>
     <string name="hint_pass_nueva">Introduce la nueva contraseña</string>
     <string name="toast_foto_seleccionada">Foto seleccionada</string>
-    <string name="toast_rellenar_campos">Rellena todos los campos</string>
+    <string name="toast_rellenar_campos">Por favor, rellena todos los campos</string>
     <string name="toast_correo_actualizado">Correo actualizado con éxito</string>
-    <string name="toast_pass_actualizada">Contraseña actualizada correctamente</string>
+    <string name="toast_pass_actualizada">Contraseña actualizada con éxito</string>
     <string name="error_mail_no_coincide">El correo actual no coincide</string>
     <string name="error_nombre_vacio">El nombre no puede estar vacío</string>
-    <string name="error_image_too_large">La imagen es demasiado pesada y no se cambiará</string>
+    <string name="error_image_too_large">La imagen pesa demasiado y no se cambiará</string>
     <string name="error_mail_invalido">Introduce un correo electrónico válido</string>
     <string name="error_mail_igual_al_actual">Introduce un correo diferente al actual</string>
     <string name="error_actualizar_correo">Error al actualizar el correo</string>
     <string name="eliminar_cuenta">ELIMINAR CUENTA</string>
-    <string name="dialog_eliminar_cuenta_titulo">¿Seguro que quieres eliminar tu cuenta?</string>
-    <string name="dialog_eliminar_cuenta_mensaje">Esta accion sera permanente.</string>
+    <string name="dialog_eliminar_cuenta_titulo">¿Estás seguro de que quieres eliminar tu cuenta?</string>
+    <string name="dialog_eliminar_cuenta_mensaje">Esta acción será permanente.</string>
     <string name="si">SÍ</string>
     <string name="no">NO</string>
     <string name="cuenta_eliminada">Cuenta eliminada correctamente</string>
@@ -99,7 +102,7 @@
     <string name="direccion_entrega">Dirección de entrega</string>
     <string name="hint_direccion">Calle, número, piso…</string>
     <string name="metodo_pago">Método de pago</string>
-    <string name="pago_tarjeta">Tarjeta de crédito/débito</string>
+    <string name="pago_tarjeta">Tarjeta de Crédito/Débito</string>
     <string name="pago_paypal">PayPal</string>
     <string name="pago_efectivo">Efectivo al repartidor</string>
     <string name="datos_tarjeta">Datos de la tarjeta</string>
@@ -118,10 +121,15 @@
     <string name="label_productos">Productos:</string>
     <string name="label_historial_titulo">Mis Pedidos</string>
     <string name="historial_vacio">Aún no has realizado ningún pedido</string>
-    <string name="notificaciones_vacia">No tienes notificaciones de ningún bombo aún</string>
-    <string name="favoritos_vacio">Aún no tienes platos favoritos</string>
+    <string name="notificaciones_vacia">Aún no hay notificaciones de ningún bombo</string>
+    <string name="favoritos_vacio">Aún no hay platos favoritos</string>
 
-    <!-- Detalle Plato -->
+    <!-- Notificaciones dinámicas -->
+    <string name="noti_titulo_estado">Estado de Bombos</string>
+    <string name="noti_msg_de_camino">Tu pedido #%1$s está de camino 🛵</string>
+    <string name="noti_msg_entregado">¡Tu pedido #%1$s ha sido entregado! 😋</string>
+
+    <!-- Plato Detail -->
     <string name="label_ingredientes">Ingredientes:</string>
     <string name="label_alergenos">Alérgenos:</string>
     <string name="no_especificados">No especificados</string>
@@ -129,17 +137,12 @@
     <string name="placeholder_nombre_plato">Nombre del Plato</string>
     <string name="placeholder_descripcion_plato">Descripción del plato…</string>
 
-    <!-- Notificaciones dinámicas -->
-    <string name="noti_titulo_estado">Estado de tus Bombos</string>
-    <string name="noti_msg_de_camino">Tu pedido #%1$s está de camino 🛵</string>
-    <string name="noti_msg_entregado">¡Tu pedido #%1$s ha sido entregado! 😋</string>
+    <!-- Home -->
+    <string name="inicio_error_carga">No se pudieron cargar los restaurantes</string>
 
-    <!-- Inicio -->
-    <string name="inicio_error_carga">No se han podido cargar los restaurantes</string>
-
-    <!-- Barra de búsqueda -->
+    <!-- Search Bar -->
     <string name="buscar_bomboplats">Buscar bomboplats…</string>
 
-    <!-- Generales UI -->
-    <string name="atras_salir">Pulsa otra vez para salir</string>
+    <!-- UI Generals -->
+    <string name="atras_salir">Pulsa de nuevo para salir</string>
 </resources>

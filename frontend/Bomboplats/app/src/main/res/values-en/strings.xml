@@ -19,6 +19,9 @@
     <string name="cambiar_correo_electronico">CHANGE EMAIL ADDRESS</string>
     <string name="cambiar_contrasena">CHANGE PASSWORD</string>
 
+    <!-- Keep session -->
+    <string name="mantener_sesion">Keep session logged in</string>
+
     <!-- Registration -->
     <string name="title_register">Create Account</string>
     <string name="prompt_name">Full name</string>

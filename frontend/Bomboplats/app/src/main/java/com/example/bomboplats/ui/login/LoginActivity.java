@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -29,6 +30,8 @@ import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Cuenta;
 import com.example.bomboplats.databinding.ActivityLoginBinding;
 
+import java.util.Calendar;
+
 public class LoginActivity extends AppCompatActivity {
 
     private LoginViewModel loginViewModel;
@@ -38,8 +41,22 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+
+        // --- COMPROBACIÓN DE SESIÓN (TOKEN SIMULADO) ---
+        SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        boolean keepForever = prefs.getBoolean("keep_session_forever", false);
+        long expirationTime = prefs.getLong("session_expiration", 0);
+        String currentEmail = prefs.getString("current_user_email", null);
+
+        if (currentEmail != null && (keepForever || expirationTime > System.currentTimeMillis())) {
+            // La sesión sigue siendo válida (o es indefinida)
+            Intent intent = new Intent(this, GeneralActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+        // ----------------------------------------------
 
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -49,6 +66,7 @@ public class LoginActivity extends AppCompatActivity {
 
         final EditText usernameEditText = binding.username;
         final EditText passwordEditText = binding.password;
+        final CheckBox keepSessionCheckBox = binding.keepSession;
         final Button loginButton = binding.login;
         final ProgressBar loadingProgressBar = binding.loading;
         final ImageView catImageView = binding.imageView;
@@ -120,8 +138,25 @@ public class LoginActivity extends AppCompatActivity {
                 }
                 if (loginResult.getSuccess() != null) {
                     String email = usernameEditText.getText().toString();
+                    boolean shouldKeepForever = keepSessionCheckBox.isChecked();
+                    
+                    // --- GUARDAR SESIÓN (TOKEN SIMULADO) ---
                     SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-                    prefs.edit().putString("current_user_email", email).apply();
+                    SharedPreferences.Editor editor = prefs.edit();
+                    
+                    editor.putString("current_user_email", email);
+                    editor.putBoolean("keep_session_forever", shouldKeepForever);
+
+                    if (!shouldKeepForever) {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.add(Calendar.DAY_OF_YEAR, 7); // Añadir una semana
+                        editor.putLong("session_expiration", calendar.getTimeInMillis());
+                    } else {
+                        editor.remove("session_expiration");
+                    }
+                    
+                    editor.apply();
+                    // ----------------------------------------
 
                     updateUiWithUser(loginResult.getSuccess());
                     setResult(Activity.RESULT_OK);
@@ -173,7 +208,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void showLoginFailed(@StringRes Integer errorString) {
-        // CAMBIO: Se usa LoginActivity.this en lugar de getApplicationContext() para respetar el idioma
         Toast.makeText(LoginActivity.this, errorString, Toast.LENGTH_SHORT).show();
     }
 }
