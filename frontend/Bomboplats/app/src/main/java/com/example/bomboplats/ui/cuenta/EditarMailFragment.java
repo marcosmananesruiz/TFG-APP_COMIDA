@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.LoginDataSource;
 import com.example.bomboplats.data.Result;
 
 public class EditarMailFragment extends Fragment {
@@ -40,13 +41,13 @@ public class EditarMailFragment extends Fragment {
             }
 
             if (!Patterns.EMAIL_ADDRESS.matcher(nuevo).matches()) {
-                etMailNuevo.setError("Introduce un correo electrónico válido");
+                etMailNuevo.setError(getString(R.string.error_mail_invalido));
                 return;
             }
 
             String mailActual = userViewModel.getEmail().getValue();
             if (nuevo.equalsIgnoreCase(mailActual)) {
-                Toast.makeText(getContext(), "Introduce un correo diferente al actual", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.error_mail_igual_al_actual), Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -56,10 +57,10 @@ public class EditarMailFragment extends Fragment {
                 requireActivity().getSupportFragmentManager().popBackStack();
             } else if (result instanceof Result.Error) {
                 String errorMsg = ((Result.Error) result).getError().getMessage();
-                if ("El nuevo correo ya está registrado".equals(errorMsg)) {
+                if (LoginDataSource.ERROR_EMAIL_ALREADY_EXISTS.equals(errorMsg)) {
                     Toast.makeText(getContext(), getString(R.string.error_email_exists), Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getContext(), "Error al actualizar el correo", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), getString(R.string.error_actualizar_correo), Toast.LENGTH_SHORT).show();
                 }
             }
         });

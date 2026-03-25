@@ -13,6 +13,10 @@ import java.util.HashMap;
 
 public class LoginDataSource {
 
+    public static final String ERROR_EMAIL_ALREADY_EXISTS = "EMAIL_EXISTS";
+    public static final String ERROR_USER_NOT_FOUND = "USER_NOT_FOUND";
+    public static final String ERROR_WRONG_PASSWORD = "WRONG_PASSWORD";
+
     private final Context context;
     private final Gson gson;
     private final File usersDir;
@@ -57,14 +61,14 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> login(String username, String password) {
         File file = new File(usersDir, username + ".json");
-        if (!file.exists()) return new Result.Error(new IOException("Usuario no encontrado"));
+        if (!file.exists()) return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
 
         try (FileReader reader = new FileReader(file)) {
             LoggedInUser user = gson.fromJson(reader, LoggedInUser.class);
             if (user != null && user.getPassword().equals(password)) {
                 return new Result.Success<>(user);
             } else {
-                return new Result.Error(new IOException("Contraseña incorrecta"));
+                return new Result.Error(new IOException(ERROR_WRONG_PASSWORD));
             }
         } catch (IOException e) {
             return new Result.Error(e);
@@ -73,7 +77,7 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
         if (new File(usersDir, newEmail + ".json").exists()) {
-            return new Result.Error(new IOException("El nuevo correo ya está registrado"));
+            return new Result.Error(new IOException(ERROR_EMAIL_ALREADY_EXISTS));
         }
 
         Result<LoggedInUser> loadResult = getUser(oldEmail);
@@ -125,7 +129,7 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> getUser(String username) {
         File file = new File(usersDir, username + ".json");
-        if (!file.exists()) return new Result.Error(new IOException("Usuario no encontrado"));
+        if (!file.exists()) return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
         try (FileReader reader = new FileReader(file)) {
             LoggedInUser user = gson.fromJson(reader, LoggedInUser.class);
             return new Result.Success<>(user);
@@ -160,7 +164,7 @@ public class LoginDataSource {
     public Result<LoggedInUser> register(LoggedInUser user) {
         File file = new File(usersDir, user.getEmail() + ".json");
         if (file.exists()) {
-            return new Result.Error(new IOException("USUARIO_EXISTE"));
+            return new Result.Error(new IOException(ERROR_EMAIL_ALREADY_EXISTS));
         }
         return saveUserInternal(user);
     }

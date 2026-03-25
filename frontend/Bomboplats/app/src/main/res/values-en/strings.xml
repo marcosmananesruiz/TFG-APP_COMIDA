@@ -28,6 +28,7 @@
     <string name="register_link">Don\'t have an account? Register here</string>
     <string name="error_passwords_dont_match">Passwords do not match</string>
     <string name="registration_complete">Registration complete</string>
+    <string name="error_email_exists">That email is already in use by another account</string>
 
     <!-- Addresses -->
     <string name="titulo_direcciones">My Addresses</string>
@@ -79,6 +80,16 @@
     <string name="toast_pass_actualizada">Password updated successfully</string>
     <string name="error_mail_no_coincide">Current email doesn\'t match</string>
     <string name="error_nombre_vacio">Name cannot be empty</string>
+    <string name="error_image_too_large">Image is too heavy and won\'t be changed</string>
+    <string name="error_mail_invalido">Enter a valid email address</string>
+    <string name="error_mail_igual_al_actual">Enter an email different from the current one</string>
+    <string name="error_actualizar_correo">Error updating email</string>
+    <string name="eliminar_cuenta">DELETE ACCOUNT</string>
+    <string name="dialog_eliminar_cuenta_titulo">Are you sure you want to delete your account?</string>
+    <string name="dialog_eliminar_cuenta_mensaje">This action will be permanent.</string>
+    <string name="si">YES</string>
+    <string name="no">NO</string>
+    <string name="cuenta_eliminada">Account deleted successfully</string>
 
     <!-- Cart and Orders -->
     <string name="carrito_vacio">Your cart is empty</string>

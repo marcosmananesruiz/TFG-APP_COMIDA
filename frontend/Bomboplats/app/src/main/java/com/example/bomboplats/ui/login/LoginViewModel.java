@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 import android.util.Patterns;
 
+import com.example.bomboplats.data.LoginDataSource;
 import com.example.bomboplats.data.LoginRepository;
 import com.example.bomboplats.data.Result;
 import com.example.bomboplats.data.model.Cuenta;
@@ -41,8 +42,15 @@ public class LoginViewModel extends ViewModel {
         if (result instanceof Result.Success) {
             LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
             loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
-        } else {
-            loginResult.setValue(new LoginResult(R.string.login_failed));
+        } else if (result instanceof Result.Error) {
+            String errorMsg = ((Result.Error) result).getError().getMessage();
+            if (LoginDataSource.ERROR_WRONG_PASSWORD.equals(errorMsg)) {
+                loginResult.setValue(new LoginResult(R.string.invalid_password));
+            } else if (LoginDataSource.ERROR_USER_NOT_FOUND.equals(errorMsg)) {
+                loginResult.setValue(new LoginResult(R.string.invalid_username));
+            } else {
+                loginResult.setValue(new LoginResult(R.string.login_failed));
+            }
         }
     }
 
@@ -60,7 +68,7 @@ public class LoginViewModel extends ViewModel {
         Result<LoggedInUser> result = loginRepository.register(newUser);
         if (result instanceof Result.Error) {
             String errorMsg = ((Result.Error) result).getError().getMessage();
-            if ("USUARIO_EXISTE".equals(errorMsg)) {
+            if (LoginDataSource.ERROR_EMAIL_ALREADY_EXISTS.equals(errorMsg)) {
                 loginResult.setValue(new LoginResult(R.string.error_email_exists));
             } else {
                 loginResult.setValue(new LoginResult(R.string.login_failed));

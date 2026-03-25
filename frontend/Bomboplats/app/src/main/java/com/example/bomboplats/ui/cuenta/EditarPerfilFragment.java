@@ -2,6 +2,7 @@ package com.example.bomboplats.ui.cuenta;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -113,10 +114,10 @@ public class EditarPerfilFragment extends Fragment {
     }
 
     private void mostrarDialogoEliminar() {
-        new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
                 .setTitle(R.string.dialog_eliminar_cuenta_titulo)
                 .setMessage(R.string.dialog_eliminar_cuenta_mensaje)
-                .setPositiveButton(R.string.si, (dialog, which) -> {
+                .setPositiveButton(R.string.si, (d, which) -> {
                     userViewModel.deleteAccount();
                     Toast.makeText(getContext(), R.string.cuenta_eliminada, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(getActivity(), LoginActivity.class);
@@ -124,7 +125,13 @@ public class EditarPerfilFragment extends Fragment {
                     startActivity(intent);
                 })
                 .setNegativeButton(R.string.no, null)
-                .show();
+                .create();
+
+        dialog.show();
+
+        // Cambiar el color de los botones a blanco
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE);
+        dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.WHITE);
     }
 
     private boolean isImageSizeValid(Uri uri) {

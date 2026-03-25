@@ -44,10 +44,11 @@ public class RegisterActivity extends AppCompatActivity {
                     return;
                 }
                 if (loginResult.getError() != null) {
-                    Toast.makeText(getApplicationContext(), loginResult.getError(), Toast.LENGTH_SHORT).show();
+                    // SE USA EL CONTEXTO DE LA ACTIVITY PARA RESPETAR EL IDIOMA SELECCIONADO
+                    Toast.makeText(RegisterActivity.this, loginResult.getError(), Toast.LENGTH_SHORT).show();
                 }
                 if (loginResult.getSuccess() != null) {
-                    Toast.makeText(getApplicationContext(), R.string.registration_complete, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegisterActivity.this, R.string.registration_complete, Toast.LENGTH_SHORT).show();
                     finish();
                 }
             }
