@@ -24,7 +24,7 @@ public class PedidoController {
     @Autowired private IPedidoService service;
     @Autowired private PedidoEntityMapper mapper;
 
-    @GetMapping("/get")
+    @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los pedidos o según su id/estado/user/plato")
     @ApiResponses({
             @ApiResponse(responseCode = "200",

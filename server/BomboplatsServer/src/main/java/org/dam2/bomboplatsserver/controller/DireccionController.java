@@ -24,7 +24,7 @@ public class DireccionController {
     @Autowired private IDireccionService service;
     @Autowired private DireccionEntityMapper mapper;
 
-    @GetMapping("/get")
+    @GetMapping("/getAll")
     @Operation(summary = "Obtener direcciones")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
