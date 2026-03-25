@@ -1,13 +1,13 @@
 package org.dam2.bomboplatsserver.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.dam2.bomboplats.api.Restaurante;
 import org.dam2.bomboplatsserver.modelo.mapper.RestauranteEntityMapper;
-import org.dam2.bomboplatsserver.modelo.entity.RestauranteEntity;
 import org.dam2.bomboplatsserver.service.IRestauranteService;
 import org.dam2.bomboplatsserver.service.IS3Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +25,12 @@ public class RestauranteController {
     @Autowired private RestauranteEntityMapper mapper;
     @Autowired private IS3Service s3Service;
 
-    @GetMapping("/get")
-    @Operation(summary = "Obtener todos los restaurantes o filtrar por parámetros")
+    @GetMapping("/getAll")
+    @Operation(summary = "Obtener todos los restaurantes")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Restaurantes encontrados",
-                    content = @Content(schema = @Schema(implementation = Restaurante.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Restaurante.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> findAll() {
@@ -80,9 +80,9 @@ public class RestauranteController {
     @GetMapping(value = "/get", params = "nombre")
     @Operation(summary = "Buscar restaurantes por nombre")
     @ApiResponses({
-            @ApiResponse(responseCode = "200",
+            @ApiResponse (responseCode = "200",
                     description = "Restaurantes encontrados",
-                    content = @Content(schema = @Schema(implementation = Restaurante.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Restaurante.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> getByNombre(@RequestParam String nombre) {
@@ -94,7 +94,7 @@ public class RestauranteController {
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Restaurantes encontrados",
-                    content = @Content(schema = @Schema(implementation = Restaurante.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Restaurante.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> getByDescription(@RequestParam String description) {
@@ -106,12 +106,13 @@ public class RestauranteController {
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Restaurantes encontrados",
-                    content = @Content(schema = @Schema(implementation = Restaurante.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Restaurante.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> getByTag(@RequestParam String tag) {
         return this.mapper.mapFlux(this.service.findByTag(tag));
     }
+
     @GetMapping("/icon-upload-url/{id}")
     @Operation(summary = "Obtener URL prefirmada para subir foto de restaurante")
     @ApiResponses({
@@ -121,7 +122,6 @@ public class RestauranteController {
     public Mono<String> getRestauranteIconUploadUrl(
             @PathVariable String id,
             @RequestParam(defaultValue = "0") int index) {
-
         return this.service.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(r -> this.s3Service.generateRestauranteIconUrl(id, index));

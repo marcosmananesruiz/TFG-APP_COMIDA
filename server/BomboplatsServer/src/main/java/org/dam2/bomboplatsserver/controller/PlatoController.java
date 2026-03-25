@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,20 +25,18 @@ public class PlatoController {
     @Autowired private PlatoEntityMapper mapper;
     @Autowired private IS3Service s3Service;
 
-    // TODOS
-    @GetMapping("/get")
+    @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los platos")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Platos encontrados",
-                    content = @Content(schema = @Schema(implementation = Plato.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Plato.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> findAll() {
         return this.mapper.mapFlux(this.service.findAll());
     }
 
-    // POR ID
     @GetMapping("/get/{id}")
     @Operation(summary = "Obtener un plato por su ID")
     @ApiResponses({
@@ -52,7 +51,6 @@ public class PlatoController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
-    // NUEVO PLATO
     @PostMapping("/register")
     @Operation(summary = "Registrar un nuevo plato")
     @ApiResponse(responseCode = "200",
@@ -62,7 +60,6 @@ public class PlatoController {
                 .flatMap(platoEntity -> this.service.register(platoEntity));
     }
 
-    // UPDATE
     @PutMapping("/save")
     @Operation(summary = "Actualizar un plato existente")
     @ApiResponse(responseCode = "200",
@@ -72,7 +69,6 @@ public class PlatoController {
                 .flatMap(platoEntity -> this.service.update(platoEntity));
     }
 
-    // DELETE
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Eliminar un plato por su ID")
     @ApiResponse(responseCode = "200",
@@ -81,14 +77,12 @@ public class PlatoController {
         return this.service.deletePlatoById(id);
     }
 
-    // FILTROS
-
     @GetMapping(value = "/get", params = "nombre")
     @Operation(summary = "Buscar platos por nombre")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Platos encontrados",
-                    content = @Content(schema = @Schema(implementation = Plato.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Plato.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> getByNombre(@RequestParam String nombre) {
@@ -100,7 +94,7 @@ public class PlatoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Platos encontrados",
-                    content = @Content(schema = @Schema(implementation = Plato.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Plato.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> getByRestaurante(@RequestParam String idRestaurante) {
@@ -112,13 +106,12 @@ public class PlatoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Platos encontrados",
-                    content = @Content(schema = @Schema(implementation = Plato.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Plato.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> getByRestauranteAndNombre(
             @RequestParam String idRestaurante,
             @RequestParam String nombre) {
-
         return this.mapper.mapFlux(
                 this.service.findByIdRestauranteAndNombreContaining(idRestaurante, nombre));
     }
@@ -128,12 +121,13 @@ public class PlatoController {
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Platos encontrados",
-                    content = @Content(schema = @Schema(implementation = Plato.class))),
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Plato.class)))),
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> getByTag(@RequestParam String tag) {
         return this.mapper.mapFlux(this.service.findByTag(tag));
     }
+
     @GetMapping("/icon-upload-url/{id}")
     @Operation(summary = "Obtener URL prefirmada para subir foto de plato")
     @ApiResponses({
