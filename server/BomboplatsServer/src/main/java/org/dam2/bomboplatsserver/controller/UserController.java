@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
@@ -33,6 +34,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -176,13 +178,30 @@ public class UserController {
     }
 
     private Mono<Void> syncDirecciones(User user) {
-        return Flux.fromIterable(user.getDirecciones())
-                .flatMap(direccion -> this.direccionMapper.map(Mono.just(direccion))
-                        .flatMap(direccionEntity -> {
-                            direccionEntity.setIdUser(user.getId());
-                            return this.direccionService.update(direccionEntity);
-                        })
-                ).then();
+        return this.direccionService.getDireccionesOfUser(user.getId())
+                .collectList()
+                .flatMap(direccionesExistentes -> {
+
+                    Set<String> nuevosIds = user.getDirecciones().stream()
+                            .map(Direccion::getId)
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toSet());
+
+                    Mono<Void> eliminaciones = Flux.fromIterable(direccionesExistentes)
+                            .filter(existente -> !nuevosIds.contains(existente.getId()))
+                            .flatMap(existente -> this.direccionService.deleteDireccionByID(existente.getId()))
+                            .then();
+
+                    Mono<Void> actualizaciones = Flux.fromIterable(user.getDirecciones())
+                            .flatMap(direccion -> this.direccionMapper.map(Mono.just(direccion))
+                                    .flatMap(direccionEntity -> {
+                                        direccionEntity.setIdUser(user.getId());
+                                        return this.direccionService.update(direccionEntity);
+                                    })
+                            ).then();
+
+                    return eliminaciones.then(actualizaciones);
+                });
     }
 
     private Mono<Void> syncPlatosFavoritos(User user) {
@@ -199,10 +218,8 @@ public class UserController {
                 .collect(Collectors.toSet())
                 .flatMap(actualesIds -> {
 
-
                     Set<String> aInsertar = new HashSet<>(nuevosIds);
                     aInsertar.removeAll(actualesIds);
-
 
                     Set<String> aEliminar = new HashSet<>(actualesIds);
                     aEliminar.removeAll(nuevosIds);
