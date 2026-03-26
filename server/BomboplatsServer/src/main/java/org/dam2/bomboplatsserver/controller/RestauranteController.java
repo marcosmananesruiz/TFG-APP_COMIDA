@@ -6,10 +6,13 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.Restaurante;
+import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.RestauranteEntityMapper;
+import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.dam2.bomboplatsserver.service.IPlatoService;
 import org.dam2.bomboplatsserver.service.IRestauranteService;
 import org.dam2.bomboplatsserver.service.IS3Service;
@@ -29,6 +32,8 @@ public class RestauranteController {
     @Autowired private IS3Service s3Service;
     @Autowired private IPlatoService platoService;
     @Autowired private PlatoEntityMapper platoMapper;
+    @Autowired private IDireccionService direccionService;
+    @Autowired private DireccionEntityMapper direccionMapper;
 
     @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los restaurantes")
@@ -70,8 +75,11 @@ public class RestauranteController {
     @ApiResponse(responseCode = "200",
             description = "true: Restaurante actualizado. false: No existía o hubo error")
     public Mono<Boolean> updateRestaurante(@RequestBody Restaurante restaurante) {
+        Mono<Void> direccionesMono = syncDirecciones(restaurante);
+
         return this.mapper.map(Mono.just(restaurante))
-                .flatMap(restauranteEntity -> this.service.update(restauranteEntity));
+                .flatMap(restauranteEntity -> direccionesMono
+                        .then(this.service.update(restauranteEntity)));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -148,4 +156,18 @@ public class RestauranteController {
                 });
     }
 
+
+
+    private Mono<Void> syncDirecciones(Restaurante restaurante) {
+        if (restaurante.getDirecciones() == null || restaurante.getDirecciones().isEmpty())
+            return Mono.empty();
+
+        return Flux.fromIterable(restaurante.getDirecciones())
+                .flatMap(direccion -> this.direccionMapper.map(Mono.just(direccion))
+                        .flatMap(direccionEntity -> {
+                            direccionEntity.setIdRestaurante(restaurante.getId());
+                            return this.direccionService.update(direccionEntity);
+                        })
+                ).then();
+    }
 }
