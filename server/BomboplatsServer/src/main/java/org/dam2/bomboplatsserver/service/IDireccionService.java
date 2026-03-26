@@ -1,5 +1,6 @@
 package org.dam2.bomboplatsserver.service;
 
+import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
 import org.dam2.bomboplatsserver.modelo.entity.RestauranteEntity;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
@@ -16,27 +17,27 @@ public interface IDireccionService {
      * @param id id a buscar
      * @return {@link Mono}<{@link DireccionEntity}> con ese ID o {@link Mono#empty()} si no existe
      */
-    Mono<DireccionEntity> findById(String id);
+    Mono<Direccion> findById(String id);
 
     /**
      * Encuentra todas las direcciones en la base de datos
      * @return {@link Flux}<{@link DireccionEntity}> con todas las direcciones
      */
-    Flux<DireccionEntity> findAll();
+    Flux<Direccion> findAll();
 
     /**
      * Registra un direccion en la base de datos
      * @param direccionEntity Dirección a registrar
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se registró correctamente, {@code false} si ya existía ese registro o se produjo un error
      */
-    Mono<Boolean> register(DireccionEntity direccionEntity);
+    Mono<Direccion> register(Direccion direccion);
 
     /**
      * Actualiza la información de un direccion en la base de datos
      * @param direccionEntity Dirección a actualizar
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se actualizó correctamente, {@code false} si ya no existe ese registro o se produjo un error
      */
-    Mono<Boolean> update(DireccionEntity direccionEntity);
+    Mono<Boolean> update(Direccion Direccion);
 
     /**
      * Borra un direccion de la base de datos
@@ -44,12 +45,12 @@ public interface IDireccionService {
      * @see #deleteDireccionByID(String)
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se borro correctamente, {@code false} si no existe ese registro o se produjo un error
      */
-    Mono<Boolean> deleteDireccion(DireccionEntity direccionEntity);
+    Mono<Boolean> deleteDireccion(Direccion Direccion);
 
     /**
      * Borra un direccion de la base de datos
      * @param id id de la dirección a borrar
-     * @see #deleteDireccion(DireccionEntity)
+     * @see #deleteDireccion(Direccion)
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se borro correctamente, {@code false} si no existe ese registro o se produjo un error
      */
     Mono<Boolean> deleteDireccionByID(String id);
@@ -73,26 +74,29 @@ public interface IDireccionService {
      * @param userEntity Usuario del que queremos las direcciones
      * @return {@link Flux}<{@link DireccionEntity}> con todas las direcciones del usuario. {@link Flux#empty()} en caso de que no haya ninguna
      */
-    Flux<DireccionEntity> getDireccionesOfUser(UserEntity userEntity);
+    Flux<Direccion> getDireccionesOfUser(UserEntity userEntity);
 
     /**
      * Obtener todas las direcciones de un usuario segun su id
      * @param userId Id del usuario del que queremos las direcciones
      * @return {@link Flux}<{@link DireccionEntity}> con todas las direcciones del usuario. {@link Flux#empty()} en caso de que no haya ninguna
      */
-    Flux<DireccionEntity> getDireccionesOfUser(String userId);
+    Flux<Direccion> getDireccionesOfUser(String userId);
 
     /**
      * Obtener todas las direcciones de un restaurante
      * @param restauranteEntity Restaurante del que queremos las direcciones
      * @return {@link Flux}<{@link DireccionEntity}> con todas las direcciones del restaurante. {@link Flux#empty()} en caso de que no haya ninguna
      */
-    Flux<DireccionEntity> getDireccionesOfRestaurante(RestauranteEntity restauranteEntity);
+    Flux<Direccion> getDireccionesOfRestaurante(RestauranteEntity restauranteEntity);
 
     /**
      * Obtener todas las direcciones de un restaurante
      * @param restauranteId Id del restaurante del que queremos las direcciones
      * @return {@link Flux}<{@link DireccionEntity}> con todas las direcciones del restaurante. {@link Flux#empty()} en caso de que no haya ninguna
      */
-    Flux<DireccionEntity> getDireccionesOfRestaurante(String restauranteId);
+    Flux<Direccion> getDireccionesOfRestaurante(String restauranteId);
+
+    Mono<Boolean> asignarUserId(Direccion direccion, String userId);
+    Mono<Boolean> asignarRestauranteId(Direccion direccion, String direccionId);
 }

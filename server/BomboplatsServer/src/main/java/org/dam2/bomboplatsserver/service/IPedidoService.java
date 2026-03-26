@@ -15,27 +15,27 @@ public interface IPedidoService {
      * @param id {@link String} id del pedido
      * @return {@link Mono}<{@link PedidoEntity}> con ese ID, o {@link Mono#empty()} si no existe
      */
-    Mono<PedidoEntity> findById(String id);
+    Mono<Pedido> findById(String id);
 
     /**
      * Obtener todos los pedidos
      * @return {@link Flux}<{@link PedidoEntity}> con todos los pedidos
      */
-    Flux<PedidoEntity> findAll();
+    Flux<Pedido> findAll();
 
     /**
      * Registrar un pedido en la base de datos
      * @param pedidoEntity el pedido a registrar
      * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha registrado, o {@code false} si ya existe ese registro o se ha producido un error al registrarlo
      */
-    Mono<Boolean> register(PedidoEntity pedidoEntity);
+    Mono<Pedido> register(Pedido Pedido);
 
     /**
      * Actualiza el pedido de la base de datos
      * @param pedidoEntity el pedido a actualizar
      * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha actualizado el registro, o {@code false} si ese registro no existe o se ha producido un error al actualizarlo
      */
-    Mono<Boolean> update(PedidoEntity pedidoEntity);
+    Mono<Boolean> update(Pedido Pedido);
 
     /**
      * Borrar un pedido de la base de datos segun su Id
@@ -50,20 +50,20 @@ public interface IPedidoService {
      * @see org.dam2.bomboplats.api.Pedido.Estado
      * @return {@link Flux}<{@link PedidoEntity}> con todos los pedidos que se encuentran en ese estado. {@link Flux#empty()} si no se encuentra ninguno
      */
-    Flux<PedidoEntity> findByEstado(Pedido.Estado estado);
+    Flux<Pedido> findByEstado(Pedido.Estado estado);
 
     /**
      * Obtener todos los pedidos de un usuario según su Id
      * @param userId Id del usuario
      * @return {@link Flux}<{@link PedidoEntity}> con todos los pedidos del usuario. {@link Flux#empty()} si no se encuentra ninguno
      */
-    Flux<PedidoEntity> findByUserId(String userId);
+    Flux<Pedido> findByUserId(String userId);
 
     /**
      * Obtener todos los pedidos de plato según su Id
      * @param platoId Id del plato
      * @return {@link Flux}<{@link PedidoEntity}> con todos los pedidos que se han hecho de ese plato. {@link Flux#empty()} si no se encuentra ninguno
      */
-    Flux<PedidoEntity> findByPlatoId(String platoId);
+    Flux<Pedido> findByPlatoId(String platoId);
 
 }

@@ -43,23 +43,13 @@ import java.util.stream.Collectors;
 public class UserController {
 
     @Autowired private IUserService service;
-    @Autowired private IDireccionService direccionService;
-    @Autowired private UserEntityMapper mapper;
-    @Autowired private DireccionEntityMapper direccionMapper;
-    @Autowired private PasswordEncoder encoder;
     @Autowired private IS3Service s3Service;
-    @Autowired private IPlatoFavoritosService platoFavoritosService;
-    @Autowired private PlatoEntityMapper platoMapper;
-    private final String DEFAULT_ICON = "profile/default.jpg"; // En el almacenamiento de imagenes, tendremos una por defecto y palante
 
     @PutMapping("/login")
     @Operation(summary = "Comprueba el login de un usuario")
     @ApiResponse(responseCode = "200", description = "true si el login es correcto, false si el login es incorrecto o no se encuentra ese email")
     public Mono<Boolean> login(@RequestBody LoginAttempt loginAttempt) {
-        return this.service.findByEmail(loginAttempt.email()).map(userEntity -> {
-            String storedPassword = userEntity.getPassword();
-            return this.encoder.matches(loginAttempt.password(), storedPassword);
-        }).switchIfEmpty(Mono.just(false));
+        return this.service.verifyLogin(loginAttempt);
     }
 
     @GetMapping( value = "/get", params = "id")
@@ -72,8 +62,7 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Los parámetros son incorrectos")
     })
     public Mono<User> getByID(@RequestParam(required = false) String id) {
-        Mono<UserEntity> monoEntity = this.service.findByID(id);
-        return this.mapper.unmap(monoEntity).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.service.findByID(id);
     }
 
     @GetMapping(value = "/get", params = "email")
@@ -86,17 +75,14 @@ public class UserController {
             @ApiResponse(responseCode = "500", description = "Los parametros son incorrectos")
     })
     public Mono<User> getByEmail(@RequestParam(required = false) String email) {
-        return this.mapper.unmap(this.service.findByEmail(email))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.service.findByEmail(email);
     }
 
     @PostMapping("/register")
     @Operation(summary = "Registrar un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario registrado. false: Usuario ya existía o hubo un error")
-    public Mono<Boolean> registerUser(@RequestBody UserRegister register) {
-        UserEntity userEntity = new UserEntity("U0", register.nickname(), register.email(), "", this.DEFAULT_ICON);
-        userEntity.setPassword(this.encoder.encode(register.password()));
-        return this.service.register(userEntity);
+    public Mono<User> registerUser(@RequestBody UserRegister register) {
+        return this.service.register(register);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -115,20 +101,14 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado usuarios")
     })
     public Flux<User> findAll() {
-        return this.mapper.mapFlux(this.service.findAll());
+        return this.service.findAll();
     }
 
     @PutMapping("/save")
     @Operation(summary = "Actualizar información de un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario actualizado. false: Usuario no existía o hubo un error")
     public Mono<Boolean> updateUser(@RequestBody User user) {
-
-        Mono<UserEntity> userEntityMono = this.mapper.map(Mono.just(user));
-        Mono<Void> direccionesMono = syncDirecciones(user);
-        Mono<Void> platosFavoritos = syncPlatosFavoritos(user);
-
-        return userEntityMono.flatMap(userEntity -> Mono.when(direccionesMono, platosFavoritos)
-                .then(this.service.update(userEntity)));
+        return this.service.update(user);
     }
 
     @GetMapping(value = "imageUrl", params = "id")
@@ -145,103 +125,17 @@ public class UserController {
         @ApiResponse(responseCode = "404", description = "No se ha encontrado al usuario con ese ID")
     })
     public Mono<Boolean> updatePassword(@RequestParam String userId, @RequestParam String password) {
-        return this.service.findByID(userId).map(userEntity -> {
-            userEntity.setPassword(this.encoder.encode(password));
-            return true;
-        }).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.service.updatePassword(userId, password);
     }
 
-    @GetMapping(value = "platosfavoritos", params = "id")
+    @GetMapping(value = "/  platosfavoritos", params = "id")
     @Operation(summary = "Obtener los platos favoritos de un usuario")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Platos favoritos del usuario encontrados correctamente"),
             @ApiResponse(responseCode = "404", description = "No se ha encontrado el usuario")
     })
     public Flux<Plato> getPlatosFavoritos(@RequestParam String id) {
-        return this.platoFavoritosService.getPlatosFavoritosOf(id)
-                .flatMap(platoEntity -> this.platoMapper.unmap(Mono.just(platoEntity)))
-                .switchIfEmpty(Flux.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.service.getPlatosFavoritos(id);
     }
 
-    // FUNCION UNICAMENTE PARA TESTEO
-    @PostMapping("/load")
-    public Mono<String> load(@RequestBody UserEntity userEntity) {
-        String password = userEntity.getPassword();
-        userEntity.setPassword(this.encoder.encode(password)); // La hasheo aunque sea test para que el endpoint de login siga funcionando
-        return this.service.register(userEntity).map(success ->  {
-           if (success) {
-               return "Se registro el usuario";
-           } else {
-               return "No se registro al usuario";
-           }
-        });
-    }
-
-    private Mono<Void> syncDirecciones(User user) {
-        return this.direccionService.getDireccionesOfUser(user.getId())
-                .collectList()
-                .flatMap(direccionesExistentes -> {
-
-                    Set<String> nuevosIds = user.getDirecciones().stream()
-                            .map(Direccion::getId)
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toSet());
-
-                    Mono<Void> eliminaciones = Flux.fromIterable(direccionesExistentes)
-                            .filter(existente -> !nuevosIds.contains(existente.getId()))
-                            .flatMap(existente -> this.direccionService.deleteDireccionByID(existente.getId()))
-                            .then();
-
-                    Mono<Void> actualizaciones = Flux.fromIterable(user.getDirecciones())
-                            .flatMap(direccion -> this.direccionMapper.map(Mono.just(direccion))
-                                    .flatMap(direccionEntity -> {
-                                        direccionEntity.setIdUser(user.getId());
-                                        return this.direccionService.update(direccionEntity);
-                                    })
-                            ).then();
-
-                    return eliminaciones.then(actualizaciones);
-                });
-    }
-
-    private Mono<Void> syncPlatosFavoritos(User user) {
-
-        String userId = user.getId();
-
-        Set<String> nuevosIds = user.getPlatosFavoritos()
-                .stream()
-                .map(Plato::getId)
-                .collect(Collectors.toSet());
-
-        return this.platoFavoritosService.getPlatosFavoritosOf(userId)
-                .map(PlatoEntity::getId)
-                .collect(Collectors.toSet())
-                .flatMap(actualesIds -> {
-
-                    Set<String> aInsertar = new HashSet<>(nuevosIds);
-                    aInsertar.removeAll(actualesIds);
-
-                    Set<String> aEliminar = new HashSet<>(actualesIds);
-                    aEliminar.removeAll(nuevosIds);
-
-                    Mono<Void> insertMono =
-                            Flux.fromIterable(aInsertar)
-                                    .flatMap(idPlato -> {
-                                        PlatoFavoritosEntity entity = new PlatoFavoritosEntity();
-                                        entity.setUserId(userId);
-                                        entity.setPlatoId(idPlato);
-                                        return this.platoFavoritosService.register(entity);
-                                    })
-                                    .then();
-
-                    Mono<Void> deleteMono =
-                            Flux.fromIterable(aEliminar)
-                                    .flatMap(idPlato ->
-                                            this.platoFavoritosService.deleteByUserIdAndPlatoId(userId, idPlato)
-                                    )
-                                    .then();
-
-                    return Mono.when(insertMono, deleteMono);
-                });
-    }
 }

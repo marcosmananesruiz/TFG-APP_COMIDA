@@ -22,7 +22,6 @@ import reactor.core.publisher.Mono;
 public class DireccionController {
 
     @Autowired private IDireccionService service;
-    @Autowired private DireccionEntityMapper mapper;
 
     @GetMapping("/getAll")
     @Operation(summary = "Obtener direcciones")
@@ -33,7 +32,7 @@ public class DireccionController {
             @ApiResponse(responseCode = "404", description = "No se encontraron direcciones")
     })
     public Flux<Direccion> findAll() {
-        return this.mapper.mapFlux(this.service.findAll());
+        return this.service.findAll();
     }
 
     @GetMapping(value = "/get", params = "id")
@@ -44,8 +43,7 @@ public class DireccionController {
             @ApiResponse(responseCode = "404", description = "No se encontró la dirección")
     })
     public Mono<Direccion> getDireccionById(@RequestParam(required = false) String id) {
-        return this.mapper.unmap(this.service.findById(id))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.service.findById(id);
     }
 
     @GetMapping(value = "/get", params = "user")
@@ -56,8 +54,7 @@ public class DireccionController {
             @ApiResponse(responseCode = "404", description = "No se encontró la dirección")
     })
     public Flux<Direccion> getDireccionOfUser(@RequestParam(required = false) String user) {
-        return this.mapper.mapFlux(this.service.getDireccionesOfUser(user))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.service.getDireccionesOfUser(user);
     }
 
     @GetMapping(value = "/get", params = "restaurante")
@@ -68,16 +65,14 @@ public class DireccionController {
             @ApiResponse(responseCode = "404", description = "No se encontró la dirección")
     })
     public Flux<Direccion> getDireccionOfRestaurante(@RequestParam(required = false) String restaurante) {
-        return this.mapper.mapFlux(this.service.getDireccionesOfRestaurante(restaurante))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.service.getDireccionesOfRestaurante(restaurante);
     }
 
     @PostMapping("/register")
     @Operation(summary = "Registrar una dirección")
     @ApiResponse(responseCode = "200", description = "true: Registro exitoso. false: El registro ya existe o se produjo un error")
-    public Mono<Boolean> registerDireccion(@RequestBody Direccion direccion) {
-        return this.mapper.map(Mono.just(direccion))
-                .flatMap(direccionEntity -> this.service.register(direccionEntity));
+    public Mono<Direccion> registerDireccion(@RequestBody Direccion direccion) {
+        return this.service.register(direccion);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -91,18 +86,6 @@ public class DireccionController {
     @Operation(summary = "Actualizar una dirección")
     @ApiResponse(responseCode = "200", description = "true: Actualization exitosa. false: El registro no existe o se produjo un error")
     public Mono<Boolean> updateDireccion(@RequestBody Direccion direccion) {
-        return this.mapper.map(Mono.just(direccion)).flatMap(direccionEntity -> this.service.update(direccionEntity));
-    }
-
-    // SOLO PARA TESTEO
-    @PostMapping("/load")
-    public Mono<String> load(@RequestBody DireccionEntity direccionEntity) {
-        return this.service.register(direccionEntity).map(success -> {
-            if (success) {
-                return "Se ha registrado la direccion";
-            } else {
-                return "No se ha podido registrar la direccion";
-            }
-        });
+        return this.service.update(direccion);
     }
 }

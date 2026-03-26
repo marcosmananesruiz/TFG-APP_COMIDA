@@ -163,11 +163,7 @@ public class RestauranteController {
             return Mono.empty();
 
         return Flux.fromIterable(restaurante.getDirecciones())
-                .flatMap(direccion -> this.direccionMapper.map(Mono.just(direccion))
-                        .flatMap(direccionEntity -> {
-                            direccionEntity.setIdRestaurante(restaurante.getId());
-                            return this.direccionService.update(direccionEntity);
-                        })
-                ).then();
+                .flatMap(direccion -> this.direccionService.asignarRestauranteId(direccion, restaurante.getId()))
+                .then();
     }
 }
