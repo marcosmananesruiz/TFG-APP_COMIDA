@@ -16,7 +16,6 @@ import java.util.List;
 public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, Restaurante> {
 
     @Autowired private PlatoEntityMapper platoMapper;
-    @Autowired private DireccionEntityMapper direccionMapper;
     @Autowired private IPlatoService platoService;
     @Autowired private IDireccionService direccionService;
 
@@ -61,7 +60,6 @@ public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, 
 
             Mono<List<org.dam2.bomboplats.api.Direccion>> direccionesMono = direccionService
                     .getDireccionesOfRestaurante(entity.getId())
-                    .flatMap(dirEntity -> direccionMapper.unmap(Mono.just(dirEntity)))
                     .collectList();
 
             String[] finalIconUrls = iconUrls;

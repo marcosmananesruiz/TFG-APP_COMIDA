@@ -19,7 +19,6 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
     @Autowired private IUserService userService;
     @Autowired private IDireccionService direccionService;
     @Autowired private IPlatoFavoritosService platoFavoritosService;
-    @Autowired private DireccionEntityMapper direccionMapper;
     @Autowired private PlatoEntityMapper platoEntityMapper;
 
     @Override
@@ -41,7 +40,7 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
     @Override
     public Mono<User> unmap(Mono<UserEntity> o) {
         return o.flatMap(userEntity -> {
-            Mono<Set<Direccion>> direccionesMono = this.direccionMapper.mapFlux(this.direccionService.getDireccionesOfUser(userEntity)).collect(Collectors.toSet());
+            Mono<Set<Direccion>> direccionesMono = this.direccionService.getDireccionesOfUser(userEntity).collect(Collectors.toSet());
 
             Mono<Set<Plato>> favoritosMono = this.platoEntityMapper.mapFlux(this.platoFavoritosService.getPlatosFavoritosOf(userEntity.getId())).collect(Collectors.toSet());
 
@@ -61,7 +60,7 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
     @Override
     public Flux<User> mapFlux(Flux<UserEntity> o) {
         return o.flatMap(userEntity -> {
-            Mono<Set<Direccion>> direccionesMono = this.direccionMapper.mapFlux(this.direccionService.getDireccionesOfUser(userEntity)).collect(Collectors.toSet());
+            Mono<Set<Direccion>> direccionesMono = this.direccionService.getDireccionesOfUser(userEntity.getId()).collect(Collectors.toSet());
 
             Mono<Set<Plato>> favoritosMono = this.platoEntityMapper.mapFlux(this.platoFavoritosService.getPlatosFavoritosOf(userEntity.getId())).collect(Collectors.toSet());
 
