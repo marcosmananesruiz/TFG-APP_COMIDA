@@ -77,7 +77,7 @@ public class PlatoController {
         return this.service.deletePlatoById(id);
     }
 
-    @GetMapping(value = "/get", params = "nombre")
+    @GetMapping(value = "/getpornombre", params = "nombre")
     @Operation(summary = "Buscar platos por nombre")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -89,7 +89,7 @@ public class PlatoController {
         return this.mapper.mapFlux(this.service.findByNombreContaining(nombre));
     }
 
-    @GetMapping(value = "/get", params = "idRestaurante")
+    @GetMapping(value = "/getporid", params = "idRestaurante")
     @Operation(summary = "Buscar platos por ID de restaurante")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -101,7 +101,7 @@ public class PlatoController {
         return this.mapper.mapFlux(this.service.findByIdRestaurante(idRestaurante));
     }
 
-    @GetMapping(value = "/get", params = {"idRestaurante", "nombre"})
+    @GetMapping(value = "/getporplatoynombre", params = {"idRestaurante", "nombre"})
     @Operation(summary = "Buscar platos por restaurante y nombre")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -116,7 +116,7 @@ public class PlatoController {
                 this.service.findByIdRestauranteAndNombreContaining(idRestaurante, nombre));
     }
 
-    @GetMapping(value = "/get", params = "tag")
+    @GetMapping(value = "/getportag", params = "tag")
     @Operation(summary = "Buscar platos por tag")
     @ApiResponses({
             @ApiResponse(responseCode = "200",

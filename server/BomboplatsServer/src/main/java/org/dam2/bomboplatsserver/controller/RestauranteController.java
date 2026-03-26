@@ -82,7 +82,7 @@ public class RestauranteController {
         return this.service.deleteRestauranteById(id);
     }
 
-    @GetMapping(value = "/get", params = "nombre")
+    @GetMapping(value = "/getpornombre", params = "nombre")
     @Operation(summary = "Buscar restaurantes por nombre")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -94,7 +94,7 @@ public class RestauranteController {
         return this.mapper.mapFlux(this.service.findByNombreContaining(nombre));
     }
 
-    @GetMapping(value = "/get", params = "description")
+    @GetMapping(value = "/getporescription", params = "description")
     @Operation(summary = "Buscar restaurantes por descripción")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -106,7 +106,7 @@ public class RestauranteController {
         return this.mapper.mapFlux(this.service.findByDescriptionContaining(description));
     }
 
-    @GetMapping(value = "/get", params = "tag")
+    @GetMapping(value = "/getportag", params = "tag")
     @Operation(summary = "Buscar restaurantes por tag")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
