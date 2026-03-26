@@ -6,13 +6,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.Restaurante;
-import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.RestauranteEntityMapper;
-import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.dam2.bomboplatsserver.service.IPlatoService;
 import org.dam2.bomboplatsserver.service.IRestauranteService;
 import org.dam2.bomboplatsserver.service.IS3Service;
@@ -32,8 +29,6 @@ public class RestauranteController {
     @Autowired private IS3Service s3Service;
     @Autowired private IPlatoService platoService;
     @Autowired private PlatoEntityMapper platoMapper;
-    @Autowired private IDireccionService direccionService;
-    @Autowired private DireccionEntityMapper direccionMapper;
 
     @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los restaurantes")
@@ -66,15 +61,8 @@ public class RestauranteController {
     @ApiResponse(responseCode = "200",
             description = "true: Restaurante registrado. false: Ya existía o hubo error")
     public Mono<Boolean> register(@RequestBody Restaurante restaurante) {
-        Mono<Void> platosMono = syncPlatos(restaurante);
-        Mono<Void> direccionesMono = syncDirecciones(restaurante);
-
         return this.mapper.map(Mono.just(restaurante))
-                .flatMap(restauranteEntity -> this.service.register(restauranteEntity))
-                .flatMap(success -> {
-                    if (!success) return Mono.just(false);
-                    return Mono.when(platosMono, direccionesMono).thenReturn(true);
-                });
+                .flatMap(restauranteEntity -> this.service.register(restauranteEntity));
     }
 
     @PutMapping("/save")
@@ -82,12 +70,8 @@ public class RestauranteController {
     @ApiResponse(responseCode = "200",
             description = "true: Restaurante actualizado. false: No existía o hubo error")
     public Mono<Boolean> updateRestaurante(@RequestBody Restaurante restaurante) {
-        Mono<Void> platosMono = syncPlatos(restaurante);
-        Mono<Void> direccionesMono = syncDirecciones(restaurante);
-
         return this.mapper.map(Mono.just(restaurante))
-                .flatMap(restauranteEntity -> Mono.when(platosMono, direccionesMono)
-                        .then(this.service.update(restauranteEntity)));
+                .flatMap(restauranteEntity -> this.service.update(restauranteEntity));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -148,39 +132,20 @@ public class RestauranteController {
                 .flatMap(r -> this.s3Service.generateRestauranteIconUrl(id, index));
     }
 
-    // ---- Métodos privados de sincronización ----
-
-    private Mono<Void> syncPlatos(Restaurante restaurante) {
-        if (restaurante.getPlatos() == null || restaurante.getPlatos().isEmpty())
-            return Mono.empty();
-
-        return Flux.fromIterable(restaurante.getPlatos())
-                .flatMap(plato -> this.platoMapper.map(Mono.just(plato))
-                        .flatMap(platoEntity -> {
-                            platoEntity.setIdRestaurante(restaurante.getId());
-                            return this.platoService.update(platoEntity)
-                                    .flatMap(updated -> {
-                                        if (!updated) return this.platoService.register(platoEntity);
-                                        return Mono.just(true);
-                                    });
-                        })
-                ).then();
+    @PostMapping("/{idRestaurante}/plato/register")
+    @Operation(summary = "Registrar un plato asociado a un restaurante")
+    @ApiResponse(responseCode = "200",
+            description = "true: Plato registrado. false: Ya existía o hubo error")
+    public Mono<Boolean> registerPlato(
+            @PathVariable String idRestaurante,
+            @RequestBody Plato plato) {
+        return this.service.findById(idRestaurante)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
+                .flatMap(r -> this.platoMapper.map(Mono.just(plato)))
+                .flatMap(platoEntity -> {
+                    platoEntity.setIdRestaurante(idRestaurante);
+                    return this.platoService.register(platoEntity);
+                });
     }
 
-    private Mono<Void> syncDirecciones(Restaurante restaurante) {
-        if (restaurante.getDirecciones() == null || restaurante.getDirecciones().isEmpty())
-            return Mono.empty();
-
-        return Flux.fromIterable(restaurante.getDirecciones())
-                .flatMap(direccion -> this.direccionMapper.map(Mono.just(direccion))
-                        .flatMap(direccionEntity -> {
-                            direccionEntity.setIdRestaurante(restaurante.getId());
-                            return this.direccionService.update(direccionEntity)
-                                    .flatMap(updated -> {
-                                        if (!updated) return this.direccionService.register(direccionEntity);
-                                        return Mono.just(true);
-                                    });
-                        })
-                ).then();
-    }
 }

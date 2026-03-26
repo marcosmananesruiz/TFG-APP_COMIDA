@@ -2,6 +2,8 @@ package org.dam2.bomboplatsserver.modelo.mapper;
 
 import org.dam2.bomboplats.api.Restaurante;
 import org.dam2.bomboplatsserver.modelo.entity.RestauranteEntity;
+import org.dam2.bomboplatsserver.service.IDireccionService;
+import org.dam2.bomboplatsserver.service.IPlatoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -13,8 +15,10 @@ import java.util.List;
 @Component
 public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, Restaurante> {
 
-    @Autowired
-    private PlatoEntityMapper platoMapper;
+    @Autowired private PlatoEntityMapper platoMapper;
+    @Autowired private DireccionEntityMapper direccionMapper;
+    @Autowired private IPlatoService platoService;
+    @Autowired private IDireccionService direccionService;
 
     private String[] toStringArray(Object[] input) {
         if (input == null) return new String[0];
@@ -41,7 +45,7 @@ public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, 
 
     @Override
     public Mono<Restaurante> unmap(Mono<RestauranteEntity> o) {
-        return o.map(entity -> {
+        return o.flatMap(entity -> {
             String[] tags = entity.getTags() instanceof Object[]
                     ? toStringArray((Object[]) entity.getTags())
                     : entity.getTags();
@@ -50,14 +54,30 @@ public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, 
                     ? toStringArray((Object[]) entity.getIconUrl())
                     : entity.getIconUrl();
 
-            return Restaurante.builder()
-                    .id(entity.getId())
-                    .nombre(entity.getNombre())
-                    .tags(tags != null ? Arrays.asList(tags) : List.of())
-                    .iconUrls(iconUrls != null ? Arrays.asList(iconUrls) : List.of())
-                    .description(entity.getDescription())
-                    .rating(entity.getRating())
-                    .build();
+            Mono<List<org.dam2.bomboplats.api.Plato>> platosMono = platoService
+                    .findByIdRestaurante(entity.getId())
+                    .flatMap(platoEntity -> platoMapper.unmap(Mono.just(platoEntity)))
+                    .collectList();
+
+            Mono<List<org.dam2.bomboplats.api.Direccion>> direccionesMono = direccionService
+                    .getDireccionesOfRestaurante(entity.getId())
+                    .flatMap(dirEntity -> direccionMapper.unmap(Mono.just(dirEntity)))
+                    .collectList();
+
+            String[] finalIconUrls = iconUrls;
+            String[] finalTags = tags;
+
+            return Mono.zip(platosMono, direccionesMono)
+                    .map(tuple -> Restaurante.builder()
+                            .id(entity.getId())
+                            .nombre(entity.getNombre())
+                            .tags(finalTags != null ? Arrays.asList(finalTags) : List.of())
+                            .iconUrls(finalIconUrls != null ? Arrays.asList(finalIconUrls) : List.of())
+                            .description(entity.getDescription())
+                            .rating(entity.getRating())
+                            .platos(new java.util.HashSet<>(tuple.getT1()))
+                            .direcciones(tuple.getT2())
+                            .build());
         });
     }
 
