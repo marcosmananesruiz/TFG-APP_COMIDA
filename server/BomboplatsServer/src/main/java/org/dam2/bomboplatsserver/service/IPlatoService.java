@@ -1,19 +1,20 @@
 package org.dam2.bomboplatsserver.service;
 
-import org.dam2.bomboplatsserver.modelo.entity.PlatoEntity;
+import org.dam2.bomboplats.api.Plato;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface IPlatoService {
 
-    Mono<PlatoEntity> findById(String id);
-    Flux<PlatoEntity> findAll();
-    Mono<Boolean> register(PlatoEntity platoEntity);
-    Mono<Boolean> update(PlatoEntity platoEntity);
+    Mono<Plato> findById(String id);
+    Flux<Plato> findAll();
+    Mono<Plato> register(Plato plato);
+    Mono<Boolean> update(Plato plato);
     Mono<Boolean> deletePlatoById(String id);
 
-    Flux<PlatoEntity> findByIdRestaurante(String idRestaurante);
-    Flux<PlatoEntity> findByNombreContaining(String nombre);
-    Flux<PlatoEntity> findByIdRestauranteAndNombreContaining(String idRestaurante, String nombre);
-    Flux<PlatoEntity> findByTag(String tag);
+    Flux<Plato> findByIdRestaurante(String idRestaurante);
+    Flux<Plato> findByNombreContaining(String nombre);
+    Flux<Plato> findByIdRestauranteAndNombreContaining(String idRestaurante, String nombre);
+    Flux<Plato> findByTag(String tag);
+    Mono<Plato> registerConRestaurante(Plato plato, String idRestaurante);
 }

@@ -1,5 +1,6 @@
 package org.dam2.bomboplatsserver.service.impl;
 
+import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplatsserver.modelo.entity.PlatoEntity;
 import org.dam2.bomboplatsserver.repo.PlatoRepository;
 import org.dam2.bomboplatsserver.service.IPlatoService;
@@ -12,6 +13,9 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Service
 public class PlatoServiceImpl implements IPlatoService {
 
@@ -19,44 +23,81 @@ public class PlatoServiceImpl implements IPlatoService {
     @Autowired private R2dbcEntityTemplate template;
 
     public static Logger LOGGER = LoggerFactory.getLogger(PlatoServiceImpl.class);
-
-    // Cambiado UNIQUE_CHAR a "T" según tu formato
     private final String UNIQUE_CHAR = "T";
 
-    @Override
-    public Mono<PlatoEntity> findById(String id) {
-        return this.repo.findById(id);
+    private String[] toStringArray(Object[] input) {
+        if (input == null) return new String[0];
+        return Arrays.stream(input)
+                .map(o -> o != null ? o.toString() : null)
+                .toArray(String[]::new);
+    }
+
+    private Plato toDTO(PlatoEntity entity) {
+        String[] tags = entity.getTags() instanceof Object[]
+                ? toStringArray((Object[]) entity.getTags())
+                : entity.getTags();
+        String[] mods = entity.getPossibleModifications() instanceof Object[]
+                ? toStringArray((Object[]) entity.getPossibleModifications())
+                : entity.getPossibleModifications();
+
+        return Plato.builder()
+                .id(entity.getId())
+                .nombre(entity.getNombre())
+                .description(entity.getDescription())
+                .iconUrl(entity.getIconUrl())
+                .tags(tags != null ? Arrays.asList(tags) : List.of())
+                .possibleModifications(mods != null ? Arrays.asList(mods) : List.of())
+                .precio(entity.getPrecio())
+                .build();
+    }
+
+    private PlatoEntity toEntity(Plato plato) {
+        return PlatoEntity.builder()
+                .id(plato.getId())
+                .nombre(plato.getNombre())
+                .description(plato.getDescription())
+                .iconUrl(plato.getIconUrl())
+                .tags(plato.getTags() != null ? plato.getTags().toArray(new String[0]) : new String[0])
+                .possibleModifications(plato.getPossibleModifications() != null
+                        ? plato.getPossibleModifications().toArray(new String[0])
+                        : new String[0])
+                .precio(plato.getPrecio())
+                .build();
     }
 
     @Override
-    public Flux<PlatoEntity> findAll() {
-        return this.repo.findAll();
+    public Mono<Plato> findById(String id) {
+        return this.repo.findById(id).map(this::toDTO);
     }
 
     @Override
-    public Mono<Boolean> register(PlatoEntity platoEntity) {
+    public Flux<Plato> findAll() {
+        return this.repo.findAll().map(this::toDTO);
+    }
 
+    @Override
+    public Mono<Plato> register(Plato plato) {
+        PlatoEntity entity = toEntity(plato);
         return this.repo.getNextID()
-                // Generar ID con formato T00001, T00002, etc.
                 .map(idNumber -> String.format("%s%05d", UNIQUE_CHAR, idNumber))
                 .flatMap(id -> {
-                    platoEntity.setId(id);
-                    return this.template.insert(PlatoEntity.class)
-                            .using(platoEntity);
-                }).thenReturn(true)
+                    entity.setId(id);
+                    return this.template.insert(PlatoEntity.class).using(entity);
+                })
+                .map(this::toDTO)
                 .onErrorResume(DuplicateKeyException.class, e -> {
                     LOGGER.error("{}: Se ha intentado registrar un plato con ID {}, el cual ya existe",
-                            e.getMessage(), platoEntity.getId());
-                    return Mono.just(false);
+                            e.getMessage(), entity.getId());
+                    return Mono.empty();
                 });
     }
 
     @Override
-    public Mono<Boolean> update(PlatoEntity platoEntity) {
-        return this.repo.findById(platoEntity.getId())
-                .flatMap(existing -> this.repo.save(platoEntity)
-                        .doOnNext(updatedEntity ->
-                                LOGGER.info("Plato con ID {} actualizado", updatedEntity.getId()))
+    public Mono<Boolean> update(Plato plato) {
+        PlatoEntity entity = toEntity(plato);
+        return this.repo.findById(entity.getId())
+                .flatMap(existing -> this.repo.save(entity)
+                        .doOnNext(u -> LOGGER.info("Plato con ID {} actualizado", u.getId()))
                         .thenReturn(true)
                 ).defaultIfEmpty(false);
     }
@@ -65,29 +106,47 @@ public class PlatoServiceImpl implements IPlatoService {
     public Mono<Boolean> deletePlatoById(String id) {
         return this.repo.findById(id)
                 .flatMap(exists -> this.repo.deleteById(id)
-                        .doOnSuccess(deletedId ->
-                                LOGGER.info("Plato con ID {} eliminado", deletedId))
+                        .doOnSuccess(d -> LOGGER.info("Plato con ID {} eliminado", d))
                         .thenReturn(true)
                 ).defaultIfEmpty(false);
     }
 
     @Override
-    public Flux<PlatoEntity> findByIdRestaurante(String idRestaurante) {
-        return this.repo.findByIdRestaurante(idRestaurante);
+    public Flux<Plato> findByIdRestaurante(String idRestaurante) {
+        return this.repo.findByIdRestaurante(idRestaurante).map(this::toDTO);
     }
 
     @Override
-    public Flux<PlatoEntity> findByNombreContaining(String nombre) {
-        return this.repo.findByNombreContainingIgnoreCase(nombre);
+    public Flux<Plato> findByNombreContaining(String nombre) {
+        return this.repo.findByNombreContainingIgnoreCase(nombre).map(this::toDTO);
     }
 
     @Override
-    public Flux<PlatoEntity> findByIdRestauranteAndNombreContaining(String idRestaurante, String nombre) {
-        return this.repo.findByIdRestauranteAndNombreContainingIgnoreCase(idRestaurante, nombre);
+    public Flux<Plato> findByIdRestauranteAndNombreContaining(String idRestaurante, String nombre) {
+        return this.repo.findByIdRestauranteAndNombreContainingIgnoreCase(idRestaurante, nombre).map(this::toDTO);
     }
 
     @Override
-    public Flux<PlatoEntity> findByTag(String tag) {
-        return this.repo.findByTag(tag);
+    public Flux<Plato> findByTag(String tag) {
+        return this.repo.findByTag(tag).map(this::toDTO);
     }
+
+    @Override
+    public Mono<Plato> registerConRestaurante(Plato plato, String idRestaurante) {
+        PlatoEntity entity = toEntity(plato);
+        entity.setIdRestaurante(idRestaurante);
+        return this.repo.getNextID()
+                .map(idNumber -> String.format("%s%05d", UNIQUE_CHAR, idNumber))
+                .flatMap(id -> {
+                    entity.setId(id);
+                    return this.template.insert(PlatoEntity.class).using(entity);
+                })
+                .map(this::toDTO)
+                .onErrorResume(DuplicateKeyException.class, e -> {
+                    LOGGER.error("{}: Se ha intentado registrar un plato con ID {}, el cual ya existe",
+                            e.getMessage(), entity.getId());
+                    return Mono.empty();
+                });
+    }
+
 }

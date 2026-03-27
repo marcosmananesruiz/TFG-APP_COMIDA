@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.dam2.bomboplats.api.Plato;
-import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
 import org.dam2.bomboplatsserver.service.IPlatoService;
 import org.dam2.bomboplatsserver.service.IS3Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import reactor.core.publisher.Mono;
 public class PlatoController {
 
     @Autowired private IPlatoService service;
-    @Autowired private PlatoEntityMapper mapper;
     @Autowired private IS3Service s3Service;
 
     @GetMapping("/getAll")
@@ -34,7 +32,7 @@ public class PlatoController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> findAll() {
-        return this.mapper.mapFlux(this.service.findAll());
+        return this.service.findAll();
     }
 
     @GetMapping("/get/{id}")
@@ -47,7 +45,7 @@ public class PlatoController {
             @ApiResponse(responseCode = "500", description = "Parámetros incorrectos")
     })
     public Mono<Plato> getPlatoById(@PathVariable String id) {
-        return this.mapper.unmap(this.service.findById(id))
+        return this.service.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
@@ -55,9 +53,9 @@ public class PlatoController {
     @Operation(summary = "Registrar un nuevo plato")
     @ApiResponse(responseCode = "200",
             description = "true: Plato registrado. false: Ya existía o hubo un error")
-    public Mono<Boolean> register(@RequestBody Plato plato) {
-        return this.mapper.map(Mono.just(plato))
-                .flatMap(platoEntity -> this.service.register(platoEntity));
+    public Mono<Plato> register(@RequestBody Plato plato) {
+        return this.service.register(plato)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST)));
     }
 
     @PutMapping("/save")
@@ -65,8 +63,7 @@ public class PlatoController {
     @ApiResponse(responseCode = "200",
             description = "true: Plato actualizado. false: No existía o hubo error")
     public Mono<Boolean> updatePlato(@RequestBody Plato plato) {
-        return this.mapper.map(Mono.just(plato))
-                .flatMap(platoEntity -> this.service.update(platoEntity));
+        return this.service.update(plato);
     }
 
     @DeleteMapping("/delete/{id}")
@@ -86,7 +83,7 @@ public class PlatoController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> getByNombre(@RequestParam String nombre) {
-        return this.mapper.mapFlux(this.service.findByNombreContaining(nombre));
+        return this.service.findByNombreContaining(nombre);
     }
 
     @GetMapping(value = "/getporid", params = "idRestaurante")
@@ -98,7 +95,7 @@ public class PlatoController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> getByRestaurante(@RequestParam String idRestaurante) {
-        return this.mapper.mapFlux(this.service.findByIdRestaurante(idRestaurante));
+        return this.service.findByIdRestaurante(idRestaurante);
     }
 
     @GetMapping(value = "/getporplatoynombre", params = {"idRestaurante", "nombre"})
@@ -112,8 +109,7 @@ public class PlatoController {
     public Flux<Plato> getByRestauranteAndNombre(
             @RequestParam String idRestaurante,
             @RequestParam String nombre) {
-        return this.mapper.mapFlux(
-                this.service.findByIdRestauranteAndNombreContaining(idRestaurante, nombre));
+        return this.service.findByIdRestauranteAndNombreContaining(idRestaurante, nombre);
     }
 
     @GetMapping(value = "/getportag", params = "tag")
@@ -125,7 +121,7 @@ public class PlatoController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado platos")
     })
     public Flux<Plato> getByTag(@RequestParam String tag) {
-        return this.mapper.mapFlux(this.service.findByTag(tag));
+        return this.service.findByTag(tag);
     }
 
     @GetMapping("/icon-upload-url/{id}")

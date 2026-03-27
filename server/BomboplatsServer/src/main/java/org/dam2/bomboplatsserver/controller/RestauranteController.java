@@ -6,12 +6,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.Restaurante;
-import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.RestauranteEntityMapper;
 import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.dam2.bomboplatsserver.service.IPlatoService;
 import org.dam2.bomboplatsserver.service.IRestauranteService;
@@ -28,12 +24,9 @@ import reactor.core.publisher.Mono;
 public class RestauranteController {
 
     @Autowired private IRestauranteService service;
-    @Autowired private RestauranteEntityMapper mapper;
     @Autowired private IS3Service s3Service;
     @Autowired private IPlatoService platoService;
-    @Autowired private PlatoEntityMapper platoMapper;
     @Autowired private IDireccionService direccionService;
-    @Autowired private DireccionEntityMapper direccionMapper;
 
     @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los restaurantes")
@@ -44,7 +37,7 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> findAll() {
-        return this.mapper.mapFlux(this.service.findAll());
+        return this.service.findAll();
     }
 
     @GetMapping("/get/{id}")
@@ -57,17 +50,17 @@ public class RestauranteController {
             @ApiResponse(responseCode = "500", description = "Parámetros incorrectos")
     })
     public Mono<Restaurante> getRestauranteById(@PathVariable String id) {
-        return this.mapper.unmap(this.service.findById(id))
+        return this.service.findById(id)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @PostMapping("/register")
     @Operation(summary = "Registrar un restaurante")
     @ApiResponse(responseCode = "200",
-            description = "true: Restaurante registrado. false: Ya existía o hubo error")
-    public Mono<Boolean> register(@RequestBody Restaurante restaurante) {
-        return this.mapper.map(Mono.just(restaurante))
-                .flatMap(restauranteEntity -> this.service.register(restauranteEntity));
+            description = "Restaurante registrado con su ID generado")
+    public Mono<Restaurante> register(@RequestBody Restaurante restaurante) {
+        return this.service.register(restaurante)
+                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST)));
     }
 
     @PutMapping("/save")
@@ -76,10 +69,7 @@ public class RestauranteController {
             description = "true: Restaurante actualizado. false: No existía o hubo error")
     public Mono<Boolean> updateRestaurante(@RequestBody Restaurante restaurante) {
         Mono<Void> direccionesMono = syncDirecciones(restaurante);
-
-        return this.mapper.map(Mono.just(restaurante))
-                .flatMap(restauranteEntity -> direccionesMono
-                        .then(this.service.update(restauranteEntity)));
+        return direccionesMono.then(this.service.update(restaurante));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -99,7 +89,7 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> getByNombre(@RequestParam String nombre) {
-        return this.mapper.mapFlux(this.service.findByNombreContaining(nombre));
+        return this.service.findByNombreContaining(nombre);
     }
 
     @GetMapping(value = "/getporescription", params = "description")
@@ -111,7 +101,7 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> getByDescription(@RequestParam String description) {
-        return this.mapper.mapFlux(this.service.findByDescriptionContaining(description));
+        return this.service.findByDescriptionContaining(description);
     }
 
     @GetMapping(value = "/getportag", params = "tag")
@@ -123,7 +113,7 @@ public class RestauranteController {
             @ApiResponse(responseCode = "404", description = "No se han encontrado restaurantes")
     })
     public Flux<Restaurante> getByTag(@RequestParam String tag) {
-        return this.mapper.mapFlux(this.service.findByTag(tag));
+        return this.service.findByTag(tag);
     }
 
     @GetMapping("/icon-upload-url/{id}")
@@ -143,20 +133,14 @@ public class RestauranteController {
     @PostMapping("/{idRestaurante}/plato/register")
     @Operation(summary = "Registrar un plato asociado a un restaurante")
     @ApiResponse(responseCode = "200",
-            description = "true: Plato registrado. false: Ya existía o hubo error")
-    public Mono<Boolean> registerPlato(
+            description = "Plato registrado con su ID generado")
+    public Mono<Plato> registerPlato(
             @PathVariable String idRestaurante,
             @RequestBody Plato plato) {
         return this.service.findById(idRestaurante)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
-                .flatMap(r -> this.platoMapper.map(Mono.just(plato)))
-                .flatMap(platoEntity -> {
-                    platoEntity.setIdRestaurante(idRestaurante);
-                    return this.platoService.register(platoEntity);
-                });
+                .flatMap(r -> this.platoService.registerConRestaurante(plato, idRestaurante));
     }
-
-
 
     private Mono<Void> syncDirecciones(Restaurante restaurante) {
         if (restaurante.getDirecciones() == null || restaurante.getDirecciones().isEmpty())
