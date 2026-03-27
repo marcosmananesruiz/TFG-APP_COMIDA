@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, Restaurante> {
 
-    @Autowired private PlatoEntityMapper platoMapper;
+    //@Autowired private PlatoEntityMapper platoMapper;
     @Autowired private IPlatoService platoService;
     @Autowired private IDireccionService direccionService;
 
@@ -55,7 +55,6 @@ public class RestauranteEntityMapper implements EntityMapper<RestauranteEntity, 
 
             Mono<List<org.dam2.bomboplats.api.Plato>> platosMono = platoService
                     .findByIdRestaurante(entity.getId())
-                    .flatMap(platoEntity -> platoMapper.unmap(Mono.just(platoEntity)))
                     .collectList();
 
             Mono<List<org.dam2.bomboplats.api.Direccion>> direccionesMono = direccionService
