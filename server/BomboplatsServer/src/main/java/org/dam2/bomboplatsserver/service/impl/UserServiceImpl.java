@@ -161,7 +161,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public Flux<Plato> getPlatosFavoritos(String userId) {
-        return this.platoMapper.mapFlux(this.platoFavoritosService.getPlatosFavoritosOf(userId))
+        return this.platoFavoritosService.getPlatosFavoritosOf(userId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
@@ -200,7 +200,7 @@ public class UserServiceImpl implements IUserService {
         String userId = user.getId();
 
         return this.platoFavoritosService.getPlatosFavoritosOf(userId)
-                .map(PlatoEntity::getId)
+                .map(Plato::getId)
                 .collect(Collectors.toSet())
                 .flatMap(actualesIds -> {
 
@@ -217,10 +217,7 @@ public class UserServiceImpl implements IUserService {
 
                     Mono<Void> insertMono = Flux.fromIterable(aInsertar)
                             .flatMap(idPlato -> {
-                                PlatoFavoritosEntity entity = new PlatoFavoritosEntity();
-                                entity.setUserId(userId);
-                                entity.setPlatoId(idPlato);
-                                return this.platoFavoritosService.register(entity);
+                                return this.platoFavoritosService.asignarFavorito(idPlato, userId);
                             })
                             .then();
 

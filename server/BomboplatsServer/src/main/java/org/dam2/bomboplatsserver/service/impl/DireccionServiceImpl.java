@@ -122,14 +122,12 @@ public class DireccionServiceImpl implements IDireccionService {
 
     @Override
     public Flux<Direccion> getDireccionesOfUser(String userID) {
-        return this.mapper.mapFlux(this.repo.findByIdUser(userID))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.mapper.mapFlux(this.repo.findByIdUser(userID));
     }
-
+    // A estos dos no les pongo que devuelvan 404 porque sí que es posible que no tengan direcciones al principio
     @Override
     public Flux<Direccion> getDireccionesOfRestaurante(String restauranteID) {
-        return this.mapper.mapFlux(this.repo.findByIdRestaurante(restauranteID))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.mapper.mapFlux(this.repo.findByIdRestaurante(restauranteID));
     }
 
     @Override

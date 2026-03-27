@@ -14,8 +14,6 @@ public class PedidoEntityMapper implements EntityMapper<PedidoEntity, Pedido> {
 
     @Autowired private IUserService userService;
     @Autowired private IPlatoService platoService;
-    @Autowired private UserEntityMapper userMapper;
-    @Autowired private PlatoEntityMapper platoMapper;
 
     @Override
     public Mono<PedidoEntity> map(Mono<Pedido> o) {
@@ -33,18 +31,18 @@ public class PedidoEntityMapper implements EntityMapper<PedidoEntity, Pedido> {
     public Mono<Pedido> unmap(Mono<PedidoEntity> o) {
         return o.flatMap(pedidoEntity -> {
             Pedido pedido = new Pedido();
-            return this.userService.findByID(pedidoEntity.getIdUser()).flatMap(userEntity -> this.userMapper.unmap(Mono.just(userEntity))
-                    .flatMap(user -> this.platoService.findById(pedidoEntity.getIdPlato()).flatMap(platoEntity -> this.platoMapper.unmap(Mono.just(platoEntity))
-                            .map(plato -> {
-                                pedido.setId(pedidoEntity.getId());
-                                pedido.setEstado(pedidoEntity.getEstado());
-                                pedido.setModifications(Arrays.asList(pedidoEntity.getModificaciones()));
-                                pedido.setEntrega(pedidoEntity.getEntrega());
-                                pedido.setUser(user);
-                                pedido.setPlato(plato);
-                                return pedido;
-                            })
-                    )));
+            return this.userService.findByID(pedidoEntity.getIdUser()).flatMap(user -> this.platoService.findById(pedidoEntity.getIdPlato())
+                    .map(plato -> {
+                        pedido.setId(pedidoEntity.getId());
+                        pedido.setEstado(pedidoEntity.getEstado());
+                        pedido.setModifications(Arrays.asList(pedidoEntity.getModificaciones()));
+                        pedido.setEntrega(pedidoEntity.getEntrega());
+                        pedido.setUser(user);
+                        pedido.setPlato(plato);
+                        return pedido;
+                    })
+            );
+
         });
     }
 
@@ -52,18 +50,18 @@ public class PedidoEntityMapper implements EntityMapper<PedidoEntity, Pedido> {
     public Flux<Pedido> mapFlux(Flux<PedidoEntity> o) {
         return o.flatMap(pedidoEntity -> {
             Pedido pedido = new Pedido();
-            return this.userService.findByID(pedidoEntity.getIdUser()).flatMap(userEntity -> this.userMapper.unmap(Mono.just(userEntity))
-                    .flatMap(user -> this.platoService.findById(pedidoEntity.getIdPlato()).flatMap(platoEntity -> this.platoMapper.unmap(Mono.just(platoEntity))
-                            .map(plato -> {
-                                pedido.setId(pedidoEntity.getId());
-                                pedido.setEstado(pedidoEntity.getEstado());
-                                pedido.setModifications(Arrays.asList(pedidoEntity.getModificaciones()));
-                                pedido.setEntrega(pedidoEntity.getEntrega());
-                                pedido.setUser(user);
-                                pedido.setPlato(plato);
-                                return pedido;
-                            })
-                    )));
+            return this.userService.findByID(pedidoEntity.getIdUser()).flatMap(user -> this.platoService.findById(pedidoEntity.getIdPlato())
+                    .map(plato -> {
+                        pedido.setId(pedidoEntity.getId());
+                        pedido.setEstado(pedidoEntity.getEstado());
+                        pedido.setModifications(Arrays.asList(pedidoEntity.getModificaciones()));
+                        pedido.setEntrega(pedidoEntity.getEntrega());
+                        pedido.setUser(user);
+                        pedido.setPlato(plato);
+                        return pedido;
+                    })
+            );
+
         });
     }
 }

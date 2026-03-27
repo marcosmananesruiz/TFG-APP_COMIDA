@@ -2,6 +2,7 @@ package org.dam2.bomboplatsserver.modelo.mapper;
 
 import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
+import org.dam2.bomboplatsserver.repo.DireccionRepository;
 import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
@@ -9,22 +10,27 @@ import reactor.core.publisher.Mono;
 
 public class DireccionEntityMapper implements EntityMapper<DireccionEntity, Direccion> {
 
-    @Autowired private IDireccionService service;
+    @Autowired private DireccionRepository repo;
 
     @Override
     public Mono<DireccionEntity> map(Mono<Direccion> o) {
         return o.flatMap(direccion -> {
-                DireccionEntity direccionEntity = new DireccionEntity();
-                return this.service.getUserID(direccion.getId()).map(idUser -> this.service.getRestauranteID(direccion.getId()).doOnNext(idRestaurante -> {
+
+                Mono<String> userIdMono = this.repo.findIdUserById(direccion.getId());
+                Mono<String> restauranteIdMono = this.repo.findIdRestauranteById(direccion.getId());
+
+                return Mono.zip(userIdMono, restauranteIdMono).map(tuple -> {
+                    DireccionEntity direccionEntity = new DireccionEntity();
                     direccionEntity.setId(direccion.getId());
                     direccionEntity.setPoblacion(direccion.getPoblacion());
                     direccionEntity.setCalle(direccion.getCalle());
                     direccionEntity.setCodigoPostal(direccion.getCodigoPostal());
                     direccionEntity.setPortal(direccion.getPortal());
                     direccionEntity.setPiso(direccion.getPiso());
-                    direccionEntity.setIdUser(idUser);
-                    direccionEntity.setIdRestaurante(idRestaurante);
-                })).thenReturn(direccionEntity);
+                    direccionEntity.setIdUser(tuple.getT1());
+                    direccionEntity.setIdRestaurante(tuple.getT2());
+                    return direccionEntity;
+                });
             }
         );
     }

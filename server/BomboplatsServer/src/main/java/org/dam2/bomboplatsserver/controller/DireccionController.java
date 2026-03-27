@@ -40,29 +40,32 @@ public class DireccionController {
             @ApiResponse(responseCode = "200",
                     description = "Dirección encontrada",
                     content = @Content(schema = @Schema(implementation = Direccion.class))),
-            @ApiResponse(responseCode = "404", description = "No se encontró la dirección")
+            @ApiResponse(responseCode = "404", description = "No se encontró la dirección"),
+            @ApiResponse(responseCode = "500", description = "parametros incorrectos")
     })
     public Mono<Direccion> getDireccionById(@RequestParam(required = false) String id) {
         return this.service.findById(id);
     }
 
-    @GetMapping(value = "/get", params = "user")
+    @GetMapping(value = "/getByUser", params = "user")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Dirección encontrada",
-                    content = @Content(schema = @Schema(implementation = Direccion.class))),
-            @ApiResponse(responseCode = "404", description = "No se encontró la dirección")
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Direccion.class)))),
+            @ApiResponse(responseCode = "404", description = "No se encontró la dirección"),
+            @ApiResponse(responseCode = "500", description = "Parametros incorrectos")
     })
     public Flux<Direccion> getDireccionOfUser(@RequestParam(required = false) String user) {
         return this.service.getDireccionesOfUser(user);
     }
 
-    @GetMapping(value = "/get", params = "restaurante")
+    @GetMapping(value = "/getByRestaurante", params = "restaurante")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Dirección encontrada",
-                    content = @Content(schema = @Schema(implementation = Direccion.class))),
-            @ApiResponse(responseCode = "404", description = "No se encontró la dirección")
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Direccion.class)))),
+            @ApiResponse(responseCode = "404", description = "No se encontró la dirección"),
+            @ApiResponse(responseCode = "500", description = "Parametros incorrectos")
     })
     public Flux<Direccion> getDireccionOfRestaurante(@RequestParam(required = false) String restaurante) {
         return this.service.getDireccionesOfRestaurante(restaurante);

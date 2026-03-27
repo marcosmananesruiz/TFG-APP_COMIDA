@@ -4,6 +4,7 @@ import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
+import org.dam2.bomboplatsserver.repo.UserRepository;
 import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.dam2.bomboplatsserver.service.IPlatoFavoritosService;
 import org.dam2.bomboplatsserver.service.IUserService;
@@ -16,15 +17,14 @@ import java.util.stream.Collectors;
 
 public class UserEntityMapper implements EntityMapper<UserEntity, User> {
 
-    @Autowired private IUserService userService;
+    @Autowired private UserRepository repo;
     @Autowired private IDireccionService direccionService;
     @Autowired private IPlatoFavoritosService platoFavoritosService;
-    @Autowired private PlatoEntityMapper platoEntityMapper;
 
     @Override
     public Mono<UserEntity> map(Mono<User> o) {
         return o.flatMap(user ->
-                this.userService.getPassword(user.getId())
+                this.repo.findPasswordById(user.getId())
                         .map(password -> {
                             UserEntity userEntity = new UserEntity();
                             userEntity.setId(user.getId());
@@ -42,7 +42,7 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
         return o.flatMap(userEntity -> {
             Mono<Set<Direccion>> direccionesMono = this.direccionService.getDireccionesOfUser(userEntity).collect(Collectors.toSet());
 
-            Mono<Set<Plato>> favoritosMono = this.platoEntityMapper.mapFlux(this.platoFavoritosService.getPlatosFavoritosOf(userEntity.getId())).collect(Collectors.toSet());
+            Mono<Set<Plato>> favoritosMono = this.platoFavoritosService.getPlatosFavoritosOf(userEntity.getId()).collect(Collectors.toSet());
 
             return Mono.zip(direccionesMono, favoritosMono)
                     .map(tuple -> User.builder()
@@ -62,7 +62,7 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
         return o.flatMap(userEntity -> {
             Mono<Set<Direccion>> direccionesMono = this.direccionService.getDireccionesOfUser(userEntity.getId()).collect(Collectors.toSet());
 
-            Mono<Set<Plato>> favoritosMono = this.platoEntityMapper.mapFlux(this.platoFavoritosService.getPlatosFavoritosOf(userEntity.getId())).collect(Collectors.toSet());
+            Mono<Set<Plato>> favoritosMono = this.platoFavoritosService.getPlatosFavoritosOf(userEntity.getId()).collect(Collectors.toSet());
 
             return Mono.zip(direccionesMono, favoritosMono)
                     .map(tuple -> User.builder()

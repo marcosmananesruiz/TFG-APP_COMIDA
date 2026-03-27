@@ -24,7 +24,7 @@ public class PedidoController {
     @Autowired private IPedidoService service;
 
     @GetMapping("/getAll")
-    @Operation(summary = "Obtener todos los pedidos o según su id/estado/user/plato")
+    @Operation(summary = "Obtener todos los pedidos")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
                     description = "Pedidos encontrados",
@@ -36,21 +36,50 @@ public class PedidoController {
     }
 
     @GetMapping(value = "/get", params = "id")
+    @Operation(summary = "Obtener un pedido segun su ID", operationId = "getPedidoById")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200",
+                    description = "Pedidos Encontrados",
+                    content = @Content(schema = @Schema(implementation = Pedido.class))),
+            @ApiResponse(responseCode = "404", description = "No se ha encontrado el pedido")
+    })
     public Mono<Pedido> getPedidoById(@RequestParam(required = false) String id) {
         return this.service.findById(id);
     }
 
-    @GetMapping(value = "/get", params = "estado")
+    @GetMapping(value = "/getByEstado", params = "estado")
+    @Operation(summary = "Obtener pedidos segun su estado", operationId = "getPedidoByEstado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedidos Encontrados",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Pedido.class)))),
+            @ApiResponse(responseCode = "404", description = "No se han encontrado pedidos"),
+            @ApiResponse(responseCode = "500", description = "Parametros incorrectos")
+    })
+
     public Flux<Pedido> getPedidosByEstado(@RequestParam(required = false) Pedido.Estado estado) {
         return this.service.findByEstado(estado);
     }
 
-    @GetMapping(value = "/get", params = "user")
+    @GetMapping(value = "/getByUser", params = "user")
+    @Operation(summary = "Obtener todos los pedidos de un usuario según su id", operationId = "getPedidoByUser")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedidos Encontrados",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Pedido.class)))),
+            @ApiResponse(responseCode = "404", description = "No se han encontrado pedidos"),
+            @ApiResponse(responseCode = "500", description = "Parametros incorrects")
+    })
     public Flux<Pedido> getPedidosByUser(@RequestParam(required = false) String user) {
         return this.service.findByUserId(user);
     }
 
-    @GetMapping(value = "/get", params = "plato")
+    @GetMapping(value = "/getByPlato", params = "plato")
+    @Operation(summary = "Obtener todos los pedidos que se han hecho de un plato según su id", operationId = "getPedidoByPlato")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedidos Encontrados",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Pedido.class)))),
+            @ApiResponse(responseCode = "404", description = "No se han encontrado pedidos"),
+            @ApiResponse(responseCode = "500", description = "Parametros incorrectos")
+    })
     public Flux<Pedido> getPedidosByPlato(@RequestParam(required = false) String plato) {
         return this.service.findByPlatoId(plato);
     }

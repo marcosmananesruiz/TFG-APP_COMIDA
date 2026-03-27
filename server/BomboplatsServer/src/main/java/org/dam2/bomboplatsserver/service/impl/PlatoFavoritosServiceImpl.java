@@ -1,5 +1,7 @@
 package org.dam2.bomboplatsserver.service.impl;
 
+import org.dam2.bomboplats.api.Plato;
+import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplatsserver.modelo.entity.PlatoEntity;
 import org.dam2.bomboplatsserver.modelo.entity.PlatoFavoritosEntity;
 import org.dam2.bomboplatsserver.repo.PlatoFavoritosRepository;
@@ -18,7 +20,7 @@ public class PlatoFavoritosServiceImpl implements IPlatoFavoritosService {
     @Autowired private IPlatoService platoService;
 
     @Override
-    public Flux<PlatoEntity> getPlatosFavoritosOf(String userId) {
+    public Flux<Plato> getPlatosFavoritosOf(String userId) {
         return this.repo.findByUserId(userId).flatMap(platoFavoritosEntity -> this.platoService.findById(platoFavoritosEntity.getPlatoId()));
     }
 
@@ -42,5 +44,25 @@ public class PlatoFavoritosServiceImpl implements IPlatoFavoritosService {
     @Override
     public Mono<Void> deleteByUserIdAndPlatoId(String userId, String platoId) {
         return this.repo.deleteByUserIdAndPlatoId(userId, platoId);
+    }
+
+    @Override
+    public Mono<Boolean> asignarFavorito(Plato plato, String userId) {
+        return this.asignarFavorito(plato.getId(), userId);
+    }
+
+    @Override
+    public Mono<Boolean> asignarFavorito(Plato plato, User user) {
+        return this.asignarFavorito(plato.getId(), user.getId());
+    }
+
+    @Override
+    public Mono<Boolean> asignarFavorito(String platoId, User user) {
+        return this.asignarFavorito(platoId, user.getId());
+    }
+
+    @Override
+    public Mono<Boolean> asignarFavorito(String platoId, String userId) {
+        return this.register(new PlatoFavoritosEntity(null, userId, platoId));
     }
 }

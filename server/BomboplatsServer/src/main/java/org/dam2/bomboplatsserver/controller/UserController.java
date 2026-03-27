@@ -65,7 +65,7 @@ public class UserController {
         return this.service.findByID(id);
     }
 
-    @GetMapping(value = "/get", params = "email")
+    @GetMapping(value = "/getByEmail", params = "email")
     @Operation(summary = "Obtener un usuario por su Email")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -92,7 +92,7 @@ public class UserController {
         return this.service.deleteUserByID(id);
     }
 
-    @GetMapping("/get")
+    @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los usuarios")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
