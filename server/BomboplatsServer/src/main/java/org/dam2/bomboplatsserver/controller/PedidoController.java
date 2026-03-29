@@ -7,15 +7,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.dam2.bomboplats.api.Pedido;
-import org.dam2.bomboplatsserver.modelo.entity.PedidoEntity;
-import org.dam2.bomboplatsserver.modelo.mapper.PedidoEntityMapper;
 import org.dam2.bomboplatsserver.service.IPedidoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/pedido")
@@ -105,4 +103,14 @@ public class PedidoController {
         return this.service.deletePedidoById(id);
     }
 
+    @GetMapping("/get/id")
+    @Operation(summary = "Obtener unicamente el id de los pedidos")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Se han obtenido todos los IDs exitosamente",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+            @ApiResponse(responseCode = "404", description = "No hay ningun ID")
+    })
+    public Mono<List<String>> getPedidosIDs() {
+        return this.service.getIDs().collectList();
+    }
 }

@@ -147,4 +147,9 @@ public class DireccionServiceImpl implements IDireccionService {
         }).thenReturn(true)
             .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
+
+    @Override
+    public Flux<String> getIDs() {
+        return this.repo.getIDs();
+    }
 }

@@ -7,15 +7,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.dam2.bomboplats.api.Direccion;
-import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
-import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.service.IDireccionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/direccion")
@@ -90,5 +88,16 @@ public class DireccionController {
     @ApiResponse(responseCode = "200", description = "true: Actualization exitosa. false: El registro no existe o se produjo un error")
     public Mono<Boolean> updateDireccion(@RequestBody Direccion direccion) {
         return this.service.update(direccion);
+    }
+
+    @GetMapping("/get/id")
+    @Operation(summary = "Obtener unicamente los ID de las direcciones")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Se han obtenido todos los IDs exitosamente",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+            @ApiResponse(responseCode = "404", description = "No se han encontrado IDs")
+    })
+    public Mono<List<String>> getDireccionIDs() {
+        return this.service.getIDs().collectList();
     }
 }

@@ -22,4 +22,6 @@ public interface DireccionRepository extends ReactiveCrudRepository<DireccionEnt
     @Query("SELECT nextval('direccion_seq')")
     Mono<Long> getNextID();
 
+    @Query("SELECT id FROM direcciones")
+    Flux<String> getIDs();
 }

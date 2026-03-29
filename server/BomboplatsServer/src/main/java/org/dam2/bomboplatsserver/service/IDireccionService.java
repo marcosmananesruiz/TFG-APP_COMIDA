@@ -99,4 +99,5 @@ public interface IDireccionService {
 
     Mono<Boolean> asignarUserId(Direccion direccion, String userId);
     Mono<Boolean> asignarRestauranteId(Direccion direccion, String direccionId);
+    Flux<String> getIDs();
 }

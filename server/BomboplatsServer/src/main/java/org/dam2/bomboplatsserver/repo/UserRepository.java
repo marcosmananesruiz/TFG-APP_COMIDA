@@ -4,6 +4,7 @@ import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -18,4 +19,7 @@ public interface UserRepository extends ReactiveCrudRepository<UserEntity, Strin
     Mono<UserEntity> findUserEntityByEmail(String email);
 
     Mono<Boolean> existsByEmail(String email);
+
+    @Query("SELECT id FROM usuarios")
+    Flux<String> getIDs();
 }

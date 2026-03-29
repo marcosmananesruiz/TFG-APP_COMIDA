@@ -1,42 +1,25 @@
 package org.dam2.bomboplatsserver.controller;
 
 
-import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
-import io.swagger.v3.oas.annotations.OpenAPI31;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.dam2.bomboplats.api.Direccion;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
 import org.dam2.bomboplats.api.login.UserRegister;
-import org.dam2.bomboplatsserver.modelo.entity.DireccionEntity;
-import org.dam2.bomboplatsserver.modelo.entity.PlatoEntity;
-import org.dam2.bomboplatsserver.modelo.entity.PlatoFavoritosEntity;
-import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
-import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
-import org.dam2.bomboplatsserver.service.*;
+import org.dam2.bomboplatsserver.service.IS3Service;
+import org.dam2.bomboplatsserver.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -138,4 +121,14 @@ public class UserController {
         return this.service.getPlatosFavoritos(id);
     }
 
+    @GetMapping(value = "/get/id", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Obtener todos los IDs")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Se encontraron todos los IDs",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = String.class)))),
+            @ApiResponse(responseCode = "404", description = "No hay ninguna ID registrada")
+    })
+    public Mono<List<String>> getUserIDs() {
+        return this.service.getUserIds().collectList();
+    }
 }

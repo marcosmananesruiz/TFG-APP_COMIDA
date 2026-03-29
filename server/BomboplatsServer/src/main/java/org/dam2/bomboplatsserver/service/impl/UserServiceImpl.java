@@ -5,9 +5,6 @@ import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
 import org.dam2.bomboplats.api.login.UserRegister;
-import org.dam2.bomboplatsserver.modelo.entity.PedidoEntity;
-import org.dam2.bomboplatsserver.modelo.entity.PlatoEntity;
-import org.dam2.bomboplatsserver.modelo.entity.PlatoFavoritosEntity;
 import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
@@ -163,6 +160,11 @@ public class UserServiceImpl implements IUserService {
     public Flux<Plato> getPlatosFavoritos(String userId) {
         return this.platoFavoritosService.getPlatosFavoritosOf(userId)
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+    }
+
+    @Override
+    public Flux<String> getUserIds() {
+        return this.repo.getIDs();
     }
 
     private Mono<Void> syncDirecciones(User user) {

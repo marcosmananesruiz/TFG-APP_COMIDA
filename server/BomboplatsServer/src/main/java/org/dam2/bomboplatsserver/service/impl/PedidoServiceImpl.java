@@ -103,4 +103,9 @@ public class PedidoServiceImpl implements IPedidoService {
         return this.mapper.mapFlux(this.repo.findByIdPlato(platoId))
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
+
+    @Override
+    public Flux<String> getIDs() {
+        return this.repo.getIDs();
+    }
 }

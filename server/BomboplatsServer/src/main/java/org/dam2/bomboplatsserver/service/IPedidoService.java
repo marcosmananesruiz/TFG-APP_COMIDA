@@ -66,4 +66,5 @@ public interface IPedidoService {
      */
     Flux<Pedido> findByPlatoId(String platoId);
 
+    Flux<String> getIDs();
 }

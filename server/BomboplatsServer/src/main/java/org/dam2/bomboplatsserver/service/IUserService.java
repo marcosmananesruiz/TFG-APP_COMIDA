@@ -74,4 +74,6 @@ public interface IUserService {
     Mono<Boolean> updatePassword(String userId, String newPassword);
 
     Flux<Plato> getPlatosFavoritos(String userId);
+
+    Flux<String> getUserIds();
 }

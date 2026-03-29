@@ -17,4 +17,7 @@ public interface PedidoRepository extends ReactiveCrudRepository<PedidoEntity, S
     Flux<PedidoEntity> findByIdUser(String idUser);
 
     Flux<PedidoEntity> findByIdPlato(String idPlato);
+
+    @Query("SELECT id FROM pedidos")
+    Flux<String> getIDs();
 }
