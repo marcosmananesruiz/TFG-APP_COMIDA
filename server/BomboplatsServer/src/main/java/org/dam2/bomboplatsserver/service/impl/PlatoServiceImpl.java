@@ -7,7 +7,6 @@ import org.dam2.bomboplatsserver.service.IPlatoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -85,9 +84,8 @@ public class PlatoServiceImpl implements IPlatoService {
                     return this.template.insert(PlatoEntity.class).using(entity);
                 })
                 .map(this::toDTO)
-                .onErrorResume(DuplicateKeyException.class, e -> {
-                    LOGGER.error("{}: Se ha intentado registrar un plato con ID {}, el cual ya existe",
-                            e.getMessage(), entity.getId());
+                .onErrorResume(e -> {
+                    LOGGER.error("Error al registrar plato: {}", e.getMessage(), e);
                     return Mono.empty();
                 });
     }
@@ -142,9 +140,8 @@ public class PlatoServiceImpl implements IPlatoService {
                     return this.template.insert(PlatoEntity.class).using(entity);
                 })
                 .map(this::toDTO)
-                .onErrorResume(DuplicateKeyException.class, e -> {
-                    LOGGER.error("{}: Se ha intentado registrar un plato con ID {}, el cual ya existe",
-                            e.getMessage(), entity.getId());
+                .onErrorResume(e -> {
+                    LOGGER.error("Error al registrar plato con restaurante: {}", e.getMessage(), e);
                     return Mono.empty();
                 });
     }

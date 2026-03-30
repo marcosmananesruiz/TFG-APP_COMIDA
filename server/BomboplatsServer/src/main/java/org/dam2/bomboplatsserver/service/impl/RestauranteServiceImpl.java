@@ -1,9 +1,6 @@
 package org.dam2.bomboplatsserver.service.impl;
 
 import org.dam2.bomboplats.api.Restaurante;
-import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
-import org.dam2.bomboplatsserver.modelo.mapper.RestauranteEntityMapper;
 import org.dam2.bomboplatsserver.modelo.entity.RestauranteEntity;
 import org.dam2.bomboplatsserver.repo.RestauranteRepository;
 import org.dam2.bomboplatsserver.service.IDireccionService;
@@ -12,7 +9,6 @@ import org.dam2.bomboplatsserver.service.IRestauranteService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -105,9 +101,8 @@ public class RestauranteServiceImpl implements IRestauranteService {
                     return this.template.insert(RestauranteEntity.class).using(entity);
                 })
                 .flatMap(this::enrich)
-                .onErrorResume(DuplicateKeyException.class, e -> {
-                    LOGGER.error("{}: Se ha intentado registrar un restaurante con ID {}, el cual ya existe",
-                            e.getMessage(), entity.getId());
+                .onErrorResume(e -> {
+                    LOGGER.error("Error al registrar restaurante: {}", e.getMessage(), e);
                     return Mono.empty();
                 });
     }
