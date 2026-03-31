@@ -31,16 +31,16 @@ public class RestauranteServiceImpl implements IRestauranteService {
     private Mono<Restaurante> enrich(RestauranteEntity entity) {
         Mono<List<org.dam2.bomboplats.api.Plato>> platosMono = platoService
                 .findByIdRestaurante(entity.getId())
-                .collectList()
-                .doOnNext(platos -> LOGGER.info("Platos encontrados para {}: {}", entity.getId(), platos.size()));
+                .collectList();
+                //.doOnNext(platos -> LOGGER.info("Platos encontrados para {}: {}", entity.getId(), platos.size()));
 
         Mono<List<org.dam2.bomboplats.api.Direccion>> direccionesMono = direccionService
                 .getDireccionesOfRestaurante(entity.getId())
-                .collectList()
-                .doOnNext(dirs -> LOGGER.info("Direcciones encontradas para {}: {}", entity.getId(), dirs.size()));
+                .collectList();
+                //.doOnNext(dirs -> LOGGER.info("Direcciones encontradas para {}: {}", entity.getId(), dirs.size()));
 
         return Mono.zip(platosMono, direccionesMono)
-                .doOnSuccess(t -> LOGGER.info("Enrich completado para {}", entity.getId()))
+                //.doOnSuccess(t -> LOGGER.info("Enrich completado para {}", entity.getId()))
                 .map(tuple -> {
                     String[] tags = entity.getTags() instanceof Object[]
                             ? toStringArray((Object[]) entity.getTags())
