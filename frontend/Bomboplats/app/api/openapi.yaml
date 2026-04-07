@@ -1,0 +1,1708 @@
+openapi: 3.1.0
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- description: Generated server url
+  url: http://localhost:8080
+paths:
+  /users/updatePass:
+    put:
+      operationId: updatePassword
+      parameters:
+      - explode: true
+        in: query
+        name: userId
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: password
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Se actualizo la contraseña correctamente"
+        "404":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: No se ha encontrado al usuario con ese ID
+      summary: Actualizar la contraseña de un usuario segun su id
+      tags:
+      - user-controller
+      x-accepts:
+      - '*/*'
+  /users/save:
+    put:
+      operationId: updateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Usuario actualizado. false: Usuario no existía o hubo\
+            \ un error"
+      summary: Actualizar información de un usuario
+      tags:
+      - user-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /users/login:
+    put:
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginAttempt"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true si el login es correcto, false si el login es incorrecto\
+            \ o no se encuentra ese email"
+      summary: Comprueba el login de un usuario
+      tags:
+      - user-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /restaurante/save:
+    put:
+      operationId: updateRestaurante
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Restaurante"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Restaurante actualizado. false: No existía o hubo error"
+      summary: Actualizar un restaurante
+      tags:
+      - restaurante-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /plato/save:
+    put:
+      operationId: updatePlato
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Plato"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Plato actualizado. false: No existía o hubo error"
+      summary: Actualizar un plato existente
+      tags:
+      - plato-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /pedido/save:
+    put:
+      operationId: updatePedido
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pedido"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Pedido actualizado. false: Ese registro no existe o\
+            \ se ha producido un error"
+      summary: Actualizar un pedido
+      tags:
+      - pedido-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /direccion/save:
+    put:
+      operationId: updateDireccion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Direccion"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Actualization exitosa. false: El registro no existe\
+            \ o se produjo un error"
+      summary: Actualizar una dirección
+      tags:
+      - direccion-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /users/register:
+    post:
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+          description: "true: Usuario registrado. false: Usuario ya existía o hubo\
+            \ un error"
+      summary: Registrar un usuario
+      tags:
+      - user-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /restaurante/{idRestaurante}/plato/register:
+    post:
+      operationId: registerPlato
+      parameters:
+      - explode: false
+        in: path
+        name: idRestaurante
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Plato"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Plato"
+          description: Plato registrado con su ID generado
+      summary: Registrar un plato asociado a un restaurante
+      tags:
+      - restaurante-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /restaurante/register:
+    post:
+      operationId: register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Restaurante"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Restaurante"
+          description: Restaurante registrado con su ID generado
+      summary: Registrar un restaurante
+      tags:
+      - restaurante-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /plato/register:
+    post:
+      operationId: register_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Plato"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Plato"
+          description: "true: Plato registrado. false: Ya existía o hubo un error"
+      summary: Registrar un nuevo plato
+      tags:
+      - plato-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /pedido/register:
+    post:
+      operationId: register_2
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pedido"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Pedido"
+          description: "true: Pedido registrado. false: Ese registro ya existe o se\
+            \ ha producido un error"
+      summary: Registrar un pedido
+      tags:
+      - pedido-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /direccion/register:
+    post:
+      operationId: registerDireccion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Direccion"
+        required: true
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Direccion"
+          description: "true: Registro exitoso. false: El registro ya existe o se\
+            \ produjo un error"
+      summary: Registrar una dirección
+      tags:
+      - direccion-controller
+      x-content-type: application/json
+      x-accepts:
+      - '*/*'
+  /users/imageUrl:
+    get:
+      operationId: createImageUrl
+      parameters:
+      - explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+          description: Se genero el link
+      summary: Generar link para subir fotos de usuarios al S3
+      tags:
+      - user-controller
+      x-accepts:
+      - '*/*'
+  /users/getByEmail:
+    get:
+      operationId: getByEmail
+      parameters:
+      - explode: true
+        in: query
+        name: email
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Usuario encontrado
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+          description: No se ha encontrado al usuario
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Los parametros son incorrectos
+      summary: Obtener un usuario por su Email
+      tags:
+      - user-controller
+      x-accepts:
+      - '*/*'
+  /users/getAll:
+    get:
+      operationId: findAll
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/User"
+                type: array
+          description: Usuarios encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/User"
+                type: array
+          description: No se han encontrado usuarios
+      summary: Obtener todos los usuarios
+      tags:
+      - user-controller
+      x-accepts:
+      - '*/*'
+  /users/get/id:
+    get:
+      operationId: getUserIDs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Se encontraron todos los IDs
+        "404":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: No hay ninguna ID registrada
+      summary: Obtener todos los IDs
+      tags:
+      - user-controller
+      x-accepts:
+      - application/json
+  /users/get:
+    get:
+      operationId: getByID
+      parameters:
+      - explode: true
+        in: query
+        name: id
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Usuario encontrado
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+          description: No se ha encontrado al usuario
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/User"
+          description: Los parámetros son incorrectos
+      summary: Obtener un usuario por su ID
+      tags:
+      - user-controller
+      x-accepts:
+      - '*/*'
+  /users/  platosfavoritos:
+    get:
+      operationId: getPlatosFavoritos
+      parameters:
+      - explode: true
+        in: query
+        name: id
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: Platos favoritos del usuario encontrados correctamente
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: No se ha encontrado el usuario
+      summary: Obtener los platos favoritos de un usuario
+      tags:
+      - user-controller
+      x-accepts:
+      - '*/*'
+  /restaurante/icon-upload-url/{id}:
+    get:
+      operationId: getRestauranteIconUploadUrl
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: true
+        in: query
+        name: index
+        required: false
+        schema:
+          default: 0
+          format: int32
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+          description: URL generada
+        "404":
+          content:
+            '*/*':
+              schema:
+                type: string
+          description: Restaurante no encontrado
+      summary: Obtener URL prefirmada para subir foto de restaurante
+      tags:
+      - restaurante-controller
+      x-accepts:
+      - '*/*'
+  /restaurante/getportag:
+    get:
+      operationId: getByTag
+      parameters:
+      - explode: true
+        in: query
+        name: tag
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: Restaurantes encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: No se han encontrado restaurantes
+      summary: Buscar restaurantes por tag
+      tags:
+      - restaurante-controller
+      x-accepts:
+      - '*/*'
+  /restaurante/getpornombre:
+    get:
+      operationId: getByNombre
+      parameters:
+      - explode: true
+        in: query
+        name: nombre
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: Restaurantes encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: No se han encontrado restaurantes
+      summary: Buscar restaurantes por nombre
+      tags:
+      - restaurante-controller
+      x-accepts:
+      - '*/*'
+  /restaurante/getporescription:
+    get:
+      operationId: getByDescription
+      parameters:
+      - explode: true
+        in: query
+        name: description
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: Restaurantes encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: No se han encontrado restaurantes
+      summary: Buscar restaurantes por descripción
+      tags:
+      - restaurante-controller
+      x-accepts:
+      - '*/*'
+  /restaurante/getAll:
+    get:
+      operationId: findAll_1
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: Restaurantes encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Restaurante"
+                type: array
+          description: No se han encontrado restaurantes
+      summary: Obtener todos los restaurantes
+      tags:
+      - restaurante-controller
+      x-accepts:
+      - '*/*'
+  /restaurante/get/{id}:
+    get:
+      operationId: getRestauranteById
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Restaurante"
+          description: Restaurante encontrado
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Restaurante"
+          description: No se ha encontrado el restaurante
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Restaurante"
+          description: Parámetros incorrectos
+      summary: Obtener restaurante por ID
+      tags:
+      - restaurante-controller
+      x-accepts:
+      - '*/*'
+  /plato/icon-upload-url/{id}:
+    get:
+      operationId: getPlatoIconUploadUrl
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: string
+          description: URL generada
+        "404":
+          content:
+            '*/*':
+              schema:
+                type: string
+          description: Plato no encontrado
+      summary: Obtener URL prefirmada para subir foto de plato
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /plato/getportag:
+    get:
+      operationId: getByTag_1
+      parameters:
+      - explode: true
+        in: query
+        name: tag
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: Platos encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: No se han encontrado platos
+      summary: Buscar platos por tag
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /plato/getporplatoynombre:
+    get:
+      operationId: getByRestauranteAndNombre
+      parameters:
+      - explode: true
+        in: query
+        name: idRestaurante
+        required: true
+        schema:
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: nombre
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: Platos encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: No se han encontrado platos
+      summary: Buscar platos por restaurante y nombre
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /plato/getpornombre:
+    get:
+      operationId: getByNombre_1
+      parameters:
+      - explode: true
+        in: query
+        name: nombre
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: Platos encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: No se han encontrado platos
+      summary: Buscar platos por nombre
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /plato/getporid:
+    get:
+      operationId: getByRestaurante
+      parameters:
+      - explode: true
+        in: query
+        name: idRestaurante
+        required: true
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: Platos encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: No se han encontrado platos
+      summary: Buscar platos por ID de restaurante
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /plato/getAll:
+    get:
+      operationId: findAll_2
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: Platos encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Plato"
+                type: array
+          description: No se han encontrado platos
+      summary: Obtener todos los platos
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /plato/get/{id}:
+    get:
+      operationId: getPlatoById
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Plato"
+          description: Plato encontrado
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Plato"
+          description: No se ha encontrado el plato
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Plato"
+          description: Parámetros incorrectos
+      summary: Obtener un plato por su ID
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /pedido/getByUser:
+    get:
+      operationId: getPedidoByUser
+      parameters:
+      - explode: true
+        in: query
+        name: user
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: Pedidos Encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: No se han encontrado pedidos
+        "500":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: Parametros incorrects
+      summary: Obtener todos los pedidos de un usuario según su id
+      tags:
+      - pedido-controller
+      x-accepts:
+      - '*/*'
+  /pedido/getByPlato:
+    get:
+      operationId: getPedidoByPlato
+      parameters:
+      - explode: true
+        in: query
+        name: plato
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: Pedidos Encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: No se han encontrado pedidos
+        "500":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: Parametros incorrectos
+      summary: Obtener todos los pedidos que se han hecho de un plato según su id
+      tags:
+      - pedido-controller
+      x-accepts:
+      - '*/*'
+  /pedido/getByEstado:
+    get:
+      operationId: getPedidoByEstado
+      parameters:
+      - explode: true
+        in: query
+        name: estado
+        required: false
+        schema:
+          enum:
+          - PREPARING
+          - DELIVERING
+          - DELIVERED
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: Pedidos Encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: No se han encontrado pedidos
+        "500":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: Parametros incorrectos
+      summary: Obtener pedidos segun su estado
+      tags:
+      - pedido-controller
+      x-accepts:
+      - '*/*'
+  /pedido/getAll:
+    get:
+      operationId: findAll_3
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: Pedidos encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Pedido"
+                type: array
+          description: No se han encontrado pedidos
+      summary: Obtener todos los pedidos
+      tags:
+      - pedido-controller
+      x-accepts:
+      - '*/*'
+  /pedido/get/id:
+    get:
+      operationId: getPedidosIDs
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Se han obtenido todos los IDs exitosamente
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  type: string
+                type: array
+          description: No hay ningun ID
+      summary: Obtener unicamente el id de los pedidos
+      tags:
+      - pedido-controller
+      x-accepts:
+      - '*/*'
+  /pedido/get:
+    get:
+      operationId: getPedidoById
+      parameters:
+      - explode: true
+        in: query
+        name: id
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Pedido"
+          description: Pedidos Encontrados
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Pedido"
+          description: No se ha encontrado el pedido
+      summary: Obtener un pedido segun su ID
+      tags:
+      - pedido-controller
+      x-accepts:
+      - '*/*'
+  /direccion/getByUser:
+    get:
+      operationId: getDireccionOfUser
+      parameters:
+      - explode: true
+        in: query
+        name: user
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: Dirección encontrada
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: No se encontró la dirección
+        "500":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: Parametros incorrectos
+      tags:
+      - direccion-controller
+      x-accepts:
+      - '*/*'
+  /direccion/getByRestaurante:
+    get:
+      operationId: getDireccionOfRestaurante
+      parameters:
+      - explode: true
+        in: query
+        name: restaurante
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: Dirección encontrada
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: No se encontró la dirección
+        "500":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: Parametros incorrectos
+      tags:
+      - direccion-controller
+      x-accepts:
+      - '*/*'
+  /direccion/getAll:
+    get:
+      operationId: findAll_4
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: Direcciones encontradas
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  $ref: "#/components/schemas/Direccion"
+                type: array
+          description: No se encontraron direcciones
+      summary: Obtener direcciones
+      tags:
+      - direccion-controller
+      x-accepts:
+      - '*/*'
+  /direccion/get/id:
+    get:
+      operationId: getDireccionIDs
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Se han obtenido todos los IDs exitosamente
+        "404":
+          content:
+            '*/*':
+              schema:
+                items:
+                  type: string
+                type: array
+          description: No se han encontrado IDs
+      summary: Obtener unicamente los ID de las direcciones
+      tags:
+      - direccion-controller
+      x-accepts:
+      - '*/*'
+  /direccion/get:
+    get:
+      operationId: getDireccionById
+      parameters:
+      - explode: true
+        in: query
+        name: id
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Direccion"
+          description: Dirección encontrada
+        "404":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Direccion"
+          description: No se encontró la dirección
+        "500":
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Direccion"
+          description: parametros incorrectos
+      tags:
+      - direccion-controller
+      x-accepts:
+      - '*/*'
+  /users/delete/{id}:
+    delete:
+      operationId: deleteByID
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Usuario eliminado. false: Usuario no existía o hubo\
+            \ un error"
+      summary: Eliminar un usuario
+      tags:
+      - user-controller
+      x-accepts:
+      - '*/*'
+  /restaurante/delete/{id}:
+    delete:
+      operationId: deleteRestaurante
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Restaurante eliminado. false: No existía o hubo error"
+      summary: Eliminar un restaurante
+      tags:
+      - restaurante-controller
+      x-accepts:
+      - '*/*'
+  /plato/delete/{id}:
+    delete:
+      operationId: deletePlato
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Plato eliminado. false: No existía o hubo error"
+      summary: Eliminar un plato por su ID
+      tags:
+      - plato-controller
+      x-accepts:
+      - '*/*'
+  /pedido/delete/{id}:
+    delete:
+      operationId: deletePedido
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Pedido borrado. false: Ese registro no existe o se ha\
+            \ producido un error"
+      summary: Borrar un pedido
+      tags:
+      - pedido-controller
+      x-accepts:
+      - '*/*'
+  /direccion/delete/{id}:
+    delete:
+      operationId: deleteById
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            '*/*':
+              schema:
+                type: boolean
+          description: "true: Borrado exitoso. false: El registro no existe o se produjo\
+            \ un error"
+      summary: Borrar una dirección por su Id
+      tags:
+      - direccion-controller
+      x-accepts:
+      - '*/*'
+components:
+  schemas:
+    Direccion:
+      example:
+        piso: piso
+        codigoPostal: codigoPostal
+        calle: calle
+        id: id
+        poblacion: poblacion
+        portal: 0
+      properties:
+        id:
+          type: string
+        poblacion:
+          type: string
+        codigoPostal:
+          type: string
+        calle:
+          type: string
+        portal:
+          format: int32
+          type: integer
+        piso:
+          type: string
+    Plato:
+      example:
+        precio: 6.0274563
+        possibleModifications:
+        - possibleModifications
+        - possibleModifications
+        description: description
+        id: id
+        iconUrl: iconUrl
+        nombre: nombre
+        tags:
+        - tags
+        - tags
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        description:
+          type: string
+        iconUrl:
+          type: string
+        tags:
+          items:
+            type: string
+          type: array
+        possibleModifications:
+          items:
+            type: string
+          type: array
+        precio:
+          format: float
+          type: number
+    User:
+      example:
+        direcciones:
+        - piso: piso
+          codigoPostal: codigoPostal
+          calle: calle
+          id: id
+          poblacion: poblacion
+          portal: 0
+        - piso: piso
+          codigoPostal: codigoPostal
+          calle: calle
+          id: id
+          poblacion: poblacion
+          portal: 0
+        nickname: nickname
+        id: id
+        iconUrl: iconUrl
+        email: email
+        platosFavoritos:
+        - precio: 6.0274563
+          possibleModifications:
+          - possibleModifications
+          - possibleModifications
+          description: description
+          id: id
+          iconUrl: iconUrl
+          nombre: nombre
+          tags:
+          - tags
+          - tags
+        - precio: 6.0274563
+          possibleModifications:
+          - possibleModifications
+          - possibleModifications
+          description: description
+          id: id
+          iconUrl: iconUrl
+          nombre: nombre
+          tags:
+          - tags
+          - tags
+      properties:
+        id:
+          type: string
+        nickname:
+          type: string
+        email:
+          type: string
+        iconUrl:
+          type: string
+        direcciones:
+          items:
+            $ref: "#/components/schemas/Direccion"
+          type: array
+          uniqueItems: true
+        platosFavoritos:
+          items:
+            $ref: "#/components/schemas/Plato"
+          type: array
+          uniqueItems: true
+    LoginAttempt:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    Restaurante:
+      example:
+        direcciones:
+        - piso: piso
+          codigoPostal: codigoPostal
+          calle: calle
+          id: id
+          poblacion: poblacion
+          portal: 0
+        - piso: piso
+          codigoPostal: codigoPostal
+          calle: calle
+          id: id
+          poblacion: poblacion
+          portal: 0
+        rating: 0
+        description: description
+        iconUrls:
+        - iconUrls
+        - iconUrls
+        id: id
+        nombre: nombre
+        platos:
+        - precio: 6.0274563
+          possibleModifications:
+          - possibleModifications
+          - possibleModifications
+          description: description
+          id: id
+          iconUrl: iconUrl
+          nombre: nombre
+          tags:
+          - tags
+          - tags
+        - precio: 6.0274563
+          possibleModifications:
+          - possibleModifications
+          - possibleModifications
+          description: description
+          id: id
+          iconUrl: iconUrl
+          nombre: nombre
+          tags:
+          - tags
+          - tags
+        tags:
+        - tags
+        - tags
+      properties:
+        id:
+          type: string
+        nombre:
+          type: string
+        description:
+          type: string
+        iconUrls:
+          items:
+            type: string
+          type: array
+        tags:
+          items:
+            type: string
+          type: array
+        platos:
+          items:
+            $ref: "#/components/schemas/Plato"
+          type: array
+          uniqueItems: true
+        direcciones:
+          items:
+            $ref: "#/components/schemas/Direccion"
+          type: array
+        rating:
+          format: int32
+          type: integer
+    Pedido:
+      example:
+        estado: PREPARING
+        entrega: 2000-01-23T04:56:07.000+00:00
+        id: id
+        plato:
+          precio: 6.0274563
+          possibleModifications:
+          - possibleModifications
+          - possibleModifications
+          description: description
+          id: id
+          iconUrl: iconUrl
+          nombre: nombre
+          tags:
+          - tags
+          - tags
+        user:
+          direcciones:
+          - piso: piso
+            codigoPostal: codigoPostal
+            calle: calle
+            id: id
+            poblacion: poblacion
+            portal: 0
+          - piso: piso
+            codigoPostal: codigoPostal
+            calle: calle
+            id: id
+            poblacion: poblacion
+            portal: 0
+          nickname: nickname
+          id: id
+          iconUrl: iconUrl
+          email: email
+          platosFavoritos:
+          - precio: 6.0274563
+            possibleModifications:
+            - possibleModifications
+            - possibleModifications
+            description: description
+            id: id
+            iconUrl: iconUrl
+            nombre: nombre
+            tags:
+            - tags
+            - tags
+          - precio: 6.0274563
+            possibleModifications:
+            - possibleModifications
+            - possibleModifications
+            description: description
+            id: id
+            iconUrl: iconUrl
+            nombre: nombre
+            tags:
+            - tags
+            - tags
+        modifications:
+        - modifications
+        - modifications
+      properties:
+        id:
+          type: string
+        plato:
+          $ref: "#/components/schemas/Plato"
+        user:
+          $ref: "#/components/schemas/User"
+        modifications:
+          items:
+            type: string
+          type: array
+        estado:
+          enum:
+          - PREPARING
+          - DELIVERING
+          - DELIVERED
+          type: string
+        entrega:
+          format: date-time
+          type: string
+    UserRegister:
+      example:
+        password: password
+        nickname: nickname
+        email: email
+      properties:
+        nickname:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+
