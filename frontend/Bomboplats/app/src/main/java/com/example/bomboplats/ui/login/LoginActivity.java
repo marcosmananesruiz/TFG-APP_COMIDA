@@ -18,6 +18,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -27,10 +33,14 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
+import com.example.bomboplats.api.ApiClient;
+import com.example.bomboplats.api.ApiException;
+import com.example.bomboplats.api.UserControllerApi;
 import com.example.bomboplats.data.model.Cuenta;
 import com.example.bomboplats.databinding.ActivityLoginBinding;
 
 import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -88,6 +98,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        // IMAGEN DE GATO
         catImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -99,6 +110,28 @@ public class LoginActivity extends AppCompatActivity {
                 
                 loadingProgressBar.setVisibility(View.VISIBLE);
                 loginViewModel.login(new Cuenta("usuario1@test.com", "juan123"));
+
+                /*
+                // 👇 Mover la llamada de red a un hilo secundario
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler(Looper.getMainLooper());
+
+                executor.execute(() -> {
+                    try {
+                        ApiClient client = new ApiClient();
+                        client.setBasePath("http://10.0.2.2:8080");
+                        UserControllerApi controllerApi = new UserControllerApi(client);
+
+                        controllerApi.findAll().forEach(user ->
+                                Log.d("API", user.toString())
+                        );
+
+                    } catch (ApiException e) {
+                        Log.e("API", "Error al obtener usuarios: " + e.getMessage());
+                    }
+                });
+
+                 */
             }
         });
 
