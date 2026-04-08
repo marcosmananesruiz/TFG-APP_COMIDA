@@ -61,7 +61,7 @@ public class GeneralActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        // Habilitar el diseño edge-to-edge
+        // Habilitar el diseño edge-to-edge para que la app se dibuje detrás de las barras del sistema
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         
         setContentView(R.layout.activity_general);
@@ -79,19 +79,21 @@ public class GeneralActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        // Ajustar el padding del contenido principal y del drawer para evitar solapamiento con el status bar
+        // Obtener los contenedores principales para aplicarles padding dinámico
         View mainContent = findViewById(R.id.main_content_container);
         View drawerContent = findViewById(R.id.drawer_content_container);
 
+        // Ajustar el padding superior (status bar) y el inferior (navigation bar) dinámicamente
         ViewCompat.setOnApplyWindowInsetsListener(mainContent, (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0, insets.top, 0, 0);
+            // Aplicamos padding arriba para el status bar y abajo para la barra de navegación (atrás, home, etc.)
+            v.setPadding(0, insets.top, 0, insets.bottom);
             return windowInsets;
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(drawerContent, (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0, insets.top, 0, 0);
+            v.setPadding(0, insets.top, 0, insets.bottom);
             return windowInsets;
         });
 
