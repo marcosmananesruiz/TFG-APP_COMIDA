@@ -111,7 +111,6 @@ public class LoginActivity extends AppCompatActivity {
                 loadingProgressBar.setVisibility(View.VISIBLE);
                 loginViewModel.login(new Cuenta("usuario1@test.com", "juan123"));
 
-                /*
                 // 👇 Mover la llamada de red a un hilo secundario
                 ExecutorService executor = Executors.newSingleThreadExecutor();
                 Handler handler = new Handler(Looper.getMainLooper());
@@ -131,7 +130,6 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
 
-                 */
             }
         });
 

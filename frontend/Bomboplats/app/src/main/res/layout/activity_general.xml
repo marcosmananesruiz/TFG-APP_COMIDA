@@ -11,6 +11,7 @@
 
     <!-- Contenedor principal: Toolbar + Fragment -->
     <LinearLayout
+        android:id="@+id/main_content_container"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -102,6 +103,7 @@
 
     <!-- Contenedor del menú lateral -->
     <LinearLayout
+        android:id="@+id/drawer_content_container"
         android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"

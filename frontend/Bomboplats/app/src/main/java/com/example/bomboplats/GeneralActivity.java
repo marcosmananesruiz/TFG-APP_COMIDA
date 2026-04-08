@@ -15,7 +15,11 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -56,6 +60,10 @@ public class GeneralActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Habilitar el diseño edge-to-edge
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        
         setContentView(R.layout.activity_general);
 
         EstadoBombosRepository.getInstance().cargarDesdeDisco(getApplicationContext());
@@ -71,6 +79,22 @@ public class GeneralActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        // Ajustar el padding del contenido principal y del drawer para evitar solapamiento con el status bar
+        View mainContent = findViewById(R.id.main_content_container);
+        View drawerContent = findViewById(R.id.drawer_content_container);
+
+        ViewCompat.setOnApplyWindowInsetsListener(mainContent, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(0, insets.top, 0, 0);
+            return windowInsets;
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(drawerContent, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(0, insets.top, 0, 0);
+            return windowInsets;
+        });
+
         cartButton = findViewById(R.id.toolbar_shopping_cart);
         cartButton.setOnClickListener(v -> {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
@@ -78,14 +102,12 @@ public class GeneralActivity extends AppCompatActivity {
                 carritoViewModel.limpiarCarrito();
                 Toast.makeText(this, getString(R.string.toast_carrito_vaciado), Toast.LENGTH_SHORT).show();
             } else if (currentFragment instanceof RealizarEnvioFragment) {
-                // Si estamos en completar pedido, el icono es un carrito, al darle volvemos atrás al carrito (que pondrá la X)
                 getSupportFragmentManager().popBackStack();
             } else {
                 loadFragment(new CarritoFragment());
             }
         });
 
-        // Escuchar cambios en la pila para actualizar el icono de forma automática y robusta
         getSupportFragmentManager().addOnBackStackChangedListener(this::updateCartIconBasedOnFragment);
 
         searchEditText = findViewById(R.id.search_edit_text);
@@ -176,13 +198,11 @@ public class GeneralActivity extends AppCompatActivity {
 
         navigationViewBottom.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_cerrarSesion) {
-                // --- CERRAR SESIÓN (BORRAR TOKEN SIMULADO) ---
                 SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
                 prefs.edit()
                         .remove("current_user_email")
                         .remove("session_expiration")
                         .apply();
-                // ---------------------------------------------
 
                 Intent intent = new Intent(GeneralActivity.this, LoginActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -261,7 +281,6 @@ public class GeneralActivity extends AppCompatActivity {
 
     public void updateCartIcon(Fragment fragment) {
         if (cartButton == null) return;
-        // Solo mostramos la X si estamos en el carrito. En completar pedido (envío) o el resto, icono normal.
         if (fragment instanceof CarritoFragment) {
             cartButton.setImageResource(R.drawable.ic_close);
         } else {
@@ -270,7 +289,6 @@ public class GeneralActivity extends AppCompatActivity {
     }
 
     private void updateCartIconBasedOnFragment() {
-        // Post para asegurar que el fragmento ya ha cambiado tras el popBackStack
         getWindow().getDecorView().post(() -> {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
             updateCartIcon(currentFragment);
