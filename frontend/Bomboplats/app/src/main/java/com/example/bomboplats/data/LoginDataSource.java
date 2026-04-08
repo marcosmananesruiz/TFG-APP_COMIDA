@@ -1,184 +1,225 @@
 package com.example.bomboplats.data;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import com.example.bomboplats.api.ApiException;
+import com.example.bomboplats.api.LoginAttempt;
+import com.example.bomboplats.api.Plato;
+import com.example.bomboplats.api.User;
+import com.example.bomboplats.api.UserControllerApi;
+import com.example.bomboplats.api.UserRegister;
 import com.example.bomboplats.data.model.LoggedInUser;
-import com.google.gson.Gson;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+/**
+ * Class that handles authentication w/ login credentials and retrieves user information.
+ * Migrated from local JSON storage to REST API.
+ */
 public class LoginDataSource {
 
     public static final String ERROR_EMAIL_ALREADY_EXISTS = "EMAIL_EXISTS";
     public static final String ERROR_USER_NOT_FOUND = "USER_NOT_FOUND";
     public static final String ERROR_WRONG_PASSWORD = "WRONG_PASSWORD";
 
+    private final UserControllerApi userControllerApi;
     private final Context context;
-    private final Gson gson;
-    private final File usersDir;
-    private static final String PREFS_NAME = "login_prefs";
-    private static final String KEY_DEFAULTS_CREATED = "defaults_created";
 
     public LoginDataSource(Context context) {
         this.context = context;
-        this.gson = new Gson();
-
-        File root = new File(context.getFilesDir(), "documentos");
-        this.usersDir = new File(root, "users");
-        if (!usersDir.exists()) usersDir.mkdirs();
-        
-        ensureDefaultUsers();
+        this.userControllerApi = new UserControllerApi();
+        // Nota: Asegúrate de que ApiClient tenga la URL correcta (ej. http://10.0.2.2:8080 para emulador)
     }
 
-    private void ensureDefaultUsers() {
-        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        if (prefs.getBoolean(KEY_DEFAULTS_CREATED, false)) return;
+    public Result<LoggedInUser> login(String email, String password) {
+        try {
+            LoginAttempt attempt = new LoginAttempt();
+            attempt.setEmail(email);
+            attempt.setPassword(password);
 
-        String[] emails = {"jorge@test.com", "usuario1@test.com", "usuario2@test.com"};
-        String[] names = {"Jorge", "Usuario 1", "Usuario 2"};
-        
-        for (int i = 0; i < emails.length; i++) {
-            File file = new File(usersDir, emails[i] + ".json");
-            if (!file.exists()) {
-                LoggedInUser user = new LoggedInUser(
-                        String.valueOf(i + 1),
-                        names[i],
-                        emails[i],
-                        "jorge123",
-                        new HashMap<>(),
-                        new HashMap<>(),
-                        null
-                );
-                saveUserInternal(user);
-            }
-        }
-        prefs.edit().putBoolean(KEY_DEFAULTS_CREATED, true).apply();
-    }
-
-    public Result<LoggedInUser> login(String username, String password) {
-        File file = new File(usersDir, username + ".json");
-        if (!file.exists()) return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
-
-        try (FileReader reader = new FileReader(file)) {
-            LoggedInUser user = gson.fromJson(reader, LoggedInUser.class);
-            if (user != null && user.getPassword().equals(password)) {
-                return new Result.Success<>(user);
+            Boolean success = userControllerApi.login(attempt);
+            if (success != null && success) {
+                User apiUser = userControllerApi.getByEmail(email);
+                return new Result.Success<>(convertToLoggedInUser(apiUser, password));
             } else {
                 return new Result.Error(new IOException(ERROR_WRONG_PASSWORD));
             }
-        } catch (IOException e) {
-            return new Result.Error(e);
-        }
-    }
-
-    public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
-        if (new File(usersDir, newEmail + ".json").exists()) {
-            return new Result.Error(new IOException(ERROR_EMAIL_ALREADY_EXISTS));
-        }
-
-        Result<LoggedInUser> loadResult = getUser(oldEmail);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
-            File existingFile = new File(usersDir, oldEmail + ".json");
-
-            user.setEmail(newEmail);
-            
-            try (FileOutputStream fos = new FileOutputStream(existingFile);
-                 OutputStreamWriter osw = new OutputStreamWriter(fos)) {
-                gson.toJson(user, osw);
-                osw.flush();
-                fos.getFD().sync();
-            } catch (IOException e) {
-                return new Result.Error(new IOException("Error al editar el archivo", e));
+        } catch (ApiException e) {
+            if (e.getCode() == 404) {
+                return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
             }
+            return new Result.Error(new IOException("Error de red: " + e.getMessage()));
+        }
+    }
 
-            File newFile = new File(usersDir, newEmail + ".json");
-            if (existingFile.renameTo(newFile)) {
-                File oldHistory = new File(usersDir, oldEmail + "_history.json");
-                if (oldHistory.exists()) {
-                    oldHistory.renameTo(new File(usersDir, newEmail + "_history.json"));
-                }
-                File oldStates = new File(usersDir, oldEmail + "_states.json");
-                if (oldStates.exists()) {
-                    oldStates.renameTo(new File(usersDir, newEmail + "_states.json"));
-                }
-                File oldPhoto = new File(usersDir, oldEmail + ".jpg");
-                if (oldPhoto.exists()) {
-                    oldPhoto.renameTo(new File(usersDir, newEmail + ".jpg"));
-                }
-                return new Result.Success<>(user);
+    public Result<LoggedInUser> register(LoggedInUser user) {
+        try {
+            UserRegister registerData = new UserRegister();
+            registerData.setEmail(user.getEmail());
+            registerData.setNickname(user.getDisplayName());
+            registerData.setPassword(user.getPassword());
+
+            User apiUser = userControllerApi.registerUser(registerData);
+            if (apiUser != null) {
+                return new Result.Success<>(convertToLoggedInUser(apiUser, user.getPassword()));
             }
-            return new Result.Success<>(user);
+            return new Result.Error(new IOException("Error al registrar usuario"));
+        } catch (ApiException e) {
+            if (e.getCode() == 409 || (e.getResponseBody() != null && e.getResponseBody().contains("exists"))) {
+                return new Result.Error(new IOException(ERROR_EMAIL_ALREADY_EXISTS));
+            }
+            return new Result.Error(new IOException("Error en el registro: " + e.getMessage()));
         }
-        return loadResult;
     }
 
-    public Result<LoggedInUser> updatePassword(String username, String oldPassword, String newPassword) {
-        Result<LoggedInUser> loadResult = login(username, oldPassword);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
-            user.setPassword(newPassword);
-            return saveUserInternal(user);
-        }
-        return new Result.Error(new IOException("La contraseña antigua no es correcta"));
-    }
-
-    public Result<LoggedInUser> getUser(String username) {
-        File file = new File(usersDir, username + ".json");
-        if (!file.exists()) return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
-        try (FileReader reader = new FileReader(file)) {
-            LoggedInUser user = gson.fromJson(reader, LoggedInUser.class);
-            return new Result.Success<>(user);
-        } catch (IOException e) {
-            return new Result.Error(e);
+    public Result<LoggedInUser> getUser(String email) {
+        try {
+            User apiUser = userControllerApi.getByEmail(email);
+            if (apiUser != null) {
+                // Como no tenemos la contraseña en el GET de User, pasamos null o mantenemos la sesión
+                return new Result.Success<>(convertToLoggedInUser(apiUser, null));
+            }
+            return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
+        } catch (ApiException e) {
+            return new Result.Error(new IOException("Error al obtener usuario: " + e.getMessage()));
         }
     }
 
     public Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
-        File file = new File(usersDir, user.getEmail() + ".json");
-        try (FileOutputStream fos = new FileOutputStream(file);
-             OutputStreamWriter osw = new OutputStreamWriter(fos)) {
-            gson.toJson(user, osw);
-            osw.flush();
-            fos.getFD().sync();
-            return new Result.Success<>(user);
-        } catch (IOException e) {
-            return new Result.Error(new IOException("Error al guardar: " + e.getMessage()));
+        try {
+            User apiUser = convertToApiUser(user);
+            Boolean success = userControllerApi.updateUser(apiUser);
+            if (success != null && success) {
+                return new Result.Success<>(user);
+            }
+            return new Result.Error(new IOException("Error al actualizar usuario en el servidor"));
+        } catch (ApiException e) {
+            return new Result.Error(new IOException("Error de red al guardar: " + e.getMessage()));
         }
     }
 
-    public Result<LoggedInUser> updateName(String username, String newName) {
-        Result<LoggedInUser> loadResult = getUser(username);
-        if (loadResult instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) loadResult).getData();
+    public Result<LoggedInUser> updateName(String email, String newName) {
+        Result<LoggedInUser> current = getUser(email);
+        if (current instanceof Result.Success) {
+            LoggedInUser user = ((Result.Success<LoggedInUser>) current).getData();
             user.setDisplayName(newName);
             return saveUserInternal(user);
         }
-        return loadResult;
+        return current;
     }
 
-    public Result<LoggedInUser> register(LoggedInUser user) {
-        File file = new File(usersDir, user.getEmail() + ".json");
-        if (file.exists()) {
-            return new Result.Error(new IOException(ERROR_EMAIL_ALREADY_EXISTS));
+    public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
+        // La API actual parece no tener un rename de email directo que devuelva User, 
+        // así que usamos updateUser cambiando el campo email.
+        try {
+            User apiUser = userControllerApi.getByEmail(oldEmail);
+            apiUser.setEmail(newEmail);
+            Boolean success = userControllerApi.updateUser(apiUser);
+            if (success != null && success) {
+                return new Result.Success<>(convertToLoggedInUser(apiUser, null));
+            }
+            return new Result.Error(new IOException("No se pudo actualizar el email"));
+        } catch (ApiException e) {
+            return new Result.Error(new IOException("Error al actualizar email: " + e.getMessage()));
         }
-        return saveUserInternal(user);
+    }
+
+    public Result<LoggedInUser> updatePassword(String email, String oldPassword, String newPassword) {
+        try {
+            // Primero validamos el login antiguo
+            LoginAttempt attempt = new LoginAttempt();
+            attempt.setEmail(email);
+            attempt.setPassword(oldPassword);
+            
+            Boolean loginOk = userControllerApi.login(attempt);
+            if (loginOk != null && loginOk) {
+                User apiUser = userControllerApi.getByEmail(email);
+                Boolean success = userControllerApi.updatePassword(apiUser.getId(), newPassword);
+                if (success != null && success) {
+                    return new Result.Success<>(convertToLoggedInUser(apiUser, newPassword));
+                }
+            }
+            return new Result.Error(new IOException("La contraseña antigua no es correcta"));
+        } catch (ApiException e) {
+            return new Result.Error(new IOException("Error al cambiar contraseña: " + e.getMessage()));
+        }
     }
 
     public void deleteUser(String email) {
-        new File(usersDir, email + ".json").delete();
-        new File(usersDir, email + "_history.json").delete();
-        new File(usersDir, email + "_states.json").delete();
-        new File(usersDir, email + ".jpg").delete();
+        try {
+            User apiUser = userControllerApi.getByEmail(email);
+            if (apiUser != null) {
+                userControllerApi.deleteByID(apiUser.getId());
+            }
+        } catch (ApiException ignored) {
+        }
     }
 
     public File getUserPhotoFile(String email) {
-        return new File(usersDir, email + ".jpg");
+        // Las fotos ahora se gestionan vía URL (S3), 
+        // pero mantenemos el método por compatibilidad de firma si es necesario.
+        File root = new File(context.getFilesDir(), "documentos/users");
+        return new File(root, email + ".jpg");
     }
 
-    public void logout() {}
+    public void logout() {
+        // Limpieza de sesión si fuera necesario
+    }
+
+    // --- MÉTODOS DE CONVERSIÓN (EL TRADUCTOR) ---
+
+    private LoggedInUser convertToLoggedInUser(User apiUser, String password) {
+        Map<String, List<String>> favs = new HashMap<>();
+        if (apiUser.getPlatosFavoritos() != null) {
+            for (Plato p : apiUser.getPlatosFavoritos()) {
+                // Aquí asumimos que el restauranteId está en el plato. 
+                // Si la API no lo da, necesitaremos otro campo o un ID compuesto.
+                // Como parche de compatibilidad, si p.getRestauranteId() no existe, 
+                // tendrías que ver cómo guardas esa relación en la BD.
+                String restId = "RESTAURANTE_DESCONOCIDO"; // TODO: Ajustar según modelo real de Plato
+                favs.computeIfAbsent(restId, k -> new ArrayList<>()).add(p.getId());
+            }
+        }
+
+        LoggedInUser user = new LoggedInUser(
+                apiUser.getId(),
+                apiUser.getNickname(),
+                apiUser.getEmail(),
+                password,
+                favs,
+                new HashMap<>(), // El carrito suele ser volátil, o se puede mapear igual
+                apiUser.getIconUrl()
+        );
+        
+        return user;
+    }
+
+    private User convertToApiUser(LoggedInUser localUser) {
+        User apiUser = new User();
+        apiUser.setId(localUser.getUserId());
+        apiUser.setNickname(localUser.getDisplayName());
+        apiUser.setEmail(localUser.getEmail());
+        apiUser.setIconUrl(localUser.getPhotoPath());
+        
+        // Para los favoritos, convertimos el mapa de vuelta a Set de objetos Plato
+        // Nota: Solo enviamos los IDs para que el servidor los vincule.
+        // Si el servidor requiere el objeto completo, habrá que hidratarlo.
+        /*
+        Set<Plato> platos = new java.util.LinkedHashSet<>();
+        for (List<String> ids : localUser.getFavoritePlates().values()) {
+            for (String id : ids) {
+                Plato p = new Plato();
+                p.setId(id);
+                platos.add(p);
+            }
+        }
+        apiUser.setPlatosFavoritos(platos);
+        */
+        
+        return apiUser;
+    }
 }

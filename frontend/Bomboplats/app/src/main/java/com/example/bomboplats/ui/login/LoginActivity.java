@@ -13,16 +13,9 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
@@ -33,14 +26,10 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
-import com.example.bomboplats.api.ApiClient;
-import com.example.bomboplats.api.ApiException;
-import com.example.bomboplats.api.UserControllerApi;
 import com.example.bomboplats.data.model.Cuenta;
 import com.example.bomboplats.databinding.ActivityLoginBinding;
 
 import java.util.Calendar;
-import java.util.concurrent.ExecutorService;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -79,7 +68,6 @@ public class LoginActivity extends AppCompatActivity {
         final CheckBox keepSessionCheckBox = binding.keepSession;
         final Button loginButton = binding.login;
         final ProgressBar loadingProgressBar = binding.loading;
-        final ImageView catImageView = binding.imageView;
         final TextView registerLink = binding.registerLink;
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
@@ -95,41 +83,6 @@ public class LoginActivity extends AppCompatActivity {
                 backToast = Toast.makeText(LoginActivity.this, getString(R.string.atras_salir), Toast.LENGTH_SHORT);
                 backToast.show();
                 backPressedTime = System.currentTimeMillis();
-            }
-        });
-
-        // IMAGEN DE GATO
-        catImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loginViewModel.registerTestUser("usuario1@test.com", "juan123", "Juan Pérez");
-                loginViewModel.registerTestUser("usuario2@test.com", "maria456", "María García");
-
-                usernameEditText.setText("usuario1@test.com");
-                passwordEditText.setText("juan123");
-                
-                loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(new Cuenta("usuario1@test.com", "juan123"));
-
-                // 👇 Mover la llamada de red a un hilo secundario
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Handler handler = new Handler(Looper.getMainLooper());
-
-                executor.execute(() -> {
-                    try {
-                        ApiClient client = new ApiClient();
-                        client.setBasePath("http://10.0.2.2:8080");
-                        UserControllerApi controllerApi = new UserControllerApi(client);
-
-                        controllerApi.findAll().forEach(user ->
-                                Log.d("API", user.toString())
-                        );
-
-                    } catch (ApiException e) {
-                        Log.e("API", "Error al obtener usuarios: " + e.getMessage());
-                    }
-                });
-
             }
         });
 
