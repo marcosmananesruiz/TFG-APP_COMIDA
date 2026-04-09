@@ -7,9 +7,11 @@ import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import org.dam2.bomboplatsserver.modelo.mapper.DireccionEntityMapper;
 import org.dam2.bomboplatsserver.repo.DireccionRepository;
 import org.dam2.bomboplatsserver.service.IDireccionService;
+import org.dam2.bomboplatsserver.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,10 @@ public class DireccionServiceImpl implements IDireccionService {
     @Autowired private DireccionRepository repo;
     @Autowired private R2dbcEntityTemplate template;
     @Autowired private DireccionEntityMapper mapper;
+
+    @Lazy
+    @Autowired
+    private IUserService userService;
 
     public static final Logger LOGGER = LoggerFactory.getLogger(DireccionServiceImpl.class);
 
@@ -93,10 +99,10 @@ public class DireccionServiceImpl implements IDireccionService {
     @Override
     public Mono<Boolean> deleteDireccionByID(String id) {
         return this.repo.findById(id)
-                .flatMap(exists -> this.repo.deleteById(id)
-                        .doOnSuccess(deletedId -> LOGGER.info("Direccion con ID {} eliminado", deletedId))
-                        .thenReturn(true)
-                );
+                .flatMap(direccionEntity -> {
+                    Mono<Void> clearUsers = clearDireccionUser(id);
+                    return Mono.when(clearUsers).then(this.repo.delete(direccionEntity));
+                }).thenReturn(true).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @Override
@@ -151,5 +157,13 @@ public class DireccionServiceImpl implements IDireccionService {
     @Override
     public Flux<String> getIDs() {
         return this.repo.getIDs();
+    }
+
+    private Mono<Void> clearDireccionUser(String id) {
+        return this.getUserID(id).flatMap(userId -> this.userService.findByID(userId))
+                .flatMap(user -> this.findById(id).flatMap(direccion -> {
+                    user.getDirecciones().remove(direccion);
+                    return this.userService.update(user);
+                })).then();
     }
 }
