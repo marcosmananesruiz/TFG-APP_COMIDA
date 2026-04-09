@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class CarritoViewModel extends AndroidViewModel {
     
@@ -22,29 +24,34 @@ public class CarritoViewModel extends AndroidViewModel {
     private final LoginRepository loginRepository;
     private static final String PREFS_NAME = "user_prefs";
     private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     public CarritoViewModel(@NonNull Application application) {
         super(application);
         loginRepository = LoginRepository.getInstance(new LoginDataSource(application));
         
-        // Intentar restaurar sesión si no hay usuario en el repositorio
-        LoggedInUser user = loginRepository.getUser();
-        if (user == null) {
-            SharedPreferences sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            String savedEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, null);
-            if (savedEmail != null) {
-                loginRepository.loadUserSession(savedEmail);
+        // Realizar la carga inicial en un hilo secundario para evitar NetworkOnMainThreadException
+        executorService.execute(() -> {
+            // Intentar restaurar sesión si no hay usuario en el repositorio
+            LoggedInUser user = loginRepository.getUser();
+            if (user == null) {
+                SharedPreferences sharedPreferences = application.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+                String savedEmail = sharedPreferences.getString(KEY_CURRENT_USER_EMAIL, null);
+                if (savedEmail != null) {
+                    loginRepository.loadUserSession(savedEmail);
+                }
             }
-        }
-        
-        cargarDatosDesdeJSON();
+            
+            // Cargar datos (que ahora vienen de la API a través del usuario)
+            cargarDatosDesdeAPI();
+        });
     }
 
     public LiveData<Map<String, Integer>> getItemsCarrito() {
         return itemsCarrito;
     }
 
-    private void cargarDatosDesdeJSON() {
+    private void cargarDatosDesdeAPI() {
         LoggedInUser user = loginRepository.getUser();
         if (user != null) {
             Map<String, Integer> mapaCargado = new HashMap<>();
@@ -59,18 +66,18 @@ public class CarritoViewModel extends AndroidViewModel {
                     }
                 }
             }
-            itemsCarrito.setValue(mapaCargado);
+            itemsCarrito.postValue(mapaCargado);
         }
     }
 
     public void agregarAlCarrito(String itemKey, int cantidad) {
         Map<String, Integer> mapaActual = itemsCarrito.getValue();
-        if (mapaActual != null) {
-            int cantidadExistente = mapaActual.getOrDefault(itemKey, 0);
-            mapaActual.put(itemKey, cantidadExistente + cantidad);
-            itemsCarrito.setValue(new HashMap<>(mapaActual));
-            sincronizarConJSON();
-        }
+        if (mapaActual == null) mapaActual = new HashMap<>();
+        
+        int cantidadExistente = mapaActual.getOrDefault(itemKey, 0);
+        mapaActual.put(itemKey, cantidadExistente + cantidad);
+        itemsCarrito.setValue(new HashMap<>(mapaActual));
+        sincronizarConAPI();
     }
 
     public void removerDelCarrito(String itemKey) {
@@ -83,31 +90,39 @@ public class CarritoViewModel extends AndroidViewModel {
                 mapaActual.remove(itemKey);
             }
             itemsCarrito.setValue(new HashMap<>(mapaActual));
-            sincronizarConJSON();
+            sincronizarConAPI();
         }
     }
 
     public void limpiarCarrito() {
         itemsCarrito.setValue(new HashMap<>());
-        sincronizarConJSON();
+        sincronizarConAPI();
     }
 
-    private void sincronizarConJSON() {
-        Map<String, Integer> mapaUI = itemsCarrito.getValue();
+    private void sincronizarConAPI() {
+        final Map<String, Integer> mapaUI = itemsCarrito.getValue();
         if (mapaUI != null) {
-            // Convertir el mapa plano "restauranteId:bomboId" al mapa jerárquico para el JSON
-            Map<String, List<String>> mapParaJSON = new HashMap<>();
-            for (Map.Entry<String, Integer> entry : mapaUI.entrySet()) {
-                String[] parts = entry.getKey().split(":");
-                if (parts.length == 2) {
-                    String restauranteId = parts[0];
-                    String bomboId = parts[1];
-                    for (int i = 0; i < entry.getValue(); i++) {
-                        mapParaJSON.computeIfAbsent(restauranteId, k -> new ArrayList<>()).add(bomboId);
+            executorService.execute(() -> {
+                // Convertir el mapa plano "restauranteId:bomboId" al mapa jerárquico
+                Map<String, List<String>> mapParaAPI = new HashMap<>();
+                for (Map.Entry<String, Integer> entry : mapaUI.entrySet()) {
+                    String[] parts = entry.getKey().split(":");
+                    if (parts.length == 2) {
+                        String restauranteId = parts[0];
+                        String bomboId = parts[1];
+                        for (int i = 0; i < entry.getValue(); i++) {
+                            mapParaAPI.computeIfAbsent(restauranteId, k -> new ArrayList<>()).add(bomboId);
+                        }
                     }
                 }
-            }
-            loginRepository.setCartMap(mapParaJSON);
+                loginRepository.setCartMap(mapParaAPI);
+            });
         }
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        executorService.shutdown();
     }
 }

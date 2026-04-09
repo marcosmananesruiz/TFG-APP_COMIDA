@@ -1,15 +1,20 @@
 package com.example.bomboplats.data;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import com.example.bomboplats.api.ApiException;
 import com.example.bomboplats.api.LoginAttempt;
 import com.example.bomboplats.api.Plato;
 import com.example.bomboplats.api.User;
 import com.example.bomboplats.api.UserControllerApi;
 import com.example.bomboplats.api.UserRegister;
+import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.LoggedInUser;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,14 +30,15 @@ public class LoginDataSource {
     public static final String ERROR_EMAIL_ALREADY_EXISTS = "EMAIL_EXISTS";
     public static final String ERROR_USER_NOT_FOUND = "USER_NOT_FOUND";
     public static final String ERROR_WRONG_PASSWORD = "WRONG_PASSWORD";
-
+    
+    private static final String PREF_CART_NAME = "user_carts";
     private final UserControllerApi userControllerApi;
     private final Context context;
+    private final Gson gson = new Gson();
 
     public LoginDataSource(Context context) {
         this.context = context;
         this.userControllerApi = new UserControllerApi();
-        // Nota: Asegúrate de que ApiClient tenga la URL correcta (ej. http://10.0.2.2:8080 para emulador)
     }
 
     public Result<LoggedInUser> login(String email, String password) {
@@ -80,7 +86,6 @@ public class LoginDataSource {
         try {
             User apiUser = userControllerApi.getByEmail(email);
             if (apiUser != null) {
-                // Como no tenemos la contraseña en el GET de User, pasamos null o mantenemos la sesión
                 return new Result.Success<>(convertToLoggedInUser(apiUser, null));
             }
             return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
@@ -91,6 +96,9 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
         try {
+            // Save cart locally since API doesn't support it yet
+            saveCartLocally(user.getEmail(), user.getCartPlates());
+            
             User apiUser = convertToApiUser(user);
             Boolean success = userControllerApi.updateUser(apiUser);
             if (success != null && success) {
@@ -100,6 +108,21 @@ public class LoginDataSource {
         } catch (ApiException e) {
             return new Result.Error(new IOException("Error de red al guardar: " + e.getMessage()));
         }
+    }
+
+    private void saveCartLocally(String email, Map<String, List<String>> cart) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString("cart_" + email, gson.toJson(cart)).apply();
+    }
+
+    private Map<String, List<String>> loadCartLocally(String email) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE);
+        String json = prefs.getString("cart_" + email, null);
+        if (json != null) {
+            Type type = new TypeToken<Map<String, List<String>>>(){}.getType();
+            return gson.fromJson(json, type);
+        }
+        return new HashMap<>();
     }
 
     public Result<LoggedInUser> updateName(String email, String newName) {
@@ -113,13 +136,17 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
-        // La API actual parece no tener un rename de email directo que devuelva User, 
-        // así que usamos updateUser cambiando el campo email.
         try {
             User apiUser = userControllerApi.getByEmail(oldEmail);
             apiUser.setEmail(newEmail);
             Boolean success = userControllerApi.updateUser(apiUser);
             if (success != null && success) {
+                // Move cart to new email
+                Map<String, List<String>> cart = loadCartLocally(oldEmail);
+                saveCartLocally(newEmail, cart);
+                // We don't delete old cart for safety or we could:
+                // context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE).edit().remove("cart_" + oldEmail).apply();
+                
                 return new Result.Success<>(convertToLoggedInUser(apiUser, null));
             }
             return new Result.Error(new IOException("No se pudo actualizar el email"));
@@ -130,7 +157,6 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> updatePassword(String email, String oldPassword, String newPassword) {
         try {
-            // Primero validamos el login antiguo
             LoginAttempt attempt = new LoginAttempt();
             attempt.setEmail(email);
             attempt.setPassword(oldPassword);
@@ -154,33 +180,28 @@ public class LoginDataSource {
             User apiUser = userControllerApi.getByEmail(email);
             if (apiUser != null) {
                 userControllerApi.deleteByID(apiUser.getId());
+                // Delete local cart
+                context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE).edit().remove("cart_" + email).apply();
             }
         } catch (ApiException ignored) {
         }
     }
 
     public File getUserPhotoFile(String email) {
-        // Las fotos ahora se gestionan vía URL (S3), 
-        // pero mantenemos el método por compatibilidad de firma si es necesario.
         File root = new File(context.getFilesDir(), "documentos/users");
         return new File(root, email + ".jpg");
     }
 
     public void logout() {
-        // Limpieza de sesión si fuera necesario
     }
-
-    // --- MÉTODOS DE CONVERSIÓN (EL TRADUCTOR) ---
 
     private LoggedInUser convertToLoggedInUser(User apiUser, String password) {
         Map<String, List<String>> favs = new HashMap<>();
         if (apiUser.getPlatosFavoritos() != null) {
+            FoodRepository foodRepo = FoodRepository.getInstance(context);
             for (Plato p : apiUser.getPlatosFavoritos()) {
-                // Aquí asumimos que el restauranteId está en el plato. 
-                // Si la API no lo da, necesitaremos otro campo o un ID compuesto.
-                // Como parche de compatibilidad, si p.getRestauranteId() no existe, 
-                // tendrías que ver cómo guardas esa relación en la BD.
-                String restId = "RESTAURANTE_DESCONOCIDO"; // TODO: Ajustar según modelo real de Plato
+                Bombo b = foodRepo.getBomboPorId(p.getId());
+                String restId = (b != null) ? b.getRestauranteId() : "RESTAURANTE_ID";
                 favs.computeIfAbsent(restId, k -> new ArrayList<>()).add(p.getId());
             }
         }
@@ -191,7 +212,7 @@ public class LoginDataSource {
                 apiUser.getEmail(),
                 password,
                 favs,
-                new HashMap<>(), // El carrito suele ser volátil, o se puede mapear igual
+                loadCartLocally(apiUser.getEmail()),
                 apiUser.getIconUrl()
         );
         
@@ -205,11 +226,7 @@ public class LoginDataSource {
         apiUser.setEmail(localUser.getEmail());
         apiUser.setIconUrl(localUser.getPhotoPath());
         
-        // Para los favoritos, convertimos el mapa de vuelta a Set de objetos Plato
-        // Nota: Solo enviamos los IDs para que el servidor los vincule.
-        // Si el servidor requiere el objeto completo, habrá que hidratarlo.
-        /*
-        Set<Plato> platos = new java.util.LinkedHashSet<>();
+        java.util.Set<Plato> platos = new java.util.LinkedHashSet<>();
         for (List<String> ids : localUser.getFavoritePlates().values()) {
             for (String id : ids) {
                 Plato p = new Plato();
@@ -218,7 +235,6 @@ public class LoginDataSource {
             }
         }
         apiUser.setPlatosFavoritos(platos);
-        */
         
         return apiUser;
     }

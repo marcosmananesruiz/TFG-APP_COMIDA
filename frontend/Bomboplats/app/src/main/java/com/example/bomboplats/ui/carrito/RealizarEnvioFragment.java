@@ -2,6 +2,7 @@ package com.example.bomboplats.ui.carrito;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.bomboplats.R;
+import com.example.bomboplats.api.ApiException;
+import com.example.bomboplats.api.PedidoControllerApi;
+import com.example.bomboplats.api.Plato;
+import com.example.bomboplats.api.User;
 import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
@@ -29,6 +34,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RealizarEnvioFragment extends Fragment {
 
@@ -42,6 +49,8 @@ public class RealizarEnvioFragment extends Fragment {
     private EstadoBombosViewModel estadoBombosViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
+    private PedidoControllerApi pedidoApi;
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @Nullable
     @Override
@@ -53,6 +62,7 @@ public class RealizarEnvioFragment extends Fragment {
         estadoBombosViewModel = new ViewModelProvider(requireActivity()).get(EstadoBombosViewModel.class);
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         foodRepository = FoodRepository.getInstance(requireContext());
+        pedidoApi = new PedidoControllerApi();
 
         etDireccion = view.findViewById(R.id.et_direccion);
         etTarjetaNumero = view.findViewById(R.id.et_tarjeta_numero);
@@ -102,33 +112,54 @@ public class RealizarEnvioFragment extends Fragment {
         Map<String, Integer> itemsMap = carritoViewModel.getItemsCarrito().getValue();
         if (itemsMap == null || itemsMap.isEmpty()) return;
 
-        List<PedidoItem> listaItems = new ArrayList<>();
-        double total = 0.0;
+        executorService.execute(() -> {
+            String userEmail = userViewModel.getEmail().getValue();
+            if (userEmail == null) return;
 
-        for (Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
-            Bombo b = buscarBomboPorId(entry.getKey());
-            if (b != null) {
-                listaItems.add(new PedidoItem(b.getRestauranteId(), b.getId(), entry.getValue()));
-                
-                String precioLimpio = b.getPrecio().replace("€", "").replace(",", ".").trim();
-                total += Double.parseDouble(precioLimpio) * entry.getValue();
+            try {
+                for (Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
+                    Bombo b = buscarBomboPorId(entry.getKey());
+                    if (b != null) {
+                        for (int i = 0; i < entry.getValue(); i++) {
+                            com.example.bomboplats.api.Pedido apiPedido = new com.example.bomboplats.api.Pedido();
+                            
+                            Plato apiPlato = new Plato();
+                            apiPlato.setId(b.getId());
+                            apiPedido.setPlato(apiPlato);
+                            
+                            User apiUser = new User();
+                            apiUser.setEmail(userEmail);
+                            apiPedido.setUser(apiUser);
+                            
+                            apiPedido.setEstado(com.example.bomboplats.api.Pedido.EstadoEnum.PREPARING);
+                            
+                            pedidoApi.register2(apiPedido);
+                        }
+                    }
+                }
+
+                // Notificar éxito y limpiar en el hilo principal
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        Toast.makeText(getContext(), R.string.toast_pedido_realizado_exito, Toast.LENGTH_LONG).show();
+                        carritoViewModel.limpiarCarrito();
+                        historialViewModel.getPedidos(); // Dispara refresh
+                        estadoBombosViewModel.getPedidosEnEstado(); // Dispara refresh
+                        
+                        if (getParentFragmentManager() != null) {
+                            getParentFragmentManager().popBackStack();
+                        }
+                    });
+                }
+
+            } catch (ApiException e) {
+                Log.e("RealizarEnvio", "Error al registrar pedido: " + e.getMessage());
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> 
+                        Toast.makeText(getContext(), "Error al conectar con el servidor", Toast.LENGTH_SHORT).show());
+                }
             }
-        }
-
-        String fecha = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(new Date());
-        String idPedido = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        
-        Pedido nuevoPedido = new Pedido(idPedido, fecha, listaItems, total, etDireccion.getText().toString().trim());
-        historialViewModel.agregarPedido(nuevoPedido);
-        
-        estadoBombosViewModel.agregarPedidoAEstado(nuevoPedido);
-        
-        Toast.makeText(getContext(), getString(R.string.toast_pedido_realizado_exito, idPedido), Toast.LENGTH_LONG).show();
-        carritoViewModel.limpiarCarrito();
-        
-        if (getParentFragmentManager() != null) {
-            getParentFragmentManager().popBackStack();
-        }
+        });
     }
 
     private Bombo buscarBomboPorId(String id) {
@@ -141,5 +172,11 @@ public class RealizarEnvioFragment extends Fragment {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 }
