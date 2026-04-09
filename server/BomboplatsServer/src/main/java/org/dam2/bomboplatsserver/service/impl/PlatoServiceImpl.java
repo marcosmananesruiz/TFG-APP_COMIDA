@@ -3,10 +3,12 @@ package org.dam2.bomboplatsserver.service.impl;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplatsserver.modelo.entity.PlatoEntity;
 import org.dam2.bomboplatsserver.repo.PlatoRepository;
+import org.dam2.bomboplatsserver.service.IPedidoService;
 import org.dam2.bomboplatsserver.service.IPlatoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -20,7 +22,7 @@ public class PlatoServiceImpl implements IPlatoService {
 
     @Autowired private PlatoRepository repo;
     @Autowired private R2dbcEntityTemplate template;
-
+    @Autowired @Lazy private IPedidoService pedidoService;
     public static Logger LOGGER = LoggerFactory.getLogger(PlatoServiceImpl.class);
     private final String UNIQUE_CHAR = "T";
 
@@ -103,9 +105,12 @@ public class PlatoServiceImpl implements IPlatoService {
     @Override
     public Mono<Boolean> deletePlatoById(String id) {
         return this.repo.findById(id)
-                .flatMap(exists -> this.repo.deleteById(id)
-                        .doOnSuccess(d -> LOGGER.info("Plato con ID {} eliminado", d))
-                        .thenReturn(true)
+                .flatMap(exists ->
+                        pedidoService.findByPlatoId(id)
+                                .flatMap(pedido -> pedidoService.deletePedidoById(pedido.getId()))
+                                .then(this.repo.deleteById(id))
+                                .doOnSuccess(d -> LOGGER.info("Plato con ID {} y sus pedidos eliminados", id))
+                                .thenReturn(true)
                 ).defaultIfEmpty(false);
     }
 

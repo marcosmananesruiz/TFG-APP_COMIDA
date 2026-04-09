@@ -1,6 +1,7 @@
 package org.dam2.bomboplatsserver.service.impl;
 
 import org.dam2.bomboplats.api.Direccion;
+import org.dam2.bomboplats.api.Pedido;
 import org.dam2.bomboplats.api.Plato;
 import org.dam2.bomboplats.api.User;
 import org.dam2.bomboplats.api.login.LoginAttempt;
@@ -11,11 +12,13 @@ import org.dam2.bomboplatsserver.modelo.mapper.PlatoEntityMapper;
 import org.dam2.bomboplatsserver.modelo.mapper.UserEntityMapper;
 import org.dam2.bomboplatsserver.repo.UserRepository;
 import org.dam2.bomboplatsserver.service.IDireccionService;
+import org.dam2.bomboplatsserver.service.IPedidoService;
 import org.dam2.bomboplatsserver.service.IPlatoFavoritosService;
 import org.dam2.bomboplatsserver.service.IUserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.http.HttpStatus;
@@ -38,11 +41,10 @@ public class UserServiceImpl implements IUserService {
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Autowired private UserEntityMapper mapper;
-    @Autowired private DireccionEntityMapper direccionMapper;
-    @Autowired private PlatoEntityMapper platoMapper;
 
     @Autowired private IDireccionService direccionService;
     @Autowired private IPlatoFavoritosService platoFavoritosService;
+    @Lazy @Autowired private IPedidoService pedidoService;
 
     private final String UNIQUE_CHAR = "U";
     private final String DEFAULT_ICON = "profile/default.jpg";
@@ -121,11 +123,13 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public Mono<Boolean> deleteUserByID(String id) {
-        return this.repo.findById(id).flatMap(userEntity -> // Primero buscamos si el usuario esta o no
-                this.repo.delete(userEntity)
-                        .doOnSuccess(deletedId -> LOGGER.info("Usuario con ID {} eliminado", deletedId))
-                        .thenReturn(true)
-        ).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        return this.repo.findById(id).flatMap(userEntity -> {
+            Mono<Void> clearDirecciones = clearDirecciones(id);
+            Mono<Void> clearPlatos = clearPlatosFavoritos(id);
+            Mono<Void> clearPedidos = clearPedidos(id);
+            return Mono.when(clearDirecciones, clearPlatos, clearPedidos).then(this.repo.delete(userEntity));
+        })
+        .thenReturn(true).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
     @Override
@@ -198,6 +202,13 @@ public class UserServiceImpl implements IUserService {
                 });
     }
 
+    private Mono<Void> clearDirecciones(String id) {
+        return this.findByID(id).flatMap(user -> {
+            user.getDirecciones().clear();
+            return this.update(user);
+        }).then();
+    }
+
     private Mono<Void> syncPlatosFavoritos(User user) {
         String userId = user.getId();
 
@@ -230,5 +241,17 @@ public class UserServiceImpl implements IUserService {
                     return Mono.when(insertMono, deleteMono);
                 });
     }
+
+    private Mono<Void> clearPlatosFavoritos(String id) {
+        return this.findByID(id).flatMap(user -> {
+            user.getPlatosFavoritos().clear();
+            return this.update(user);
+        }).then();
+    }
+
+    private Mono<Void> clearPedidos(String id) {
+        return this.pedidoService.findByUserId(id).flatMap(pedido -> this.pedidoService.deletePedidoById(pedido.getId())).then();
+    }
+
 
 }

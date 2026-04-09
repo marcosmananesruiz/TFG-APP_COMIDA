@@ -123,10 +123,20 @@ public class RestauranteServiceImpl implements IRestauranteService {
     @Override
     public Mono<Boolean> deleteRestauranteById(String id) {
         return this.repo.findById(id)
-                .flatMap(exists -> this.repo.deleteById(id)
-                        .doOnSuccess(d -> LOGGER.info("Restaurante con ID {} eliminado", d))
-                        .thenReturn(true)
-                ).defaultIfEmpty(false);
+                .flatMap(exists -> {
+                    Mono<Void> borrarPlatos = platoService.findByIdRestaurante(id)
+                            .flatMap(plato -> platoService.deletePlatoById(plato.getId()))
+                            .then();
+
+                    Mono<Void> borrarDirecciones = direccionService.getDireccionesOfRestaurante(id)
+                            .flatMap(dir -> direccionService.deleteDireccionByID(dir.getId()))
+                            .then();
+
+                    return Mono.when(borrarPlatos, borrarDirecciones)
+                            .then(this.repo.deleteById(id))
+                            .doOnSuccess(d -> LOGGER.info("Restaurante con ID {} y sus platos y direcciones eliminados", id))
+                            .thenReturn(true);
+                }).defaultIfEmpty(false);
     }
 
     @Override
