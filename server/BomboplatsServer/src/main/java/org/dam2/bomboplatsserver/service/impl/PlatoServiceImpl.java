@@ -106,14 +106,19 @@ public class PlatoServiceImpl implements IPlatoService {
     public Mono<Boolean> deletePlatoById(String id) {
         return this.repo.findById(id)
                 .flatMap(exists ->
-                        pedidoService.findByPlatoId(id)
-                                .flatMap(pedido -> pedidoService.deletePedidoById(pedido.getId()))
-                                .then(this.repo.deleteById(id))
-                                .doOnSuccess(d -> LOGGER.info("Plato con ID {} y sus pedidos eliminados", id))
+                        pedidoService.existsByPlatoId(id)
+                                .flatMap(hayPedidos -> {
+                                    if (hayPedidos) {
+                                        return pedidoService.findByPlatoId(id)
+                                                .flatMap(pedido -> pedidoService.deletePedidoById(pedido.getId()))
+                                                .then(this.repo.deleteById(id));
+                                    } else {
+                                        return this.repo.deleteById(id);
+                                    }
+                                })
                                 .thenReturn(true)
                 ).defaultIfEmpty(false);
     }
-
     @Override
     public Flux<Plato> findByIdRestaurante(String idRestaurante) {
         return this.repo.findByIdRestaurante(idRestaurante).map(this::toDTO);
