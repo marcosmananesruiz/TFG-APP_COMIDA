@@ -138,11 +138,20 @@ public class DireccionServiceImpl implements IDireccionService {
 
     @Override
     public Mono<Boolean> asignarUserId(Direccion direccion, String userId) {
+
+        if (direccion == null) {
+            return Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST));
+        }
+
         return this.repo.findById(direccion.getId()).flatMap(direccionEntity -> {
             direccionEntity.setIdUser(userId);
             return this.repo.save(direccionEntity);
-        }).thenReturn(true)
-            .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
+        }).switchIfEmpty(this.register(direccion)
+                .flatMap(dir -> this.mapper.map(Mono.just(dir)))
+                .flatMap(direccionEntity -> {
+                    direccionEntity.setIdUser(userId);
+                    return this.repo.save(direccionEntity);
+                })).thenReturn(true);
     }
 
     @Override
