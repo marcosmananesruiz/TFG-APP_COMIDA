@@ -2,6 +2,8 @@ package com.example.bomboplats.data;
 
 import android.content.Context;
 import android.util.Log;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import com.example.bomboplats.api.ApiException;
 import com.example.bomboplats.api.Plato;
 import com.example.bomboplats.api.Restaurante;
@@ -20,14 +22,14 @@ import java.util.concurrent.Executors;
 public class FoodRepository {
     private static FoodRepository instance;
     private final RestauranteControllerApi restauranteApi;
-    private final List<com.example.bomboplats.data.model.Restaurante> cachedRestaurantes = new ArrayList<>();
+    private final MutableLiveData<List<com.example.bomboplats.data.model.Restaurante>> restaurantesLiveData = new MutableLiveData<>(new ArrayList<>());
     private final List<Bombo> cachedBombos = new ArrayList<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private FoodRepository(Context context) {
         this.restauranteApi = new RestauranteControllerApi();
-        // Carga inicial asíncrona para no bloquear
-        executorService.execute(this::refreshDataSync);
+        // Carga inicial asíncrona
+        refreshData();
     }
 
     public static synchronized FoodRepository getInstance(Context context) {
@@ -37,46 +39,61 @@ public class FoodRepository {
         return instance;
     }
 
+    public void refreshData() {
+        executorService.execute(this::refreshDataSync);
+    }
+
     /**
      * Refresca los datos desde la API de forma síncrona (debe llamarse desde hilo secundario)
      */
-    public void refreshDataSync() {
+    private void refreshDataSync() {
         try {
             List<Restaurante> apiRestaurantes = restauranteApi.findAll1();
             if (apiRestaurantes != null) {
-                synchronized (cachedRestaurantes) {
-                    cachedRestaurantes.clear();
-                    cachedBombos.clear();
-                    for (Restaurante apiR : apiRestaurantes) {
-                        com.example.bomboplats.data.model.Restaurante localR = convertToLocalRestaurante(apiR);
-                        cachedRestaurantes.add(localR);
-                        if (localR.getMenu() != null) {
-                            cachedBombos.addAll(localR.getMenu());
-                        }
+                List<com.example.bomboplats.data.model.Restaurante> locales = new ArrayList<>();
+                List<Bombo> bombos = new ArrayList<>();
+                
+                for (Restaurante apiR : apiRestaurantes) {
+                    com.example.bomboplats.data.model.Restaurante localR = convertToLocalRestaurante(apiR);
+                    locales.add(localR);
+                    if (localR.getMenu() != null) {
+                        bombos.addAll(localR.getMenu());
                     }
                 }
+                
+                synchronized (cachedBombos) {
+                    cachedBombos.clear();
+                    cachedBombos.addAll(bombos);
+                }
+                
+                restaurantesLiveData.postValue(locales);
             }
         } catch (ApiException e) {
             Log.e("FoodRepository", "Error refreshing data: " + e.getMessage());
         }
     }
 
+    public LiveData<List<com.example.bomboplats.data.model.Restaurante>> getRestaurantesLiveData() {
+        return restaurantesLiveData;
+    }
+
     public List<com.example.bomboplats.data.model.Restaurante> getRestaurantes() {
-        synchronized (cachedRestaurantes) {
-            return new ArrayList<>(cachedRestaurantes);
-        }
+        return restaurantesLiveData.getValue();
     }
 
     public List<Bombo> getBombos() {
-        synchronized (cachedRestaurantes) {
+        synchronized (cachedBombos) {
             return new ArrayList<>(cachedBombos);
         }
     }
 
     public List<Bombo> getBombosPorRestaurante(String restauranteId) {
-        for (com.example.bomboplats.data.model.Restaurante r : getRestaurantes()) {
-            if (r.getId().equals(restauranteId)) {
-                return r.getMenu();
+        List<com.example.bomboplats.data.model.Restaurante> current = restaurantesLiveData.getValue();
+        if (current != null) {
+            for (com.example.bomboplats.data.model.Restaurante r : current) {
+                if (r.getId().equals(restauranteId)) {
+                    return r.getMenu();
+                }
             }
         }
         return new ArrayList<>();
