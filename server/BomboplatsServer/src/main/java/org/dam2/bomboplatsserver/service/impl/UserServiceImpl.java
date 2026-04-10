@@ -250,7 +250,12 @@ public class UserServiceImpl implements IUserService {
     }
 
     private Mono<Void> clearPedidos(String id) {
-        return this.pedidoService.findByUserId(id).flatMap(pedido -> this.pedidoService.deletePedidoById(pedido.getId())).then();
+        return this.pedidoService.existsByUserId(id).flatMap(exists -> {
+            if (exists) {
+                return this.pedidoService.findByUserId(id).flatMap(pedido -> this.pedidoService.deletePedidoById(pedido.getId())).then();
+            }
+            return Mono.empty();
+        }).then();
     }
 
 
