@@ -39,6 +39,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private final UserControllerApi userApi;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
+    private final MutableLiveData<String> userId = new MutableLiveData<>();
     private final MutableLiveData<String> name = new MutableLiveData<>();
     private final MutableLiveData<String> email = new MutableLiveData<>();
     private final MutableLiveData<String> password = new MutableLiveData<>();
@@ -158,6 +159,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     }
 
     public void loadUserData(LoggedInUser user) {
+        this.userId.setValue(user.getUserId());
         this.email.setValue(user.getEmail());
         this.name.setValue(user.getDisplayName());
         this.password.setValue(user.getPassword());
@@ -196,6 +198,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         carrito.setValue(mapaCarritoUI);
     }
 
+    public LiveData<String> getUserId() { return userId; }
     public LiveData<String> getName() { return name; }
     public LiveData<String> getEmail() { return email; }
     public LiveData<String> getPassword() { return password; }

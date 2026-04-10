@@ -114,7 +114,8 @@ public class RealizarEnvioFragment extends Fragment {
 
         executorService.execute(() -> {
             String userEmail = userViewModel.getEmail().getValue();
-            if (userEmail == null) return;
+            String userId = userViewModel.getUserId().getValue();
+            if (userEmail == null || userId == null) return;
 
             try {
                 for (Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
@@ -128,6 +129,7 @@ public class RealizarEnvioFragment extends Fragment {
                             apiPedido.setPlato(apiPlato);
                             
                             User apiUser = new User();
+                            apiUser.setId(userId);
                             apiUser.setEmail(userEmail);
                             apiPedido.setUser(apiUser);
                             
