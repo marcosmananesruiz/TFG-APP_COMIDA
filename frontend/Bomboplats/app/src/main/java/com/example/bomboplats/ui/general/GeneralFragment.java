@@ -27,7 +27,7 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
     private RecyclerView recyclerView;
     private TextView tvEmptyError;
     private RestauranteAdapter adapter;
-    private List<Restaurante> listaCompleta;
+    private List<Restaurante> listaCompleta = new ArrayList<>();
     private FoodRepository foodRepository;
     private Map<String, String> mapaEtiquetas = new HashMap<>();
 
@@ -40,20 +40,28 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         tvEmptyError = view.findViewById(R.id.tv_empty_error);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        adapter = new RestauranteAdapter(new ArrayList<>(), this);
+        recyclerView.setAdapter(adapter);
+
         foodRepository = FoodRepository.getInstance(requireContext());
-        listaCompleta = foodRepository.getRestaurantes();
+        
+        // Observar los cambios en los restaurantes para actualizar la UI automáticamente
+        foodRepository.getRestaurantesLiveData().observe(getViewLifecycleOwner(), restaurantes -> {
+            if (restaurantes != null && !restaurantes.isEmpty()) {
+                listaCompleta = restaurantes;
+                adapter.setFilteredList(new ArrayList<>(listaCompleta));
+                recyclerView.setVisibility(View.VISIBLE);
+                tvEmptyError.setVisibility(View.GONE);
+            } else {
+                recyclerView.setVisibility(View.GONE);
+                tvEmptyError.setVisibility(View.VISIBLE);
+            }
+        });
+        
+        // Forzar un refresco al entrar por si acaso
+        foodRepository.refreshData();
         
         cargarMapaEtiquetas();
-
-        if (listaCompleta == null || listaCompleta.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            tvEmptyError.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            tvEmptyError.setVisibility(View.GONE);
-            adapter = new RestauranteAdapter(new ArrayList<>(listaCompleta), this);
-            recyclerView.setAdapter(adapter);
-        }
 
         return view;
     }
@@ -96,7 +104,6 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         if (query.isEmpty()) {
             filtrados.addAll(listaCompleta);
         } else {
-            // Buscamos todas las posibles etiquetas finales basadas en lo que el usuario está escribiendo (prefijo)
             List<String> querysExpandidas = new ArrayList<>();
             querysExpandidas.add(query);
             for (Map.Entry<String, String> entry : mapaEtiquetas.entrySet()) {
@@ -107,13 +114,10 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
 
             for (Restaurante r : listaCompleta) {
                 boolean match = false;
-                
-                // 1. Comprobar nombre
                 if (r.getNombre().toLowerCase().contains(query)) {
                     match = true;
                 }
                 
-                // 2. Comprobar etiquetas del restaurante contra todas las querys expandidas
                 if (!match && r.getEtiquetas() != null) {
                     for (String tag : r.getEtiquetas()) {
                         String tagLower = tag.toLowerCase();
