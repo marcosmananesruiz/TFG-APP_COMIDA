@@ -41,6 +41,16 @@
     <string name="toast_direccion_borrada">Address deleted</string>
     <string name="toast_direccion_guardada">Address saved</string>
     <string name="label_no_direcciones">You don\'t have saved addresses yet</string>
+    <string name="buscar_direccion">Search address...</string>
+    <string name="no_encontrado_direccion">Didn\'t find your address? Enter it here</string>
+    <string name="nueva_direccion_titulo">New Address</string>
+    <string name="poblacion">City</string>
+    <string name="calle">Street</string>
+    <string name="codigo_postal">Postal Code</string>
+    <string name="portal">Number</string>
+    <string name="piso">Floor</string>
+    <string name="toast_campos_obligatorios">Please fill in all required fields</string>
+    <string name="error_cp_invalido">Postal code must be exactly 5 digits</string>
 
     <!-- Navigation Drawer -->
     <string name="nav_inicio">Home</string>

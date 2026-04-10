@@ -1,16 +1,18 @@
 package com.example.bomboplats.ui.cuenta;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -21,10 +23,10 @@ import java.util.List;
 public class DireccionesCuentaFragment extends Fragment {
 
     private UserViewModel userViewModel;
-    private EditText etNuevaDireccion;
-    private ImageButton btnAdd;
+    private EditText etBuscar;
     private RecyclerView rvDirecciones;
-    private TextView tvNoDirecciones;
+    private TextView tvNoEncontrado;
+    private TextView tvBuscaEntrega;
     private DireccionesAdapter adapter;
 
     @Nullable
@@ -34,42 +36,78 @@ public class DireccionesCuentaFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
-        etNuevaDireccion = view.findViewById(R.id.et_nueva_direccion);
-        btnAdd = view.findViewById(R.id.btn_add_direccion);
+        etBuscar = view.findViewById(R.id.et_buscar_direccion);
         rvDirecciones = view.findViewById(R.id.rv_direcciones);
-        tvNoDirecciones = view.findViewById(R.id.tv_no_direcciones);
+        tvNoEncontrado = view.findViewById(R.id.tv_no_encontrado);
+        tvBuscaEntrega = view.findViewById(R.id.tv_busca_entrega);
 
         rvDirecciones.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new DireccionesAdapter(new ArrayList<>(), index -> {
-            userViewModel.removeAddress(index);
-            Toast.makeText(getContext(), R.string.toast_direccion_borrada, Toast.LENGTH_SHORT).show();
+            // Lógica de borrado si fuera necesaria
         });
         rvDirecciones.setAdapter(adapter);
 
-        userViewModel.getAddresses().observe(getViewLifecycleOwner(), addresses -> {
-            if (addresses == null || addresses.isEmpty()) {
-                rvDirecciones.setVisibility(View.GONE);
-                tvNoDirecciones.setVisibility(View.VISIBLE);
-                adapter.updateList(new ArrayList<>());
+        etBuscar.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                userViewModel.searchAddresses(s.toString());
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        // Observar direcciones filtradas (búsqueda)
+        userViewModel.getFilteredAddresses().observe(getViewLifecycleOwner(), addresses -> {
+            String query = etBuscar.getText().toString().trim();
+            if (!query.isEmpty()) {
+                tvBuscaEntrega.setVisibility(View.GONE);
+                if (addresses.isEmpty()) {
+                    rvDirecciones.setVisibility(View.GONE);
+                    tvNoEncontrado.setVisibility(View.VISIBLE);
+                } else {
+                    rvDirecciones.setVisibility(View.VISIBLE);
+                    tvNoEncontrado.setVisibility(View.GONE);
+                    adapter.updateList(addresses);
+                }
             } else {
-                rvDirecciones.setVisibility(View.VISIBLE);
-                tvNoDirecciones.setVisibility(View.GONE);
-                adapter.updateList(addresses);
+                updateViewBasedOnUserAddresses();
             }
         });
 
-        btnAdd.setOnClickListener(v -> {
-            String dir = etNuevaDireccion.getText().toString().trim();
-            if (!dir.isEmpty()) {
-                userViewModel.addAddress(dir);
-                etNuevaDireccion.setText("");
-                Toast.makeText(getContext(), R.string.toast_direccion_guardada, Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), R.string.toast_direccion_vacia, Toast.LENGTH_SHORT).show();
+        // Observar direcciones del usuario
+        userViewModel.getAddresses().observe(getViewLifecycleOwner(), userAddresses -> {
+            if (etBuscar.getText().toString().trim().isEmpty()) {
+                updateViewBasedOnUserAddresses();
             }
         });
+
+        tvNoEncontrado.setOnClickListener(v -> {
+            NuevaDireccionFragment fragment = new NuevaDireccionFragment();
+            FragmentTransaction transaction = getParentFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+            transaction.replace(R.id.container, fragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+        userViewModel.refreshUserData();
 
         return view;
+    }
+
+    private void updateViewBasedOnUserAddresses() {
+        List<String> userAddresses = userViewModel.getAddresses().getValue();
+        tvNoEncontrado.setVisibility(View.GONE);
+        if (userAddresses == null || userAddresses.isEmpty()) {
+            rvDirecciones.setVisibility(View.GONE);
+            tvBuscaEntrega.setVisibility(View.VISIBLE);
+        } else {
+            tvBuscaEntrega.setVisibility(View.GONE);
+            rvDirecciones.setVisibility(View.VISIBLE);
+            adapter.updateList(userAddresses);
+        }
     }
 
     private static class DireccionesAdapter extends RecyclerView.Adapter<DireccionesAdapter.ViewHolder> {
@@ -100,7 +138,7 @@ public class DireccionesCuentaFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             holder.tvAddress.setText(list.get(position));
-            holder.btnDelete.setOnClickListener(v -> listener.onDelete(position));
+            holder.btnDelete.setVisibility(View.GONE);
         }
 
         @Override

@@ -41,6 +41,17 @@
     <string name="toast_direccion_borrada">Dirección eliminada</string>
     <string name="toast_direccion_guardada">Dirección guardada</string>
     <string name="label_no_direcciones">Aún no tienes direcciones guardadas</string>
+    <string name="buscar_direccion">Buscar dirección...</string>
+    <string name="no_encontrado_direccion">¿No has encontrado tu dirección? Introdúcela aquí</string>
+    <string name="nueva_direccion_titulo">Nueva Dirección</string>
+    <string name="poblacion">Población</string>
+    <string name="calle">Calle</string>
+    <string name="codigo_postal">Código Postal</string>
+    <string name="portal">Portal</string>
+    <string name="piso">Piso</string>
+    <string name="toast_campos_obligatorios">Por favor, rellena todos los campos obligatorios</string>
+    <string name="error_cp_invalido">El código postal debe tener exactamente 5 cifras</string>
+    <string name="label_busca_entrega">Busca una dirección de entrega</string>
 
     <!-- Navigation Drawer -->
     <string name="nav_inicio">Inicio</string>
