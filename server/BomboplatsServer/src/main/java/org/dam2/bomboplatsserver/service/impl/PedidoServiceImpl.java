@@ -108,4 +108,16 @@ public class PedidoServiceImpl implements IPedidoService {
     public Flux<String> getIDs() {
         return this.repo.getIDs();
     }
+
+    @Override
+    public Mono<Boolean> existsByUserId(String idUser) {
+        return this.repo.existsByIdUser(idUser);
+    }
+
+    @Override
+    public Mono<Boolean> existsByPlatoId(String idPlato) {
+        return this.repo.existsByIdPlato(idPlato);
+    }
+
+
 }

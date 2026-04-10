@@ -67,4 +67,8 @@ public interface IPedidoService {
     Flux<Pedido> findByPlatoId(String platoId);
 
     Flux<String> getIDs();
+
+    Mono<Boolean> existsByUserId(String idUser);
+
+    Mono<Boolean> existsByPlatoId(String idPlato);
 }

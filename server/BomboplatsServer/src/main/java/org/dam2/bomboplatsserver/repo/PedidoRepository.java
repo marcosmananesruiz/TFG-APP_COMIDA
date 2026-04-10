@@ -20,4 +20,8 @@ public interface PedidoRepository extends ReactiveCrudRepository<PedidoEntity, S
 
     @Query("SELECT id FROM pedidos")
     Flux<String> getIDs();
+
+    Mono<Boolean> existsByIdUser(String idUser);
+    
+    Mono<Boolean> existsByIdPlato(String idPlato);
 }

@@ -229,9 +229,7 @@ public class UserServiceImpl implements IUserService {
                     aEliminar.removeAll(nuevosIds);
 
                     Mono<Void> insertMono = Flux.fromIterable(aInsertar)
-                            .flatMap(idPlato -> {
-                                return this.platoFavoritosService.asignarFavorito(idPlato, userId);
-                            })
+                            .flatMap(idPlato -> this.platoFavoritosService.asignarFavorito(idPlato, userId))
                             .then();
 
                     Mono<Void> deleteMono = Flux.fromIterable(aEliminar)
@@ -250,7 +248,12 @@ public class UserServiceImpl implements IUserService {
     }
 
     private Mono<Void> clearPedidos(String id) {
-        return this.pedidoService.findByUserId(id).flatMap(pedido -> this.pedidoService.deletePedidoById(pedido.getId())).then();
+        return this.pedidoService.existsByUserId(id).flatMap(exists -> {
+            if (exists) {
+                return this.pedidoService.findByUserId(id).flatMap(pedido -> this.pedidoService.deletePedidoById(pedido.getId())).then();
+            }
+            return Mono.empty();
+        }).then();
     }
 
 
