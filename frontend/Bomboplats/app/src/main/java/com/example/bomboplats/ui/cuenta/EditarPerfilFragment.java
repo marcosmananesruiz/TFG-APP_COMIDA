@@ -22,11 +22,25 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.bomboplats.R;
+import com.example.bomboplats.api.ApiClient;
+import com.example.bomboplats.api.ApiException;
+import com.example.bomboplats.api.User;
+import com.example.bomboplats.api.UserControllerApi;
 import com.example.bomboplats.ui.login.LoginActivity;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class EditarPerfilFragment extends Fragment {
 
@@ -174,6 +188,63 @@ public class EditarPerfilFragment extends Fragment {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * NO SE SI ESTO FUNCIONA LOOLOLOLOLOLOL
+     */
+    private void ejemploSubirImagen() {
+        UserControllerApi userController = new UserControllerApi();
+        String correo = this.userViewModel.getEmail().getValue();
+
+        try {
+            User user = userController.getByEmail(correo); // De la forma que mejor os convenga, obtener el ID del usuario (que como minimo, exista xd)
+            if (user.getId() == null) {
+                return;
+            }
+
+            String uploadUrl = userController.createImageUrl(user.getId()); // Con ese id llamais al Endpoint de createImageUrl, a este URL se le va a hacer una peticion como si fuera otro endpoint mas
+
+            File imageFile = this.userViewModel.getUserPhotoFile(); // A su vez, de la forma que mejor os convenga, conseguir la imagen como un File
+
+            ExecutorService executor = Executors.newSingleThreadExecutor(); // Luego, una llamada HTTP manual (no esta en el OpenAPI)
+            executor.execute(() -> {
+                try {
+                    OkHttpClient client = new OkHttpClient.Builder()
+                            .connectTimeout(30, TimeUnit.SECONDS)
+                            .writeTimeout(60, TimeUnit.SECONDS)
+                            .readTimeout(30, TimeUnit.SECONDS)
+                            .build();
+
+                    RequestBody requestBody = RequestBody.create( // Para el body, se le pasa la imagen
+                            imageFile,
+                            MediaType.parse("image/jpeg")
+                    );
+
+                    Request request = new Request.Builder() // Montar la Request, con la url del endpoint, y el body con la imagen
+                            .url(uploadUrl)
+                            .put(requestBody) // PUT obligatorio
+                            .addHeader("Content-Type", "image/jpeg")  // Esto no se si habra que quitarlo, lol
+                            .build();
+
+                    Response response = client.newCall(request).execute(); // Se ejecuta la llamada con el client.newCall(request)
+                    if (response.isSuccessful()) { // Para ver si ha funcionado o no
+                        // response 200 OK significa subida correcta
+                        Toast.makeText(getActivity(), "Imagen subida correctamente", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getActivity(), "Error: " + response.code(), Toast.LENGTH_SHORT).show();
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+
+
+        } catch (ApiException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     private void loadFragment(Fragment fragment) {
