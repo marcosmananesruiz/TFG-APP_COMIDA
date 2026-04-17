@@ -26,6 +26,7 @@ import com.example.bomboplats.api.ApiClient;
 import com.example.bomboplats.api.ApiException;
 import com.example.bomboplats.api.User;
 import com.example.bomboplats.api.UserControllerApi;
+import com.example.bomboplats.data.Result;
 import com.example.bomboplats.ui.login.LoginActivity;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -96,6 +97,20 @@ public class EditarPerfilFragment extends Fragment {
             }
         });
 
+        // Observar resultado de la actualización
+        userViewModel.getUpdateResult().observe(getViewLifecycleOwner(), result -> {
+            if (result == null) return;
+            
+            if (result instanceof Result.Success) {
+                Toast.makeText(getContext(), getString(R.string.toast_perfil_guardado), Toast.LENGTH_SHORT).show();
+                userViewModel.resetUpdateResult();
+                requireActivity().getSupportFragmentManager().popBackStack();
+            } else if (result instanceof Result.Error) {
+                Toast.makeText(getContext(), "Error al guardar los cambios", Toast.LENGTH_SHORT).show();
+                userViewModel.resetUpdateResult();
+            }
+        });
+
         btnGuardar.setOnClickListener(v -> {
             String nuevoNombre = etNombre.getText().toString().trim();
             if (!nuevoNombre.isEmpty()) {
@@ -106,8 +121,6 @@ public class EditarPerfilFragment extends Fragment {
                     }
                 }
                 userViewModel.setName(nuevoNombre);
-                Toast.makeText(getContext(), getString(R.string.toast_perfil_guardado), Toast.LENGTH_SHORT).show();
-                requireActivity().getSupportFragmentManager().popBackStack();
             } else {
                 etNombre.setError(getString(R.string.invalid_username));
             }

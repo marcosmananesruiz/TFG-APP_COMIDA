@@ -94,15 +94,35 @@ public class LoginDataSource {
         }
     }
 
-    public Result<LoggedInUser> saveUserInternal(LoggedInUser user) {
+    /**
+     * Sincroniza el usuario local con el servidor.
+     * Importante: Recuperamos el objeto User actual de la API para no perder campos (direcciones, etc)
+     * que no manejamos completamente en LoggedInUser.
+     */
+    public Result<LoggedInUser> saveUserInternal(LoggedInUser localUser) {
         try {
-            // Save cart locally since API doesn't support it yet
-            saveCartLocally(user.getEmail(), user.getCartPlates());
+            saveCartLocally(localUser.getEmail(), localUser.getCartPlates());
             
-            User apiUser = convertToApiUser(user);
-            Boolean success = userControllerApi.updateUser(apiUser);
-            if (success != null && success) {
-                return new Result.Success<>(user);
+            User apiUser = userControllerApi.getByEmail(localUser.getEmail());
+            if (apiUser != null) {
+                apiUser.setNickname(localUser.getDisplayName());
+                apiUser.setIconUrl(localUser.getPhotoPath());
+                
+                // Actualizar platos favoritos
+                java.util.Set<Plato> platos = new java.util.LinkedHashSet<>();
+                for (List<String> ids : localUser.getFavoritePlates().values()) {
+                    for (String id : ids) {
+                        Plato p = new Plato();
+                        p.setId(id);
+                        platos.add(p);
+                    }
+                }
+                apiUser.setPlatosFavoritos(platos);
+
+                Boolean success = userControllerApi.updateUser(apiUser);
+                if (success != null && success) {
+                    return new Result.Success<>(localUser);
+                }
             }
             return new Result.Error(new IOException("Error al actualizar usuario en el servidor"));
         } catch (ApiException e) {
@@ -126,31 +146,38 @@ public class LoginDataSource {
     }
 
     public Result<LoggedInUser> updateName(String email, String newName) {
-        Result<LoggedInUser> current = getUser(email);
-        if (current instanceof Result.Success) {
-            LoggedInUser user = ((Result.Success<LoggedInUser>) current).getData();
-            user.setDisplayName(newName);
-            return saveUserInternal(user);
+        try {
+            User apiUser = userControllerApi.getByEmail(email);
+            if (apiUser != null) {
+                apiUser.setNickname(newName);
+                Boolean success = userControllerApi.updateUser(apiUser);
+                if (success != null && success) {
+                    return new Result.Success<>(convertToLoggedInUser(apiUser, null));
+                }
+            }
+            return new Result.Error(new IOException("No se pudo actualizar el nombre"));
+        } catch (ApiException e) {
+            return new Result.Error(new IOException("Error al actualizar nombre: " + e.getMessage()));
         }
-        return current;
     }
 
     public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
         try {
             User apiUser = userControllerApi.getByEmail(oldEmail);
-            apiUser.setEmail(newEmail);
-            Boolean success = userControllerApi.updateUser(apiUser);
-            if (success != null && success) {
-                // Move cart to new email
-                Map<String, List<String>> cart = loadCartLocally(oldEmail);
-                saveCartLocally(newEmail, cart);
-                // We don't delete old cart for safety or we could:
-                // context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE).edit().remove("cart_" + oldEmail).apply();
-                
-                return new Result.Success<>(convertToLoggedInUser(apiUser, null));
+            if (apiUser != null) {
+                apiUser.setEmail(newEmail);
+                Boolean success = userControllerApi.updateUser(apiUser);
+                if (success != null && success) {
+                    Map<String, List<String>> cart = loadCartLocally(oldEmail);
+                    saveCartLocally(newEmail, cart);
+                    return new Result.Success<>(convertToLoggedInUser(apiUser, null));
+                }
             }
             return new Result.Error(new IOException("No se pudo actualizar el email"));
         } catch (ApiException e) {
+            if (e.getCode() == 409 || (e.getResponseBody() != null && e.getResponseBody().contains("exists"))) {
+                return new Result.Error(new IOException(ERROR_EMAIL_ALREADY_EXISTS));
+            }
             return new Result.Error(new IOException("Error al actualizar email: " + e.getMessage()));
         }
     }
@@ -169,9 +196,9 @@ public class LoginDataSource {
                     return new Result.Success<>(convertToLoggedInUser(apiUser, newPassword));
                 }
             }
-            return new Result.Error(new IOException("La contraseña antigua no es correcta"));
+            return new Result.Error(new IOException(ERROR_WRONG_PASSWORD));
         } catch (ApiException e) {
-            return new Result.Error(new IOException("Error al cambiar contraseña: " + e.getMessage()));
+            return new Result.Error(new IOException("Error al actualizar contraseña: " + e.getMessage()));
         }
     }
 
@@ -180,7 +207,6 @@ public class LoginDataSource {
             User apiUser = userControllerApi.getByEmail(email);
             if (apiUser != null) {
                 userControllerApi.deleteByID(apiUser.getId());
-                // Delete local cart
                 context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE).edit().remove("cart_" + email).apply();
             }
         } catch (ApiException ignored) {
@@ -189,6 +215,7 @@ public class LoginDataSource {
 
     public File getUserPhotoFile(String email) {
         File root = new File(context.getFilesDir(), "documentos/users");
+        if (!root.exists()) root.mkdirs();
         return new File(root, email + ".jpg");
     }
 
@@ -201,12 +228,12 @@ public class LoginDataSource {
             FoodRepository foodRepo = FoodRepository.getInstance(context);
             for (Plato p : apiUser.getPlatosFavoritos()) {
                 Bombo b = foodRepo.getBomboPorId(p.getId());
-                String restId = (b != null) ? b.getRestauranteId() : "RESTAURANTE_ID";
+                String restId = (b != null) ? b.getRestauranteId() : "REST_UNKNOWN";
                 favs.computeIfAbsent(restId, k -> new ArrayList<>()).add(p.getId());
             }
         }
 
-        LoggedInUser user = new LoggedInUser(
+        return new LoggedInUser(
                 apiUser.getId(),
                 apiUser.getNickname(),
                 apiUser.getEmail(),
@@ -215,27 +242,5 @@ public class LoginDataSource {
                 loadCartLocally(apiUser.getEmail()),
                 apiUser.getIconUrl()
         );
-        
-        return user;
-    }
-
-    private User convertToApiUser(LoggedInUser localUser) {
-        User apiUser = new User();
-        apiUser.setId(localUser.getUserId());
-        apiUser.setNickname(localUser.getDisplayName());
-        apiUser.setEmail(localUser.getEmail());
-        apiUser.setIconUrl(localUser.getPhotoPath());
-        
-        java.util.Set<Plato> platos = new java.util.LinkedHashSet<>();
-        for (List<String> ids : localUser.getFavoritePlates().values()) {
-            for (String id : ids) {
-                Plato p = new Plato();
-                p.setId(id);
-                platos.add(p);
-            }
-        }
-        apiUser.setPlatosFavoritos(platos);
-        
-        return apiUser;
     }
 }

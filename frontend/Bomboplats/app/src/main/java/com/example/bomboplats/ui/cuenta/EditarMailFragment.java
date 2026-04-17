@@ -32,6 +32,25 @@ public class EditarMailFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
+        // Observar el resultado de la actualización de forma asíncrona
+        userViewModel.getUpdateResult().observe(getViewLifecycleOwner(), result -> {
+            if (result == null) return;
+
+            if (result instanceof Result.Success) {
+                Toast.makeText(getContext(), getString(R.string.toast_correo_actualizado), Toast.LENGTH_SHORT).show();
+                userViewModel.resetUpdateResult();
+                requireActivity().getSupportFragmentManager().popBackStack();
+            } else if (result instanceof Result.Error) {
+                String errorMsg = ((Result.Error) result).getError().getMessage();
+                if (LoginDataSource.ERROR_EMAIL_ALREADY_EXISTS.equals(errorMsg)) {
+                    Toast.makeText(getContext(), getString(R.string.error_email_exists), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), getString(R.string.error_actualizar_correo), Toast.LENGTH_SHORT).show();
+                }
+                userViewModel.resetUpdateResult();
+            }
+        });
+
         btnConfirmar.setOnClickListener(v -> {
             String nuevo = etMailNuevo.getText().toString().trim();
 
@@ -51,18 +70,8 @@ public class EditarMailFragment extends Fragment {
                 return;
             }
 
-            Result<?> result = userViewModel.setEmail(nuevo);
-            if (result instanceof Result.Success) {
-                Toast.makeText(getContext(), getString(R.string.toast_correo_actualizado), Toast.LENGTH_SHORT).show();
-                requireActivity().getSupportFragmentManager().popBackStack();
-            } else if (result instanceof Result.Error) {
-                String errorMsg = ((Result.Error) result).getError().getMessage();
-                if (LoginDataSource.ERROR_EMAIL_ALREADY_EXISTS.equals(errorMsg)) {
-                    Toast.makeText(getContext(), getString(R.string.error_email_exists), Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), getString(R.string.error_actualizar_correo), Toast.LENGTH_SHORT).show();
-                }
-            }
+            // Llamada asíncrona (ahora no devuelve un Result, sino que actualiza el LiveData observado arriba)
+            userViewModel.setEmail(nuevo);
         });
 
         return view;

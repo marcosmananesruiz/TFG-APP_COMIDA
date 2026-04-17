@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
+import com.example.bomboplats.api.Direccion;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,9 +43,16 @@ public class DireccionesCuentaFragment extends Fragment {
         tvBuscaEntrega = view.findViewById(R.id.tv_busca_entrega);
 
         rvDirecciones.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new DireccionesAdapter(new ArrayList<>(), index -> {
-            // Lógica de borrado si fuera necesaria
-        });
+        adapter = new DireccionesAdapter(new ArrayList<>(), false, new DireccionesAdapter.OnDireccionClickListener() {
+            @Override
+            public void onActionClick(Direccion d, boolean isSearchMode) {
+                if (isSearchMode) {
+                    userViewModel.addAddressToUser(d);
+                } else {
+                    userViewModel.removeAddressFromUser(d);
+                }
+            }
+        }, userViewModel);
         rvDirecciones.setAdapter(adapter);
 
         etBuscar.addTextChangedListener(new TextWatcher() {
@@ -69,7 +77,7 @@ public class DireccionesCuentaFragment extends Fragment {
                 } else {
                     rvDirecciones.setVisibility(View.VISIBLE);
                     tvNoEncontrado.setVisibility(View.GONE);
-                    adapter.updateList(addresses);
+                    adapter.updateList(addresses, true);
                 }
             } else {
                 updateViewBasedOnUserAddresses();
@@ -77,7 +85,7 @@ public class DireccionesCuentaFragment extends Fragment {
         });
 
         // Observar direcciones del usuario
-        userViewModel.getAddresses().observe(getViewLifecycleOwner(), userAddresses -> {
+        userViewModel.getUserAddressesObjects().observe(getViewLifecycleOwner(), userAddresses -> {
             if (etBuscar.getText().toString().trim().isEmpty()) {
                 updateViewBasedOnUserAddresses();
             }
@@ -98,7 +106,7 @@ public class DireccionesCuentaFragment extends Fragment {
     }
 
     private void updateViewBasedOnUserAddresses() {
-        List<String> userAddresses = userViewModel.getAddresses().getValue();
+        List<Direccion> userAddresses = userViewModel.getUserAddressesObjects().getValue();
         tvNoEncontrado.setVisibility(View.GONE);
         if (userAddresses == null || userAddresses.isEmpty()) {
             rvDirecciones.setVisibility(View.GONE);
@@ -106,25 +114,30 @@ public class DireccionesCuentaFragment extends Fragment {
         } else {
             tvBuscaEntrega.setVisibility(View.GONE);
             rvDirecciones.setVisibility(View.VISIBLE);
-            adapter.updateList(userAddresses);
+            adapter.updateList(userAddresses, false);
         }
     }
 
     private static class DireccionesAdapter extends RecyclerView.Adapter<DireccionesAdapter.ViewHolder> {
-        private List<String> list;
-        private final OnDeleteClickListener listener;
+        private List<Direccion> list;
+        private boolean isSearchMode;
+        private final OnDireccionClickListener listener;
+        private final UserViewModel viewModel;
 
-        public interface OnDeleteClickListener {
-            void onDelete(int index);
+        public interface OnDireccionClickListener {
+            void onActionClick(Direccion d, boolean isSearchMode);
         }
 
-        public DireccionesAdapter(List<String> list, OnDeleteClickListener listener) {
+        public DireccionesAdapter(List<Direccion> list, boolean isSearchMode, OnDireccionClickListener listener, UserViewModel viewModel) {
             this.list = list;
+            this.isSearchMode = isSearchMode;
             this.listener = listener;
+            this.viewModel = viewModel;
         }
 
-        public void updateList(List<String> newList) {
+        public void updateList(List<Direccion> newList, boolean isSearchMode) {
             this.list = newList;
+            this.isSearchMode = isSearchMode;
             notifyDataSetChanged();
         }
 
@@ -137,8 +150,19 @@ public class DireccionesCuentaFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            holder.tvAddress.setText(list.get(position));
-            holder.btnDelete.setVisibility(View.GONE);
+            Direccion d = list.get(position);
+            holder.tvAddress.setText(viewModel.formatDireccion(d));
+            
+            if (isSearchMode) {
+                // He cambiado ic_add por ic_add_to_cart que sí existe en tus drawables
+                holder.btnAction.setImageResource(R.drawable.ic_add_to_cart); 
+                holder.btnAction.setColorFilter(holder.itemView.getContext().getColor(R.color.price_green));
+            } else {
+                holder.btnAction.setImageResource(R.drawable.ic_close);
+                holder.btnAction.setColorFilter(holder.itemView.getContext().getColor(R.color.text_color_secondary));
+            }
+
+            holder.btnAction.setOnClickListener(v -> listener.onActionClick(d, isSearchMode));
         }
 
         @Override
@@ -148,11 +172,11 @@ public class DireccionesCuentaFragment extends Fragment {
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvAddress;
-            ImageButton btnDelete;
+            ImageButton btnAction;
             ViewHolder(View v) {
                 super(v);
                 tvAddress = v.findViewById(R.id.tv_item_direccion);
-                btnDelete = v.findViewById(R.id.btn_delete_direccion);
+                btnAction = v.findViewById(R.id.btn_delete_direccion);
             }
         }
     }

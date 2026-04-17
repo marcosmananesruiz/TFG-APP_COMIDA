@@ -47,10 +47,17 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     
     private final MutableLiveData<List<String>> favoritos = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Map<String, Integer>> carrito = new MutableLiveData<>(new HashMap<>());
+    
+    // Lista de objetos Direccion del usuario (para tener los IDs)
+    private final MutableLiveData<List<Direccion>> userAddressesObjects = new MutableLiveData<>(new ArrayList<>());
+    // Lista de strings formateados para mostrar en UI clasica
     private final MutableLiveData<List<String>> addresses = new MutableLiveData<>(new ArrayList<>());
+    
     private final MutableLiveData<List<Direccion>> allApiAddresses = new MutableLiveData<>(new ArrayList<>());
-    private final MutableLiveData<List<String>> filteredAddresses = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<Direccion>> filteredAddresses = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<String> error = new MutableLiveData<>();
+    
+    private final MutableLiveData<Result<Boolean>> updateResult = new MutableLiveData<>();
 
     public UserViewModel(@NonNull Application application) {
         super(application);
@@ -73,27 +80,30 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 }
             }
 
-            // Cargar TODAS las direcciones de la base de datos para búsqueda
             try {
                 List<Direccion> apiDirs = direccionApi.findAll4();
                 allApiAddresses.postValue(apiDirs != null ? apiDirs : new ArrayList<>());
             } catch (ApiException e) {
-                Log.e("UserViewModel", "Error loading addresses: " + e.getMessage());
+                Log.e("UserViewModel", "Error loading all addresses: " + e.getMessage());
             }
 
             if (user != null) {
                 try {
-                    // Refrescar datos del usuario desde la API para tener las direcciones actualizadas
                     User apiUser = userApi.getByEmail(user.getEmail());
                     if (apiUser != null) {
+                        List<Direccion> dirs = new ArrayList<>();
                         List<String> userStringDirs = new ArrayList<>();
                         if (apiUser.getDirecciones() != null) {
                             for (Direccion d : apiUser.getDirecciones()) {
+                                dirs.add(d);
                                 userStringDirs.add(formatDireccion(d));
                             }
                         }
-                        // Actualizar localmente
+                        userAddressesObjects.postValue(dirs);
                         user.setAddresses(userStringDirs);
+                        // Sincronizar ID
+                        user.setUserId(apiUser.getId());
+                        userId.postValue(apiUser.getId());
                     }
                 } catch (ApiException e) {
                     Log.e("UserViewModel", "Error refreshing user addresses: " + e.getMessage());
@@ -112,18 +122,101 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         }
 
         List<Direccion> all = allApiAddresses.getValue();
+        List<Direccion> userDirs = userAddressesObjects.getValue();
         if (all == null) return;
 
-        List<String> results = all.stream()
+        Set<String> userDirIds = new java.util.HashSet<>();
+        if (userDirs != null) {
+            for (Direccion d : userDirs) {
+                userDirIds.add(d.getId());
+            }
+        }
+
+        List<Direccion> results = all.stream()
+                .filter(d -> d.getId() != null && !userDirIds.contains(d.getId()))
                 .filter(d -> formatDireccion(d).toLowerCase().contains(query.toLowerCase()))
-                .map(this::formatDireccion)
                 .collect(Collectors.toList());
         
         filteredAddresses.setValue(results);
     }
 
-    private String formatDireccion(Direccion d) {
+    public String formatDireccion(Direccion d) {
         return d.getCalle() + ", " + d.getPortal() + (d.getPiso() != null && !d.getPiso().isEmpty() ? ", " + d.getPiso() : "") + " (" + d.getPoblacion() + ")";
+    }
+
+    public void addAddressToUser(Direccion direccion) {
+        executorService.execute(() -> {
+            try {
+                LoggedInUser loggedUser = loginRepository.getUser();
+                if (loggedUser != null) {
+                    User apiUser = userApi.getByEmail(loggedUser.getEmail());
+                    Set<Direccion> userDirs = apiUser.getDirecciones();
+                    if (userDirs == null) userDirs = new LinkedHashSet<>();
+                    
+                    boolean exists = false;
+                    for (Direccion d : userDirs) {
+                        if (d.getId().equals(direccion.getId())) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!exists) {
+                        userDirs.add(direccion);
+                        apiUser.setDirecciones(userDirs);
+                        userApi.updateUser(apiUser);
+                        refreshUserData();
+                    }
+                }
+            } catch (ApiException e) {
+                error.postValue("Error al añadir la dirección");
+            }
+        });
+    }
+
+    public void removeAddressFromUser(Direccion direccion) {
+        executorService.execute(() -> {
+            try {
+                LoggedInUser loggedUser = loginRepository.getUser();
+                if (loggedUser == null) return;
+
+                // 1. IMPORTANTE: Recuperar el usuario completo por ID directamente si es posible, 
+                // pero como tenemos el email, usamos getByEmail asegurándonos de que traiga el ID.
+                User apiUser = userApi.getByEmail(loggedUser.getEmail());
+                if (apiUser == null || apiUser.getId() == null) {
+                    Log.e("UserViewModel", "Usuario no encontrado o sin ID al eliminar dirección");
+                    return;
+                }
+
+                // El error 404 indica que el servidor no encuentra el recurso al hacer PUT /users/save.
+                // Aseguramos que el objeto apiUser tenga el ID correcto antes de enviar.
+                
+                Set<Direccion> currentDirs = apiUser.getDirecciones();
+                if (currentDirs != null) {
+                    // 2. Filtrar
+                    Set<Direccion> updatedDirs = currentDirs.stream()
+                            .filter(d -> !d.getId().equals(direccion.getId()))
+                            .collect(Collectors.toCollection(LinkedHashSet::new));
+
+                    // 3. Solo si ha habido cambios reales
+                    if (updatedDirs.size() < currentDirs.size()) {
+                        apiUser.setDirecciones(updatedDirs);
+                        
+                        // Enviamos el objeto con el ID que el servidor reconoce
+                        Boolean success = userApi.updateUser(apiUser);
+                        
+                        if (success != null && success) {
+                            refreshUserData();
+                        } else {
+                            error.postValue("El servidor rechazó la actualización de direcciones");
+                        }
+                    }
+                }
+            } catch (ApiException e) {
+                Log.e("UserViewModel", "Error ApiException (404) al eliminar: " + e.getMessage());
+                error.postValue("Error en el servidor al intentar quitar la dirección");
+            }
+        });
     }
 
     public void registerAndAssignAddress(String poblacion, String calle, String cp, int portal, String piso) {
@@ -136,24 +229,12 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 d.setPortal(portal);
                 d.setPiso(piso);
 
-                // 1. Guardar dirección en BD
                 Direccion savedDir = direccionApi.registerDireccion(d);
-                
-                // 2. Asignar al usuario actual
-                LoggedInUser loggedUser = loginRepository.getUser();
-                if (loggedUser != null && savedDir != null) {
-                    User apiUser = userApi.getByEmail(loggedUser.getEmail());
-                    Set<Direccion> userDirs = apiUser.getDirecciones();
-                    if (userDirs == null) userDirs = new LinkedHashSet<>();
-                    userDirs.add(savedDir);
-                    apiUser.setDirecciones(userDirs);
-                    
-                    userApi.updateUser(apiUser);
+                if (savedDir != null) {
+                    addAddressToUser(savedDir);
                 }
-                
-                refreshUserData();
             } catch (ApiException e) {
-                error.postValue("Error al guardar la dirección en el servidor");
+                error.postValue("Error al guardar la nueva dirección");
             }
         });
     }
@@ -181,8 +262,8 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         List<String> listaFavs = new ArrayList<>();
         Map<String, List<String>> favMap = user.getFavoritePlates();
         for (Map.Entry<String, List<String>> entry : favMap.entrySet()) {
-            for (String bomboId : entry.getValue()) {
-                listaFavs.add(entry.getKey() + ":" + bomboId);
+            for (String bId : entry.getValue()) {
+                listaFavs.add(entry.getKey() + ":" + bId);
             }
         }
         favoritos.setValue(listaFavs);
@@ -190,8 +271,8 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         Map<String, Integer> mapaCarritoUI = new HashMap<>();
         Map<String, List<String>> cartMap = user.getCartPlates();
         for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
-            for (String bomboId : entry.getValue()) {
-                String key = entry.getKey() + ":" + bomboId;
+            for (String bId : entry.getValue()) {
+                String key = entry.getKey() + ":" + bId;
                 mapaCarritoUI.put(key, mapaCarritoUI.getOrDefault(key, 0) + 1);
             }
         }
@@ -206,35 +287,48 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<List<String>> getFavoritos() { return favoritos; }
     public LiveData<Map<String, Integer>> getCarrito() { return carrito; }
     public LiveData<List<String>> getAddresses() { return addresses; }
-    public LiveData<List<String>> getFilteredAddresses() { return filteredAddresses; }
+    public LiveData<List<Direccion>> getUserAddressesObjects() { return userAddressesObjects; }
+    public LiveData<List<Direccion>> getFilteredAddresses() { return filteredAddresses; }
     public LiveData<String> getError() { return error; }
+    public LiveData<Result<Boolean>> getUpdateResult() { return updateResult; }
 
-    public void removeAddress(int index) {
-        refreshUserData();
-    }
+    public void resetUpdateResult() { updateResult.setValue(null); }
 
     public void setName(String newName) {
         executorService.execute(() -> {
             Result<LoggedInUser> result = loginRepository.updateName(newName);
-            if (result instanceof Result.Success) name.postValue(newName);
+            if (result instanceof Result.Success) {
+                name.postValue(newName);
+                updateResult.postValue(new Result.Success<>(true));
+            } else {
+                updateResult.postValue(new Result.Error(((Result.Error) result).getError()));
+            }
         });
     }
 
-    public Result<LoggedInUser> setEmail(String newEmail) {
-        Result<LoggedInUser> result = loginRepository.updateEmail(newEmail);
-        if (result instanceof Result.Success) {
-            email.postValue(newEmail);
-            sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, newEmail).apply();
-        }
-        return result;
+    public void setEmail(String newEmail) {
+        executorService.execute(() -> {
+            Result<LoggedInUser> result = loginRepository.updateEmail(newEmail);
+            if (result instanceof Result.Success) {
+                email.postValue(newEmail);
+                sharedPreferences.edit().putString(KEY_CURRENT_USER_EMAIL, newEmail).apply();
+                updateResult.postValue(new Result.Success<>(true));
+            } else {
+                updateResult.postValue(new Result.Error(((Result.Error) result).getError()));
+            }
+        });
     }
 
-    public Result<LoggedInUser> setPassword(String oldPass, String newPass) {
-        Result<LoggedInUser> result = loginRepository.updatePassword(oldPass, newPass);
-        if (result instanceof Result.Success) {
-            password.postValue(newPass);
-        }
-        return result;
+    public void setPassword(String oldPass, String newPass) {
+        executorService.execute(() -> {
+            Result<LoggedInUser> result = loginRepository.updatePassword(oldPass, newPass);
+            if (result instanceof Result.Success) {
+                password.postValue(newPass);
+                updateResult.postValue(new Result.Success<>(true));
+            } else {
+                updateResult.postValue(new Result.Error(((Result.Error) result).getError()));
+            }
+        });
     }
 
     public File getUserPhotoFile() {
