@@ -171,6 +171,17 @@ public class UserServiceImpl implements IUserService {
         return this.repo.getIDs();
     }
 
+    @Override
+    public Mono<Void> saveUserEntity(User user) {
+        return this.repo.findById(user.getId())
+                .flatMap(userEntity -> {
+                    userEntity.setEmail(user.getEmail());
+                    userEntity.setNickname(user.getNickname());
+                    userEntity.setIconUrl(user.getIconUrl());
+                    return this.repo.save(userEntity);
+                }).then();
+    }
+
     private Mono<Void> syncDirecciones(User user) {
         return this.direccionService.getDireccionesOfUser(user.getId())
                 .collectList()
@@ -198,7 +209,7 @@ public class UserServiceImpl implements IUserService {
                             .flatMap(direccion -> this.direccionService.asignarUserId(direccion, user.getId()))
                             .then();
 
-                    return Mono.when(eliminaciones, actualizaciones);
+                    return actualizaciones.then(eliminaciones);
                 });
     }
 

@@ -100,6 +100,7 @@ public class DireccionServiceImpl implements IDireccionService {
     public Mono<Boolean> deleteDireccionByID(String id) {
         return this.repo.findById(id)
                 .flatMap(direccionEntity -> {
+                    LOGGER.info("deleteDireccionByID id={}", id);
                     Mono<Void> clearUsers = clearDireccionUser(id);
                     return Mono.when(clearUsers).then(this.repo.delete(direccionEntity));
                 }).thenReturn(true).switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
@@ -169,10 +170,13 @@ public class DireccionServiceImpl implements IDireccionService {
     }
 
     private Mono<Void> clearDireccionUser(String id) {
-        return this.getUserID(id).flatMap(userId -> this.userService.findByID(userId))
+        return this.getUserID(id).flatMap(userId -> {
+                    LOGGER.info("clearDireccionUser id={}", userId);
+                    return this.userService.findByID(userId);
+                })
                 .flatMap(user -> this.findById(id).flatMap(direccion -> {
                     user.getDirecciones().remove(direccion);
-                    return this.userService.update(user);
+                    return this.userService.saveUserEntity(user);
                 })).then();
     }
 }

@@ -17,6 +17,8 @@ public interface DireccionRepository extends ReactiveCrudRepository<DireccionEnt
     Flux<DireccionEntity> findByIdRestaurante(String idRestaurante);
 
     Mono<String> findIdRestauranteById(String id);
+
+    @Query("SELECT id_usuario FROM direcciones WHERE id = :id")
     Mono<String> findIdUserById(String id);
     
     @Query("SELECT nextval('direccion_seq')")

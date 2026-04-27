@@ -76,4 +76,6 @@ public interface IUserService {
     Flux<Plato> getPlatosFavoritos(String userId);
 
     Flux<String> getUserIds();
+
+    Mono<Void> saveUserEntity(User user);
 }
