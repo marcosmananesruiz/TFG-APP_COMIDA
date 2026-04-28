@@ -9,6 +9,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
@@ -20,6 +21,8 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
     private List<BomboConCantidad> listaCarrito;
     private OnCarritoActionListener listener;
     private Set<String> favoritos;
+    private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
+    private static final String DEFAULT_BOMBO_IMAGE = BASE_BUCKET + "platos/default.jpg";
 
     public interface OnCarritoActionListener {
         void onRestarClick(String itemKey);
@@ -54,7 +57,13 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         
         holder.tvNombre.setText(bombo.getNombre());
         holder.tvDescripcion.setText(bombo.getDescripcion());
-        holder.tvPrecio.setText(bombo.getPrecio());
+        
+        // Añadir € al precio si no lo tiene
+        String precio = bombo.getPrecio();
+        if (precio != null && !precio.contains("€")) {
+            precio += "€";
+        }
+        holder.tvPrecio.setText(precio);
         
         // Configuramos la vista para el modo carrito
         holder.tvCantidad.setVisibility(View.VISIBLE);
@@ -87,14 +96,24 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
             if (listener != null) listener.onBomboClick(bombo);
         });
 
-        int resID = holder.itemView.getContext().getResources().getIdentifier(
-                bombo.getId(), "drawable", holder.itemView.getContext().getPackageName());
-        
-        if (resID != 0) {
-            holder.imgBombo.setImageResource(resID);
-        } else {
-            holder.imgBombo.setImageResource(R.drawable.ic_launcher_background);
+        // Carga de imagen con Glide desde S3
+        String fotoUrl = DEFAULT_BOMBO_IMAGE;
+        if (bombo.getFotos() != null && !bombo.getFotos().isEmpty()) {
+            String fotoPath = bombo.getFotos().get(0);
+            if (fotoPath != null && !fotoPath.isEmpty()) {
+                if (fotoPath.startsWith("http")) {
+                    fotoUrl = fotoPath;
+                } else {
+                    fotoUrl = BASE_BUCKET + fotoPath;
+                }
+            }
         }
+
+        Glide.with(holder.itemView.getContext())
+                .load(fotoUrl)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(DEFAULT_BOMBO_IMAGE)
+                .into(holder.imgBombo);
     }
 
     @Override

@@ -8,16 +8,23 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
+import java.util.ArrayList;
 import java.util.List;
 
 public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapter.FotoViewHolder> {
 
     private List<String> listaFotos;
+    private String defaultImageUrl;
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
-    private static final String DEFAULT_IMAGE = BASE_BUCKET + "restaurantes/default_0.jpg";
 
-    public FotoCarruselAdapter(List<String> listaFotos) {
-        this.listaFotos = listaFotos;
+    public FotoCarruselAdapter(List<String> fotos, String defaultImageUrl) {
+        this.listaFotos = (fotos != null && !fotos.isEmpty()) ? new ArrayList<>(fotos) : new ArrayList<>();
+        this.defaultImageUrl = defaultImageUrl;
+        
+        // Si no hay fotos, añadimos la de por defecto para que el carrusel no esté vacío
+        if (this.listaFotos.isEmpty()) {
+            this.listaFotos.add(defaultImageUrl);
+        }
     }
 
     @NonNull
@@ -30,7 +37,7 @@ public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapte
     @Override
     public void onBindViewHolder(@NonNull FotoViewHolder holder, int position) {
         String fotoPath = listaFotos.get(position);
-        String fotoUrl = DEFAULT_IMAGE;
+        String fotoUrl = defaultImageUrl;
 
         if (fotoPath != null && !fotoPath.isEmpty()) {
             if (fotoPath.startsWith("http")) {
@@ -43,13 +50,13 @@ public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapte
         Glide.with(holder.itemView.getContext())
                 .load(fotoUrl)
                 .placeholder(R.drawable.ic_launcher_background)
-                .error(DEFAULT_IMAGE)
+                .error(defaultImageUrl)
                 .into(holder.imgFoto);
     }
 
     @Override
     public int getItemCount() {
-        return listaFotos != null ? listaFotos.size() : 0;
+        return listaFotos.size();
     }
 
     public static class FotoViewHolder extends RecyclerView.ViewHolder {

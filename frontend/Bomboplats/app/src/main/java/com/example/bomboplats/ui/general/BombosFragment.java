@@ -40,6 +40,8 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private FoodRepository foodRepository;
     private Map<String, String> mapaEtiquetas = new HashMap<>();
 
+    private static final String DEFAULT_RESTAURANTE_IMAGE = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/restaurantes/default_0.jpg";
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -65,11 +67,9 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             tvDescripcion.setText(getArguments().getString("descripcion"));
             
             List<String> fotos = getArguments().getStringArrayList("fotos");
-            if (fotos != null) {
-                fotoAdapter = new FotoCarruselAdapter(fotos);
-                recyclerViewFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-                recyclerViewFotos.setAdapter(fotoAdapter);
-            }
+            fotoAdapter = new FotoCarruselAdapter(fotos, DEFAULT_RESTAURANTE_IMAGE);
+            recyclerViewFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+            recyclerViewFotos.setAdapter(fotoAdapter);
         }
 
         cargarMapaEtiquetas();

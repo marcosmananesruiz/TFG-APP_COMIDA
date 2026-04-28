@@ -12,13 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DetalleBomboFragment extends Fragment {
@@ -32,6 +32,8 @@ public class DetalleBomboFragment extends Fragment {
     private String bomboId;
     private Bombo bomboActual;
     private int cantidad = 1;
+
+    private static final String DEFAULT_BOMBO_IMAGE = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/platos/default.jpg";
 
     @Nullable
     @Override
@@ -101,9 +103,7 @@ public class DetalleBomboFragment extends Fragment {
         });
 
         // Observar cambios en favoritos para mantener UI sincronizada
-        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), ids -> {
-            actualizarIconoFavorito();
-        });
+        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), ids -> actualizarIconoFavorito());
 
         return view;
     }
@@ -118,7 +118,14 @@ public class DetalleBomboFragment extends Fragment {
     private void mostrarInfoBombo() {
         if (bomboActual != null) {
             tvNombre.setText(bomboActual.getNombre());
-            tvPrecio.setText(bomboActual.getPrecio());
+            
+            // Asegurar formato de precio con €
+            String precio = bomboActual.getPrecio();
+            if (precio != null && !precio.contains("€")) {
+                precio += "€";
+            }
+            tvPrecio.setText(precio);
+            
             tvDescripcion.setText(bomboActual.getDescripcion());
             
             if (bomboActual.getIngredientes() != null && !bomboActual.getIngredientes().isEmpty()) {
@@ -133,18 +140,11 @@ public class DetalleBomboFragment extends Fragment {
                 tvAlergenos.setText(getString(R.string.sin_alergenos));
             }
 
-            if (bomboActual.getFotos() != null && !bomboActual.getFotos().isEmpty()) {
-                List<String> fotosString = bomboActual.getFotos();
-                List<Integer> resIds = new ArrayList<>();
-                for (String fotoName : fotosString) {
-                    int resId = getContext().getResources().getIdentifier(fotoName, "drawable", getContext().getPackageName());
-                    if (resId != 0) resIds.add(resId);
-                }
-                if (resIds.isEmpty()) resIds.add(R.drawable.ic_launcher_background);
-                
-                RestauranteFotoAdapter fotoAdapter = new RestauranteFotoAdapter(resIds);
-                rvFotos.setAdapter(fotoAdapter);
-            }
+            // Carrusel de fotos del plato
+            List<String> fotos = bomboActual.getFotos();
+            FotoCarruselAdapter fotoAdapter = new FotoCarruselAdapter(fotos, DEFAULT_BOMBO_IMAGE);
+            rvFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+            rvFotos.setAdapter(fotoAdapter);
         }
     }
 }

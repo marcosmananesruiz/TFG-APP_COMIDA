@@ -50,7 +50,17 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         Bombo bombo = listaBombos.get(position);
         holder.tvNombre.setText(bombo.getNombre());
         holder.tvDescripcion.setText(bombo.getDescripcion());
-        holder.tvPrecio.setText(bombo.getPrecio());
+        
+        // Asegurar formato de precio con €
+        String precioStr = bombo.getPrecio();
+        if (precioStr != null && !precioStr.isEmpty()) {
+            if (!precioStr.contains("€")) {
+                precioStr += "€";
+            }
+        } else {
+            precioStr = "0.00€";
+        }
+        holder.tvPrecio.setText(precioStr);
 
         // Aplicar icono y color según si es favorito
         boolean esFav = favoritosProvider != null && favoritosProvider.esFavorito(bombo.getRestauranteId(), bombo.getId());
@@ -62,13 +72,14 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
             holder.btnFav.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_color));
         }
 
+        // Carga de imagen con Glide desde S3
         String fotoUrl = DEFAULT_BOMBO_IMAGE;
         if (bombo.getFotos() != null && !bombo.getFotos().isEmpty()) {
             String fotoPath = bombo.getFotos().get(0);
-            if (fotoPath != null) {
+            if (fotoPath != null && !fotoPath.isEmpty()) {
                 if (fotoPath.startsWith("http")) {
                     fotoUrl = fotoPath;
-                } else if (!fotoPath.isEmpty()) {
+                } else {
                     fotoUrl = BASE_BUCKET + fotoPath;
                 }
             }
