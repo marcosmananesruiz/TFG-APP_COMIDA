@@ -163,6 +163,19 @@ public class LoginDataSource {
 
     public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
         try {
+            // Comprobación manual de si el correo ya existe antes de actualizar
+            try {
+                User existingUser = userControllerApi.getByEmail(newEmail);
+                if (existingUser != null) {
+                    return new Result.Error(new IOException(ERROR_EMAIL_ALREADY_EXISTS));
+                }
+            } catch (ApiException e) {
+                // Si da 404 es que el correo está libre, lo cual es correcto
+                if (e.getCode() != 404) {
+                    throw e; // Otros errores de red los tratamos en el catch externo
+                }
+            }
+
             User apiUser = userControllerApi.getByEmail(oldEmail);
             if (apiUser != null) {
                 apiUser.setEmail(newEmail);

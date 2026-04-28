@@ -48,15 +48,10 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private final MutableLiveData<List<String>> favoritos = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Map<String, Integer>> carrito = new MutableLiveData<>(new HashMap<>());
     
-    // Lista de objetos Direccion del usuario (para tener los IDs)
     private final MutableLiveData<List<Direccion>> userAddressesObjects = new MutableLiveData<>(new ArrayList<>());
-    // Lista de strings formateados para mostrar en UI clasica
     private final MutableLiveData<List<String>> addresses = new MutableLiveData<>(new ArrayList<>());
     
-    private final MutableLiveData<List<Direccion>> allApiAddresses = new MutableLiveData<>(new ArrayList<>());
-    private final MutableLiveData<List<Direccion>> filteredAddresses = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<String> error = new MutableLiveData<>();
-    
     private final MutableLiveData<Result<Boolean>> updateResult = new MutableLiveData<>();
 
     public UserViewModel(@NonNull Application application) {
@@ -80,13 +75,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 }
             }
 
-            try {
-                List<Direccion> apiDirs = direccionApi.findAll4();
-                allApiAddresses.postValue(apiDirs != null ? apiDirs : new ArrayList<>());
-            } catch (ApiException e) {
-                Log.e("UserViewModel", "Error loading all addresses: " + e.getMessage());
-            }
-
             if (user != null) {
                 try {
                     User apiUser = userApi.getByEmail(user.getEmail());
@@ -101,43 +89,17 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                         }
                         userAddressesObjects.postValue(dirs);
                         user.setAddresses(userStringDirs);
-                        // Sincronizar ID
                         user.setUserId(apiUser.getId());
                         userId.postValue(apiUser.getId());
                     }
                 } catch (ApiException e) {
-                    Log.e("UserViewModel", "Error refreshing user addresses: " + e.getMessage());
+                    Log.e("UserViewModel", "Error refreshing user data: " + e.getMessage());
                 }
 
                 final LoggedInUser finalUser = user;
                 new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> loadUserData(finalUser));
             }
         });
-    }
-
-    public void searchAddresses(String query) {
-        if (query == null || query.isEmpty()) {
-            filteredAddresses.setValue(new ArrayList<>());
-            return;
-        }
-
-        List<Direccion> all = allApiAddresses.getValue();
-        List<Direccion> userDirs = userAddressesObjects.getValue();
-        if (all == null) return;
-
-        Set<String> userDirIds = new java.util.HashSet<>();
-        if (userDirs != null) {
-            for (Direccion d : userDirs) {
-                userDirIds.add(d.getId());
-            }
-        }
-
-        List<Direccion> results = all.stream()
-                .filter(d -> d.getId() != null && !userDirIds.contains(d.getId()))
-                .filter(d -> formatDireccion(d).toLowerCase().contains(query.toLowerCase()))
-                .collect(Collectors.toList());
-        
-        filteredAddresses.setValue(results);
     }
 
     public String formatDireccion(Direccion d) {
@@ -180,41 +142,39 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 LoggedInUser loggedUser = loginRepository.getUser();
                 if (loggedUser == null) return;
 
-                // 1. IMPORTANTE: Recuperar el usuario completo por ID directamente si es posible, 
-                // pero como tenemos el email, usamos getByEmail asegurándonos de que traiga el ID.
                 User apiUser = userApi.getByEmail(loggedUser.getEmail());
-                if (apiUser == null || apiUser.getId() == null) {
-                    Log.e("UserViewModel", "Usuario no encontrado o sin ID al eliminar dirección");
-                    return;
-                }
-
-                // El error 404 indica que el servidor no encuentra el recurso al hacer PUT /users/save.
-                // Aseguramos que el objeto apiUser tenga el ID correcto antes de enviar.
+                if (apiUser == null || apiUser.getId() == null) return;
                 
                 Set<Direccion> currentDirs = apiUser.getDirecciones();
                 if (currentDirs != null) {
-                    // 2. Filtrar
                     Set<Direccion> updatedDirs = currentDirs.stream()
                             .filter(d -> !d.getId().equals(direccion.getId()))
                             .collect(Collectors.toCollection(LinkedHashSet::new));
 
-                    // 3. Solo si ha habido cambios reales
                     if (updatedDirs.size() < currentDirs.size()) {
                         apiUser.setDirecciones(updatedDirs);
-                        
-                        // Enviamos el objeto con el ID que el servidor reconoce
-                        Boolean success = userApi.updateUser(apiUser);
-                        
-                        if (success != null && success) {
-                            refreshUserData();
-                        } else {
-                            error.postValue("El servidor rechazó la actualización de direcciones");
-                        }
+                        userApi.updateUser(apiUser);
+                        refreshUserData();
                     }
                 }
             } catch (ApiException e) {
-                Log.e("UserViewModel", "Error ApiException (404) al eliminar: " + e.getMessage());
-                error.postValue("Error en el servidor al intentar quitar la dirección");
+                error.postValue("Error al quitar la dirección");
+            }
+        });
+    }
+
+    public void updateAddress(Direccion updatedDir) {
+        executorService.execute(() -> {
+            try {
+                // Actualizar la dirección en la tabla Direcciones
+                Boolean success = direccionApi.updateDireccion(updatedDir);
+                if (success != null && success) {
+                    refreshUserData();
+                } else {
+                    error.postValue("No se pudo actualizar la dirección");
+                }
+            } catch (ApiException e) {
+                error.postValue("Error al actualizar la dirección en el servidor");
             }
         });
     }
@@ -288,7 +248,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<Map<String, Integer>> getCarrito() { return carrito; }
     public LiveData<List<String>> getAddresses() { return addresses; }
     public LiveData<List<Direccion>> getUserAddressesObjects() { return userAddressesObjects; }
-    public LiveData<List<Direccion>> getFilteredAddresses() { return filteredAddresses; }
     public LiveData<String> getError() { return error; }
     public LiveData<Result<Boolean>> getUpdateResult() { return updateResult; }
 

@@ -5,19 +5,34 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.bomboplats.R;
+import com.example.bomboplats.api.Direccion;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.gson.Gson;
 
 public class NuevaDireccionFragment extends Fragment {
 
+    private static final String ARG_DIRECCION = "direccion_json";
     private UserViewModel userViewModel;
     private TextInputEditText etPoblacion, etCalle, etCP, etPortal, etPiso;
     private Button btnGuardar;
+    private TextView tvTitulo;
+    private Direccion direccionAEditar;
+
+    public static NuevaDireccionFragment newInstance(Direccion d) {
+        NuevaDireccionFragment fragment = new NuevaDireccionFragment();
+        Bundle args = new Bundle();
+        // Usamos GSON para pasar el objeto fácilmente o podrías hacerlo Parcelable si la clase lo fuera
+        args.putString(ARG_DIRECCION, new Gson().toJson(d));
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Nullable
     @Override
@@ -26,12 +41,20 @@ public class NuevaDireccionFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
+        tvTitulo = view.findViewById(R.id.tv_nueva_direccion_titulo);
         etPoblacion = view.findViewById(R.id.et_poblacion);
         etCalle = view.findViewById(R.id.et_calle);
         etCP = view.findViewById(R.id.et_codigo_postal);
         etPortal = view.findViewById(R.id.et_portal);
         etPiso = view.findViewById(R.id.et_piso);
         btnGuardar = view.findViewById(R.id.btn_guardar_direccion);
+
+        if (getArguments() != null && getArguments().containsKey(ARG_DIRECCION)) {
+            String json = getArguments().getString(ARG_DIRECCION);
+            direccionAEditar = new Gson().fromJson(json, Direccion.class);
+            prellenarCampos();
+            tvTitulo.setText(R.string.editar_direccion_titulo);
+        }
 
         btnGuardar.setOnClickListener(v -> {
             String poblacion = etPoblacion.getText().toString().trim();
@@ -45,7 +68,6 @@ public class NuevaDireccionFragment extends Fragment {
                 return;
             }
 
-            // Validación de Código Postal (exactamente 5 cifras)
             if (cp.length() != 5 || !cp.matches("\\d{5}")) {
                 etCP.setError(getString(R.string.error_cp_invalido));
                 return;
@@ -53,8 +75,23 @@ public class NuevaDireccionFragment extends Fragment {
 
             try {
                 int portal = Integer.parseInt(portalStr);
-                userViewModel.registerAndAssignAddress(poblacion, calle, cp, portal, piso);
-                Toast.makeText(getContext(), R.string.toast_direccion_guardada, Toast.LENGTH_SHORT).show();
+                
+                if (direccionAEditar != null) {
+                    // Modo edición
+                    direccionAEditar.setPoblacion(poblacion);
+                    direccionAEditar.setCalle(calle);
+                    direccionAEditar.setCodigoPostal(cp);
+                    direccionAEditar.setPortal(portal);
+                    direccionAEditar.setPiso(piso);
+                    
+                    userViewModel.updateAddress(direccionAEditar);
+                    Toast.makeText(getContext(), R.string.toast_direccion_actualizada, Toast.LENGTH_SHORT).show();
+                } else {
+                    // Modo creación
+                    userViewModel.registerAndAssignAddress(poblacion, calle, cp, portal, piso);
+                    Toast.makeText(getContext(), R.string.toast_direccion_guardada, Toast.LENGTH_SHORT).show();
+                }
+                
                 requireActivity().getSupportFragmentManager().popBackStack();
             } catch (NumberFormatException e) {
                 Toast.makeText(getContext(), "Portal debe ser un número", Toast.LENGTH_SHORT).show();
@@ -62,5 +99,15 @@ public class NuevaDireccionFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void prellenarCampos() {
+        if (direccionAEditar != null) {
+            etPoblacion.setText(direccionAEditar.getPoblacion());
+            etCalle.setText(direccionAEditar.getCalle());
+            etCP.setText(direccionAEditar.getCodigoPostal());
+            etPortal.setText(String.valueOf(direccionAEditar.getPortal()));
+            etPiso.setText(direccionAEditar.getPiso());
+        }
     }
 }

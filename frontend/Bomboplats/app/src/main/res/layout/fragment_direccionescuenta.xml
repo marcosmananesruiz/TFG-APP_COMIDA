@@ -18,57 +18,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/et_buscar_direccion"
+    <Button
+        android:id="@+id/btn_ir_nueva_direccion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="@string/buscar_direccion"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:drawablePadding="8dp"
-        android:padding="12dp"
-        android:background="@drawable/bg_edittext"
-        android:textColor="@color/text_color"
-        android:textColorHint="@color/text_color_secondary"
-        android:inputType="text"
-        android:autofillHints="postalAddress"
+        android:text="@string/btn_anadir_direccion"
+        android:textAllCaps="false"
+        android:backgroundTint="@color/primary"
+        android:textColor="@android:color/white"
         app:layout_constraintTop_toBottomOf="@id/tv_titulo_direcciones" />
-
-    <TextView
-        android:id="@+id/tv_busca_entrega"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/label_busca_entrega"
-        android:textColor="@color/text_color_secondary"
-        android:textSize="18sp"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_direcciones"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@id/tv_no_encontrado"
-        app:layout_constraintTop_toBottomOf="@id/et_buscar_direccion" />
-
-    <TextView
-        android:id="@+id/tv_no_encontrado"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/no_encontrado_direccion"
-        android:textColor="@color/primary"
-        android:textSize="16sp"
-        android:textAlignment="center"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackground"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_ir_nueva_direccion" />
 
     <TextView
         android:id="@+id/tv_no_direcciones"
@@ -80,6 +47,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/et_buscar_direccion" />
+        app:layout_constraintTop_toBottomOf="@id/btn_ir_nueva_direccion" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

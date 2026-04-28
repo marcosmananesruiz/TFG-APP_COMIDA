@@ -31,19 +31,22 @@
     <string name="register_link">¿No tienes cuenta? Regístrate aquí</string>
     <string name="error_passwords_dont_match">Las contraseñas no coinciden</string>
     <string name="registration_complete">Registro completado</string>
-    <string name="error_email_exists">Ese email ya está en uso por otra cuenta</string>
+    <string name="error_email_exists">Este correo ya está en uso</string>
 
     <!-- Direcciones -->
     <string name="titulo_direcciones">Mis Direcciones</string>
     <string name="hint_nueva_direccion">Añadir nueva dirección...</string>
     <string name="btn_mis_direcciones">Mis Direcciones</string>
     <string name="toast_direccion_vacia">La dirección no puede estar vacía</string>
-    <string name="toast_direccion_borrada">Dirección eliminada</string>
+    <string name="toast_direccion_borrada">Dirección desvinculada</string>
     <string name="toast_direccion_guardada">Dirección guardada</string>
+    <string name="toast_direccion_actualizada">Dirección actualizada</string>
     <string name="label_no_direcciones">Aún no tienes direcciones guardadas</string>
     <string name="buscar_direccion">Buscar dirección...</string>
+    <string name="btn_anadir_direccion">+ Añadir dirección</string>
     <string name="no_encontrado_direccion">¿No has encontrado tu dirección? Introdúcela aquí</string>
     <string name="nueva_direccion_titulo">Nueva Dirección</string>
+    <string name="editar_direccion_titulo">Editar Dirección</string>
     <string name="poblacion">Población</string>
     <string name="calle">Calle</string>
     <string name="codigo_postal">Código Postal</string>

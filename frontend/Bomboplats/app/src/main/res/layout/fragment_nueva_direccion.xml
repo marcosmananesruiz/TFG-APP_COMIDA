@@ -12,7 +12,7 @@
         android:padding="24dp">
 
         <TextView
-            android:id="@+id/tv_titulo_nueva_direccion"
+            android:id="@+id/tv_nueva_direccion_titulo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/nueva_direccion_titulo"
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:hint="@string/poblacion"
-            app:layout_constraintTop_toBottomOf="@id/tv_titulo_nueva_direccion">
+            app:layout_constraintTop_toBottomOf="@id/tv_nueva_direccion_titulo">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_poblacion"
