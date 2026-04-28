@@ -58,6 +58,11 @@ dependencies {
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation("jakarta.annotation:jakarta.annotation-api:1.3.5")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+
+    // Glide
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)

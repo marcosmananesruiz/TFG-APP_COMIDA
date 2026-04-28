@@ -13,45 +13,45 @@
         android:layout_height="wrap_content"
         android:padding="12dp">
 
-        <!-- Imagen del restaurante -->
-        <ImageView
-            android:id="@+id/img_restaurante"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_background"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <!-- Nombre del restaurante -->
         <TextView
             android:id="@+id/tv_nombre"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:layout_marginEnd="8dp"
             android:text="Nombre Restaurante"
             android:textColor="@color/text_color"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toStartOf="@+id/tv_estrellas"
-            app:layout_constraintStart_toEndOf="@+id/img_restaurante"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Descripción corta -->
+        <!-- Dirección -->
         <TextView
-            android:id="@+id/tv_descripcion"
+            android:id="@+id/tv_direccion"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Descripción rápida del lugar..."
+            android:layout_marginTop="2dp"
+            android:text="Calle Ejemplo 123"
             android:textColor="@color/text_color"
-            android:alpha="0.7"
-            android:textSize="14sp"
-            app:layout_constraintStart_toEndOf="@+id/img_restaurante"
-            app:layout_constraintStart_toStartOf="@+id/tv_nombre"
+            android:alpha="0.6"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_nombre" />
+
+        <!-- Imagen del restaurante -->
+        <ImageView
+            android:id="@+id/img_restaurante"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_launcher_background"
+            app:layout_constraintTop_toBottomOf="@+id/tv_direccion"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Estrellas -->
         <TextView
@@ -61,18 +61,47 @@
             android:text="⭐ 4.5"
             android:textColor="#FF9800"
             android:textStyle="bold"
+            android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Descripción corta -->
+        <TextView
+            android:id="@+id/tv_descripcion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Descripción rápida del lugar..."
+            android:textColor="@color/text_color"
+            android:alpha="0.8"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@+id/tv_precio"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/img_restaurante" />
+
+        <!-- Etiquetas (Tags) -->
+        <TextView
+            android:id="@+id/tv_etiquetas"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="(- [tag])\n(- [tag])"
+            android:textColor="@color/text_color"
+            android:alpha="0.7"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toStartOf="@+id/tv_precio"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_descripcion" />
 
         <!-- Rango de precio -->
         <TextView
             android:id="@+id/tv_precio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="€€"
             android:textColor="@color/price_green"
             android:textStyle="bold"
+            android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -53,7 +54,12 @@ public class DireccionesCuentaFragment extends Fragment {
         rvDirecciones.setAdapter(adapter);
 
         btnNuevaDireccion.setOnClickListener(v -> {
-            loadFragment(new NuevaDireccionFragment());
+            List<Direccion> currentAddresses = userViewModel.getUserAddressesObjects().getValue();
+            if (currentAddresses != null && currentAddresses.size() >= 5) {
+                Toast.makeText(getContext(), getString(R.string.error_limite_direcciones), Toast.LENGTH_SHORT).show();
+            } else {
+                loadFragment(new NuevaDireccionFragment());
+            }
         });
 
         // Observar direcciones del usuario

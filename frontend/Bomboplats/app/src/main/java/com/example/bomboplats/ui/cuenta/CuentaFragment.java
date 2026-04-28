@@ -1,6 +1,5 @@
 package com.example.bomboplats.ui.cuenta;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
 import java.io.File;
 
@@ -24,6 +24,9 @@ public class CuentaFragment extends Fragment {
     private Button btnEditar;
     private Button btnDirecciones;
     private UserViewModel userViewModel;
+
+    private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
+    private static final String DEFAULT_USER_IMAGE = BASE_BUCKET + "profile/default.jpg";
 
     @Nullable
     @Override
@@ -42,16 +45,33 @@ public class CuentaFragment extends Fragment {
         userViewModel.getEmail().observe(getViewLifecycleOwner(), email -> tvPerfilEmail.setText(email));
         
         userViewModel.getPhotoUri().observe(getViewLifecycleOwner(), uriString -> {
-            if (uriString != null) {
-                File file = new File(uriString);
-                if (file.exists()) {
-                    ivPerfilFoto.setImageURI(Uri.fromFile(file));
+            String fotoUrl = DEFAULT_USER_IMAGE;
+            if (uriString != null && !uriString.isEmpty()) {
+                if (uriString.startsWith("http")) {
+                    fotoUrl = uriString;
                 } else {
-                    ivPerfilFoto.setImageResource(R.drawable.mibombo);
+                    // Si es una ruta local o solo el nombre del archivo
+                    File file = new File(uriString);
+                    if (file.exists()) {
+                        Glide.with(this)
+                                .load(file)
+                                .placeholder(R.drawable.mibombo)
+                                .error(DEFAULT_USER_IMAGE)
+                                .circleCrop()
+                                .into(ivPerfilFoto);
+                        return;
+                    } else {
+                        fotoUrl = BASE_BUCKET + uriString;
+                    }
                 }
-            } else {
-                ivPerfilFoto.setImageResource(R.drawable.mibombo);
             }
+
+            Glide.with(this)
+                    .load(fotoUrl)
+                    .placeholder(R.drawable.mibombo)
+                    .error(DEFAULT_USER_IMAGE)
+                    .circleCrop()
+                    .into(ivPerfilFoto);
         });
 
         btnEditar.setOnClickListener(v -> {

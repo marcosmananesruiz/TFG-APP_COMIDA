@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.bomboplats.api.ApiException;
+import com.example.bomboplats.api.Direccion;
 import com.example.bomboplats.api.Plato;
 import com.example.bomboplats.api.Restaurante;
 import com.example.bomboplats.api.RestauranteControllerApi;
@@ -125,21 +126,33 @@ public class FoodRepository {
     // --- CONVERSORES ---
 
     private com.example.bomboplats.data.model.Restaurante convertToLocalRestaurante(Restaurante apiR) {
-        String iconUrl = (apiR.getIconUrls() != null && !apiR.getIconUrls().isEmpty()) 
-                ? apiR.getIconUrls().get(0) : "";
+        List<String> fotos = apiR.getIconUrls() != null ? new ArrayList<>(apiR.getIconUrls()) : new ArrayList<>();
+        List<String> etiquetas = apiR.getTags() != null ? new ArrayList<>(apiR.getTags()) : new ArrayList<>();
+        
+        String ubicacion = "";
+        if (apiR.getDirecciones() != null && !apiR.getDirecciones().isEmpty()) {
+            Direccion d = apiR.getDirecciones().get(0);
+            ubicacion = d.getCalle() + ", " + d.getPortal() + " (" + d.getPoblacion() + ")";
+        }
+
+        float valoracion = apiR.getRating() != null ? apiR.getRating().floatValue() : 0.0f;
 
         com.example.bomboplats.data.model.Restaurante localR = new com.example.bomboplats.data.model.Restaurante(
                 apiR.getId(),
                 apiR.getNombre(),
                 apiR.getDescription(),
-                iconUrl,
-                apiR.getTags() != null ? new ArrayList<>(apiR.getTags()) : new ArrayList<>()
+                etiquetas,
+                fotos,
+                ubicacion,
+                valoracion,
+                "€€", // Rango de precio por defecto si no viene en API
+                new ArrayList<>()
         );
 
         List<Bombo> menu = new ArrayList<>();
         if (apiR.getPlatos() != null) {
             for (Plato p : apiR.getPlatos()) {
-                List<String> fotos = (p.getIconUrl() != null) ? new ArrayList<>(Arrays.asList(p.getIconUrl())) : new ArrayList<>();
+                List<String> fotosPlato = (p.getIconUrl() != null) ? new ArrayList<>(Arrays.asList(p.getIconUrl())) : new ArrayList<>();
                 Bombo b = new Bombo(
                         p.getId(),
                         apiR.getId(),
@@ -147,9 +160,9 @@ public class FoodRepository {
                         p.getDescription(),
                         p.getPrecio() != null ? String.valueOf(p.getPrecio()) : "0.0",
                         p.getTags() != null ? new ArrayList<>(p.getTags()) : new ArrayList<>(),
-                        fotos,
+                        fotosPlato,
                         p.getPossibleModifications() != null ? new ArrayList<>(p.getPossibleModifications()) : new ArrayList<>(),
-                        new ArrayList<>() // Alergenos no disponibles en Plato API
+                        new ArrayList<>()
                 );
                 menu.add(b);
             }

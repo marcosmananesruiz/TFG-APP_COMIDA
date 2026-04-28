@@ -41,6 +41,7 @@
     <string name="toast_direccion_borrada">Dirección desvinculada</string>
     <string name="toast_direccion_guardada">Dirección guardada</string>
     <string name="toast_direccion_actualizada">Dirección actualizada</string>
+    <string name="error_limite_direcciones">Has superado el limite de direcciones, borra alguna para añadir una nueva</string>
     <string name="label_no_direcciones">Aún no tienes direcciones guardadas</string>
     <string name="buscar_direccion">Buscar dirección...</string>
     <string name="btn_anadir_direccion">+ Añadir dirección</string>

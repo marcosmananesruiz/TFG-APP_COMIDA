@@ -21,6 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
 import com.example.bomboplats.api.ApiClient;
 import com.example.bomboplats.api.ApiException;
@@ -51,12 +52,19 @@ public class EditarPerfilFragment extends Fragment {
     private UserViewModel userViewModel;
     private Uri pendingPhotoUri;
 
+    private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
+    private static final String DEFAULT_USER_IMAGE = BASE_BUCKET + "profile/default.jpg";
+
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
             registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
                 if (uri != null) {
                     if (isImageSizeValid(uri)) {
                         pendingPhotoUri = uri;
-                        ivFoto.setImageURI(uri);
+                        Glide.with(this)
+                                .load(uri)
+                                .placeholder(R.drawable.mibombo)
+                                .circleCrop()
+                                .into(ivFoto);
                         Toast.makeText(getContext(), getString(R.string.toast_foto_seleccionada), Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getContext(), getString(R.string.error_image_too_large), Toast.LENGTH_SHORT).show();
@@ -87,14 +95,34 @@ public class EditarPerfilFragment extends Fragment {
 
         // Cargar foto actual
         userViewModel.getPhotoUri().observe(getViewLifecycleOwner(), uriString -> {
-            if (uriString != null && pendingPhotoUri == null) {
-                File file = new File(uriString);
-                if (file.exists()) {
-                    ivFoto.setImageURI(Uri.fromFile(file));
+            if (pendingPhotoUri != null) return;
+
+            String fotoUrl = DEFAULT_USER_IMAGE;
+            if (uriString != null && !uriString.isEmpty()) {
+                if (uriString.startsWith("http")) {
+                    fotoUrl = uriString;
                 } else {
-                    ivFoto.setImageResource(R.drawable.mibombo);
+                    File file = new File(uriString);
+                    if (file.exists()) {
+                        Glide.with(this)
+                                .load(file)
+                                .placeholder(R.drawable.mibombo)
+                                .error(DEFAULT_USER_IMAGE)
+                                .circleCrop()
+                                .into(ivFoto);
+                        return;
+                    } else {
+                        fotoUrl = BASE_BUCKET + uriString;
+                    }
                 }
             }
+
+            Glide.with(this)
+                    .load(fotoUrl)
+                    .placeholder(R.drawable.mibombo)
+                    .error(DEFAULT_USER_IMAGE)
+                    .circleCrop()
+                    .into(ivFoto);
         });
 
         // Observar resultado de la actualización
@@ -203,61 +231,40 @@ public class EditarPerfilFragment extends Fragment {
         }
     }
 
-    /**
-     * NO SE SI ESTO FUNCIONA LOOLOLOLOLOLOL
-     */
-    private void ejemploSubirImagen() {
-        UserControllerApi userController = new UserControllerApi();
-        String correo = this.userViewModel.getEmail().getValue();
+    private void ejemplomostrarSubida(String uploadUrl, File imageFile) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            try {
+                OkHttpClient client = new OkHttpClient.Builder()
+                        .connectTimeout(30, TimeUnit.SECONDS)
+                        .writeTimeout(60, TimeUnit.SECONDS)
+                        .readTimeout(30, TimeUnit.SECONDS)
+                        .build();
 
-        try {
-            User user = userController.getByEmail(correo); // De la forma que mejor os convenga, obtener el ID del usuario (que como minimo, exista xd)
-            if (user.getId() == null) {
-                return;
-            }
+                RequestBody requestBody = RequestBody.create(
+                        imageFile,
+                        MediaType.parse("image/jpeg")
+                );
 
-            String uploadUrl = userController.createImageUrl(user.getId()); // Con ese id llamais al Endpoint de createImageUrl, a este URL se le va a hacer una peticion como si fuera otro endpoint mas
+                Request request = new Request.Builder()
+                        .url(uploadUrl)
+                        .put(requestBody)
+                        .addHeader("Content-Type", "image/jpeg")
+                        .build();
 
-            File imageFile = this.userViewModel.getUserPhotoFile(); // A su vez, de la forma que mejor os convenga, conseguir la imagen como un File
-
-            ExecutorService executor = Executors.newSingleThreadExecutor(); // Luego, una llamada HTTP manual (no esta en el OpenAPI)
-            executor.execute(() -> {
-                try {
-                    OkHttpClient client = new OkHttpClient.Builder()
-                            .connectTimeout(30, TimeUnit.SECONDS)
-                            .writeTimeout(60, TimeUnit.SECONDS)
-                            .readTimeout(30, TimeUnit.SECONDS)
-                            .build();
-
-                    RequestBody requestBody = RequestBody.create( // Para el body, se le pasa la imagen
-                            imageFile,
-                            MediaType.parse("image/jpeg")
-                    );
-
-                    Request request = new Request.Builder() // Montar la Request, con la url del endpoint, y el body con la imagen
-                            .url(uploadUrl)
-                            .put(requestBody) // PUT obligatorio
-                            .addHeader("Content-Type", "image/jpeg")  // Esto no se si habra que quitarlo, lol
-                            .build();
-
-                    Response response = client.newCall(request).execute(); // Se ejecuta la llamada con el client.newCall(request)
-                    if (response.isSuccessful()) { // Para ver si ha funcionado o no
-                        // response 200 OK significa subida correcta
+                Response response = client.newCall(request).execute();
+                getActivity().runOnUiThread(() -> {
+                    if (response.isSuccessful()) {
                         Toast.makeText(getActivity(), "Imagen subida correctamente", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getActivity(), "Error: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
+                });
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-
-
-        } catch (ApiException e) {
-            throw new RuntimeException(e);
-        }
-
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private void loadFragment(Fragment fragment) {

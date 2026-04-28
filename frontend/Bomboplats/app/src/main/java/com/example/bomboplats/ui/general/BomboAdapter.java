@@ -8,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import java.util.List;
@@ -17,6 +18,8 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
     private List<Bombo> listaBombos;
     private OnBomboClickListener listener;
     private FavoritosProvider favoritosProvider;
+    private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
+    private static final String DEFAULT_BOMBO_IMAGE = BASE_BUCKET + "platos/default.jpg";
 
     public interface OnBomboClickListener {
         void onBomboClick(Bombo bombo);
@@ -59,14 +62,23 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
             holder.btnFav.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_color));
         }
 
-        int resID = holder.itemView.getContext().getResources().getIdentifier(
-                bombo.getId(), "drawable", holder.itemView.getContext().getPackageName());
-        
-        if (resID != 0) {
-            holder.imgBombo.setImageResource(resID);
-        } else {
-            holder.imgBombo.setImageResource(R.drawable.ic_launcher_background);
+        String fotoUrl = DEFAULT_BOMBO_IMAGE;
+        if (bombo.getFotos() != null && !bombo.getFotos().isEmpty()) {
+            String fotoPath = bombo.getFotos().get(0);
+            if (fotoPath != null) {
+                if (fotoPath.startsWith("http")) {
+                    fotoUrl = fotoPath;
+                } else if (!fotoPath.isEmpty()) {
+                    fotoUrl = BASE_BUCKET + fotoPath;
+                }
+            }
         }
+
+        Glide.with(holder.itemView.getContext())
+                .load(fotoUrl)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(DEFAULT_BOMBO_IMAGE)
+                .into(holder.imgBombo);
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onBomboClick(bombo);
