@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
@@ -38,7 +40,7 @@ public class S3ServiceImpl implements IS3Service {
                     presigner.presignPutObject(presignRequest);
 
             return presignedRequest.url().toString();
-        });
+        }).subscribeOn(Schedulers.boundedElastic());
     }
 
 

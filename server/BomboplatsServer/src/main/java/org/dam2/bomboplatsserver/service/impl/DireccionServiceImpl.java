@@ -68,6 +68,10 @@ public class DireccionServiceImpl implements IDireccionService {
                 .onErrorResume(DuplicateKeyException.class, e -> {
                     LOGGER.error("{}: Se ha intentado registrar una direccion con ID {}, la cual ya existe", e.getMessage(), direccion.getId());
                    return Mono.error(new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR));
+                })
+                .onErrorResume(e -> {
+                    LOGGER.error("{}: Se ha producido un error inesperado!", e.getMessage());
+                    return Mono.error(new ResponseStatusException(HttpStatus.LOCKED));
                 });
     }
 
