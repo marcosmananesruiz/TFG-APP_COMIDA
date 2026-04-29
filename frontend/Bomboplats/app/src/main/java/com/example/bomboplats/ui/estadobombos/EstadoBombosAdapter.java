@@ -57,18 +57,15 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
         StringBuilder sb = new StringBuilder();
         if (item.getPedido().getItems() != null) {
             for (PedidoItem pi : item.getPedido().getItems()) {
-                // Rehidratamos el nombre del plato usando el repositorio
                 String itemKey = pi.getRestauranteId() + ":" + pi.getBomboId();
                 Bombo bombo = foodRepository.getBomboPorId(itemKey);
-                String nombre = (bombo != null) ? bombo.getNombre() : "Plato desconocido";
-                
+                String nombre = (bombo != null) ? bombo.getNombre() : "Plato";
                 sb.append(pi.getCantidad()).append("x ").append(nombre).append(", ");
             }
         }
         
         String resumen = sb.toString();
         if (resumen.length() > 2) resumen = resumen.substring(0, resumen.length() - 2);
-        
         holder.tvDescripcion.setText(resumen);
         
         String prefixTotal = context.getString(R.string.label_total);
@@ -88,16 +85,20 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
         } else if (EstadoPedido.ESTADO_PREPARACION.equalsIgnoreCase(estadoRaw)) {
             estadoTraducido = context.getString(R.string.estado_en_preparacion);
             holder.tvCantidad.setTextColor(Color.GRAY);
-        } else {
-            holder.tvCantidad.setTextColor(Color.GRAY);
         }
+
+        // Mostrar tiempo estimado de llegada (Hora actual + 10 min definida en la creación)
+        long arrivalMillis = item.getTimestampEntrega();
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTimeInMillis(arrivalMillis);
+        String arrivalTime = String.format(Locale.getDefault(), "%02d:%02d", 
+                cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE));
         
-        holder.tvCantidad.setText(estadoTraducido);
+        String infoStatus = estadoTraducido + " • Llegada: " + arrivalTime;
+        holder.tvCantidad.setText(infoStatus);
 
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onPedidoClick(item);
-            }
+            if (listener != null) listener.onPedidoClick(item);
         });
     }
 
@@ -114,9 +115,7 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
             tvDescripcion = v.findViewById(R.id.tv_descripcion_bombo);
             tvPrecio = v.findViewById(R.id.tv_precio_bombo);
             tvCantidad = v.findViewById(R.id.tv_cantidad_bombo);
-            if (v.findViewById(R.id.img_bombo) != null) {
-                v.findViewById(R.id.img_bombo).setVisibility(View.GONE);
-            }
+            if (v.findViewById(R.id.img_bombo) != null) v.findViewById(R.id.img_bombo).setVisibility(View.GONE);
             if (v.findViewById(R.id.btn_fav_bombo) != null) v.findViewById(R.id.btn_fav_bombo).setVisibility(View.GONE);
             if (v.findViewById(R.id.btn_agregar_carrito_rapido) != null) v.findViewById(R.id.btn_agregar_carrito_rapido).setVisibility(View.GONE);
         }

@@ -28,9 +28,13 @@
 
             <!-- Card Dirección -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/card_direccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="2dp">
@@ -55,27 +59,22 @@
                             android:textColor="@color/text_color"
                             android:textStyle="bold" />
 
-                        <ImageButton
-                            android:id="@+id/btn_seleccionar_direccion"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             android:layout_alignParentEnd="true"
-                            android:background="?attr/selectableItemBackgroundBorderless"
                             android:src="@drawable/ic_search"
-                            app:tint="@color/primary"
-                            android:contentDescription="Seleccionar dirección guardada" />
+                            app:tint="@color/primary" />
                     </RelativeLayout>
 
-                    <EditText
-                        android:id="@+id/et_direccion"
+                    <TextView
+                        android:id="@+id/tv_direccion_seleccionada"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        android:hint="@string/hint_direccion"
+                        android:hint="@string/label_no_direcciones"
                         android:textColor="@color/text_color"
                         android:textColorHint="@color/text_color"
                         android:alpha="0.7"
-                        android:inputType="textPostalAddress"
                         android:paddingVertical="8dp"
                         android:textSize="16sp" />
                 </LinearLayout>

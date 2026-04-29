@@ -131,7 +131,7 @@
     <string name="label_estado">Estado: </string>
     <string name="estado_en_preparacion">En preparación</string>
     <string name="estado_entregado">Entregado</string>
-    <string name="estado_de_camino">De camino</string>
+    <string name="estado_de_camino">En reparto</string>
     <string name="prefix_pedido_id">Pedido #</string>
     <string name="label_productos">Productos:</string>
     <string name="label_historial_titulo">Mis Pedidos</string>
@@ -141,7 +141,8 @@
 
     <!-- Notificaciones dinámicas -->
     <string name="noti_titulo_estado">Estado de Bombos</string>
-    <string name="noti_msg_de_camino">Tu pedido #%1$s está de camino 🛵</string>
+    <string name="noti_msg_preparacion">Tu pedido #%1$s está en preparación 🍳</string>
+    <string name="noti_msg_de_camino">Tu pedido #%1$s está en reparto 🛵</string>
     <string name="noti_msg_entregado">¡Tu pedido #%1$s ha sido entregado! 😋</string>
 
     <!-- Plato Detail -->

@@ -8,7 +8,6 @@ import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.EstadoBombosRepository;
-import com.example.bomboplats.data.NotificationRepository;
 import com.example.bomboplats.data.model.EstadoPedido;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -26,7 +25,6 @@ public class EstadoBomboWorker extends Worker {
     public Result doWork() {
         Context context = getApplicationContext();
         EstadoBombosRepository repository = EstadoBombosRepository.getInstance();
-        NotificationRepository notiRepo = NotificationRepository.getInstance();
         
         repository.cargarDesdeDisco(context);
         List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
@@ -41,45 +39,49 @@ public class EstadoBomboWorker extends Worker {
             long transcurrido = ahora - ep.getTimestampCreacion();
             String estadoAnterior = ep.getEstado();
 
-            // 1. Lógica de limpieza: si lleva > 30s entregado, se borra el pedido Y sus notificaciones
-            if (EstadoPedido.ESTADO_ENTREGADO.equals(ep.getEstado()) && transcurrido >= 30000) {
-                String orderId = ep.getPedido().getId();
-                // Borramos las notificaciones relacionadas del historial persistente
-                notiRepo.removeNotificationsByOrderId(context, orderId);
+            // 1. Lógica de finalización: Si la hora actual es >= hora estimada de entrega
+            if (ahora >= ep.getTimestampEntrega()) {
+                // Notificación final de entregado
+                String titulo = context.getString(R.string.noti_titulo_estado);
+                String msg = context.getString(R.string.noti_msg_entregado, ep.getPedido().getId());
+                NotificationHelper.showNotification(context, titulo, msg);
+                
+                // Se quita de la lista de estados activos
                 iterator.remove();
                 huboCambios = true;
                 continue;
             }
 
-            // 2. Lógica de evolución de estados
-            if (transcurrido >= 30000) {
-                ep.setEstado(EstadoPedido.ESTADO_ENTREGADO);
-            } else if (transcurrido >= 15000) {
+            // 2. Lógica de evolución: A los 3 minutos (180.000 ms) pasa a "De camino" (En reparto)
+            if (transcurrido >= 180000 && EstadoPedido.ESTADO_PREPARACION.equals(ep.getEstado())) {
                 ep.setEstado(EstadoPedido.ESTADO_CAMINO);
             }
 
+            // 3. Notificar cambios de estado (si ha evolucionado a "De camino")
             if (!estadoAnterior.equals(ep.getEstado())) {
                 huboCambios = true;
                 String titulo = context.getString(R.string.noti_titulo_estado);
-                String msg;
+                String msg = "";
                 if (EstadoPedido.ESTADO_CAMINO.equals(ep.getEstado())) {
                     msg = context.getString(R.string.noti_msg_de_camino, ep.getPedido().getId());
-                } else {
-                    msg = context.getString(R.string.noti_msg_entregado, ep.getPedido().getId());
                 }
-                NotificationHelper.showNotification(context, titulo, msg);
+                
+                if (!msg.isEmpty()) {
+                    NotificationHelper.showNotification(context, titulo, msg);
+                }
             }
 
-            if (!EstadoPedido.ESTADO_ENTREGADO.equals(ep.getEstado())) pendientes = true;
+            pendientes = true;
         }
 
         if (huboCambios) {
             repository.guardarEnDisco(context, listaActual);
         }
 
+        // Si quedan pedidos en curso, volver a ejecutar en 30 segundos para comprobar
         if (pendientes || huboCambios) {
             OneTimeWorkRequest nextWork = new OneTimeWorkRequest.Builder(EstadoBomboWorker.class)
-                    .setInitialDelay(15, TimeUnit.SECONDS)
+                    .setInitialDelay(30, TimeUnit.SECONDS)
                     .build();
             WorkManager.getInstance(context).enqueue(nextWork);
         }

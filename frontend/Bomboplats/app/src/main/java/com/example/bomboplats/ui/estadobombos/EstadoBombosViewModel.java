@@ -26,9 +26,15 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         super(application);
         workManager = WorkManager.getInstance(application);
         
+        cargarPedidos();
+        
         if (!pedidosTodosEntregados()) {
             lanzarWorkerDeEstado();
         }
+    }
+
+    public void cargarPedidos() {
+        repository.cargarDesdeDisco(getApplication());
     }
 
     private boolean pedidosTodosEntregados() {
@@ -51,40 +57,22 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         lanzarWorkerDeEstado();
     }
 
-    public void simularPasoTiempo() {
-        List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
-        boolean huboCambios = false;
-
-        String tituloNoti = getApplication().getString(R.string.noti_titulo_estado);
-
-        for (EstadoPedido ep : listaActual) {
-            if (EstadoPedido.ESTADO_PREPARACION.equals(ep.getEstado())) {
-                ep.setEstado(EstadoPedido.ESTADO_CAMINO);
-                huboCambios = true;
-                String mensaje = getApplication().getString(R.string.noti_msg_de_camino, String.valueOf(ep.getPedido().getId()));
-                NotificationHelper.showNotification(getApplication(), tituloNoti, mensaje);
-            } else if (EstadoPedido.ESTADO_CAMINO.equals(ep.getEstado())) {
-                ep.setEstado(EstadoPedido.ESTADO_ENTREGADO);
-                huboCambios = true;
-                String mensaje = getApplication().getString(R.string.noti_msg_entregado, String.valueOf(ep.getPedido().getId()));
-                NotificationHelper.showNotification(getApplication(), tituloNoti, mensaje);
-            }
-        }
-
-        if (huboCambios) {
-            repository.guardarEnDisco(getApplication(), listaActual);
-        }
-    }
-
-    private void lanzarWorkerDeEstado() {
+    /**
+     * Lanza el Worker que se encarga de actualizar los estados en segundo plano.
+     */
+    public void lanzarWorkerDeEstado() {
         OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(EstadoBomboWorker.class)
                 .setInitialDelay(15, TimeUnit.SECONDS)
                 .build();
         
         workManager.enqueueUniqueWork(
                 "SeguimientoBombos",
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE, // Usamos REPLACE para asegurarnos de que se reinicie con el nuevo pedido
                 workRequest
         );
+    }
+
+    public void filtrar(String query) {
+        // Implementación de filtrado si fuera necesaria en el futuro
     }
 }

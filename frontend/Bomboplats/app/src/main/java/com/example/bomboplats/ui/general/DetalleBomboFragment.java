@@ -26,7 +26,7 @@ public class DetalleBomboFragment extends Fragment {
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
-    private TextView tvNombre, tvPrecio, tvDescripcion, tvIngredientes, tvAlergenos, tvCantidad;
+    private TextView tvNombre, tvPrecio, tvDescription, tvIngredientes, tvAlergenos, tvCantidad;
     private ImageView ivFavorito;
     private RecyclerView rvFotos;
     private String bomboId;
@@ -46,7 +46,7 @@ public class DetalleBomboFragment extends Fragment {
 
         tvNombre = view.findViewById(R.id.tv_bombo_nombre);
         tvPrecio = view.findViewById(R.id.tv_bombo_precio);
-        tvDescripcion = view.findViewById(R.id.tv_bombo_descripcion);
+        tvDescription = view.findViewById(R.id.tv_bombo_descripcion);
         tvIngredientes = view.findViewById(R.id.tv_bombo_ingredientes);
         tvAlergenos = view.findViewById(R.id.tv_bombo_alergenos);
         rvFotos = view.findViewById(R.id.rv_bombo_fotos);
@@ -94,7 +94,6 @@ public class DetalleBomboFragment extends Fragment {
 
         btnPedido.setOnClickListener(v -> {
             if (bomboActual != null) {
-                // Formato compuesto "restauranteId:bomboId" para evitar conflictos
                 String itemKey = bomboActual.getRestauranteId() + ":" + bomboActual.getId();
                 carritoViewModel.agregarAlCarrito(itemKey, cantidad);
                 String mensaje = getString(R.string.carrito_item_added, cantidad, bomboActual.getNombre());
@@ -102,7 +101,6 @@ public class DetalleBomboFragment extends Fragment {
             }
         });
 
-        // Observar cambios en favoritos para mantener UI sincronizada
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), ids -> actualizarIconoFavorito());
 
         return view;
@@ -119,14 +117,13 @@ public class DetalleBomboFragment extends Fragment {
         if (bomboActual != null) {
             tvNombre.setText(bomboActual.getNombre());
             
-            // Asegurar formato de precio con €
             String precio = bomboActual.getPrecio();
             if (precio != null && !precio.contains("€")) {
                 precio += "€";
             }
             tvPrecio.setText(precio);
             
-            tvDescripcion.setText(bomboActual.getDescripcion());
+            tvDescription.setText(bomboActual.getDescripcion());
             
             if (bomboActual.getIngredientes() != null && !bomboActual.getIngredientes().isEmpty()) {
                 tvIngredientes.setText(String.join(", ", bomboActual.getIngredientes()));
@@ -140,11 +137,10 @@ public class DetalleBomboFragment extends Fragment {
                 tvAlergenos.setText(getString(R.string.sin_alergenos));
             }
 
-            // Carrusel de fotos del plato
             List<String> fotos = bomboActual.getFotos();
-            FotoCarruselAdapter fotoAdapter = new FotoCarruselAdapter(fotos, DEFAULT_BOMBO_IMAGE);
+            FotoCarruselAdapter adapter = new FotoCarruselAdapter(fotos, DEFAULT_BOMBO_IMAGE);
             rvFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-            rvFotos.setAdapter(fotoAdapter);
+            rvFotos.setAdapter(adapter);
         }
     }
 }
