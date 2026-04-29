@@ -23,6 +23,7 @@
     <color name="price_color">#4CAF50</color>
     <color name="price_green">#4CAF50</color>
     <color name="logout_red">#B00020</color>
+    <color name="primary_red">#B00020</color>
     <color name="favorite_red">#E91E63</color>
     <color name="divider_color">#E0E0E0</color>
 

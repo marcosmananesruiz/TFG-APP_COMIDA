@@ -85,7 +85,8 @@
     <string name="toast_perfil_guardado">Perfil actualizado correctamente</string>
     <string name="toast_fav_add">Añadido a favoritos</string>
     <string name="toast_fav_rem">Eliminado de favoritos</string>
-    <string name="default_nombre_usuario">Nombre de Usuario</string>
+    <string name="default_nombre_usuario">User</string>
+    <string name="default_email_usuario">mail@example.com</string>
     <string name="cambiar_correo_titulo">Cambiar Correo</string>
     <string name="hint_mail_actual">Introduce tu correo actual</string>
     <string name="hint_mail_nuevo">Introduce el nuevo correo</string>
@@ -161,4 +162,7 @@
 
     <!-- UI Generals -->
     <string name="atras_salir">Pulsa de nuevo para salir</string>
+    <string name="error_sin_internet">Si no tienes conexion a internet no se cargaran los restaurantes ni podras hacer modificaciones a tu cuenta. Por favor conectate a internet para continuar.</string>
+    <string name="desc_cerrar_aviso">Cerrar aviso</string>
+    <string name="desc_icono_alerta">Icono de alerta</string>
 </resources>

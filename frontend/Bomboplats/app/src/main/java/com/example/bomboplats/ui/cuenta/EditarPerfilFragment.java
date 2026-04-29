@@ -53,7 +53,6 @@ public class EditarPerfilFragment extends Fragment {
     private Uri pendingPhotoUri;
 
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
-    private static final String DEFAULT_USER_IMAGE = BASE_BUCKET + "profile/default.jpg";
 
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
             registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
@@ -62,7 +61,8 @@ public class EditarPerfilFragment extends Fragment {
                         pendingPhotoUri = uri;
                         Glide.with(this)
                                 .load(uri)
-                                .placeholder(R.drawable.mibombo)
+                                .placeholder(R.drawable.ic_user_default)
+                                .error(R.drawable.ic_user_default)
                                 .circleCrop()
                                 .into(ivFoto);
                         Toast.makeText(getContext(), getString(R.string.toast_foto_seleccionada), Toast.LENGTH_SHORT).show();
@@ -97,32 +97,31 @@ public class EditarPerfilFragment extends Fragment {
         userViewModel.getPhotoUri().observe(getViewLifecycleOwner(), uriString -> {
             if (pendingPhotoUri != null) return;
 
-            String fotoUrl = DEFAULT_USER_IMAGE;
             if (uriString != null && !uriString.isEmpty()) {
+                Object model;
                 if (uriString.startsWith("http")) {
-                    fotoUrl = uriString;
+                    model = uriString;
                 } else {
                     File file = new File(uriString);
                     if (file.exists()) {
-                        Glide.with(this)
-                                .load(file)
-                                .placeholder(R.drawable.mibombo)
-                                .error(DEFAULT_USER_IMAGE)
-                                .circleCrop()
-                                .into(ivFoto);
-                        return;
+                        model = file;
                     } else {
-                        fotoUrl = BASE_BUCKET + uriString;
+                        model = BASE_BUCKET + uriString;
                     }
                 }
-            }
 
-            Glide.with(this)
-                    .load(fotoUrl)
-                    .placeholder(R.drawable.mibombo)
-                    .error(DEFAULT_USER_IMAGE)
-                    .circleCrop()
-                    .into(ivFoto);
+                Glide.with(this)
+                        .load(model)
+                        .placeholder(R.drawable.ic_user_default)
+                        .error(R.drawable.ic_user_default)
+                        .circleCrop()
+                        .into(ivFoto);
+            } else {
+                Glide.with(this)
+                        .load(R.drawable.ic_user_default)
+                        .circleCrop()
+                        .into(ivFoto);
+            }
         });
 
         // Observar resultado de la actualización

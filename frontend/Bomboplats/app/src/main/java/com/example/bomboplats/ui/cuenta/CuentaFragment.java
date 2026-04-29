@@ -26,7 +26,6 @@ public class CuentaFragment extends Fragment {
     private UserViewModel userViewModel;
 
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
-    private static final String DEFAULT_USER_IMAGE = BASE_BUCKET + "profile/default.jpg";
 
     @Nullable
     @Override
@@ -41,37 +40,55 @@ public class CuentaFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
-        userViewModel.getName().observe(getViewLifecycleOwner(), name -> tvPerfilNombre.setText(name));
-        userViewModel.getEmail().observe(getViewLifecycleOwner(), email -> tvPerfilEmail.setText(email));
+        userViewModel.getName().observe(getViewLifecycleOwner(), name -> {
+            if (name == null || name.isEmpty()) {
+                tvPerfilNombre.setText(R.string.default_nombre_usuario);
+            } else {
+                tvPerfilNombre.setText(name);
+            }
+        });
+
+        userViewModel.getEmail().observe(getViewLifecycleOwner(), email -> {
+            if (email == null || email.isEmpty()) {
+                tvPerfilEmail.setText(R.string.default_email_usuario);
+            } else {
+                tvPerfilEmail.setText(email);
+            }
+        });
         
         userViewModel.getPhotoUri().observe(getViewLifecycleOwner(), uriString -> {
-            String fotoUrl = DEFAULT_USER_IMAGE;
             if (uriString != null && !uriString.isEmpty()) {
                 if (uriString.startsWith("http")) {
-                    fotoUrl = uriString;
+                    Glide.with(this)
+                            .load(uriString)
+                            .placeholder(R.drawable.ic_user_default)
+                            .error(R.drawable.ic_user_default)
+                            .circleCrop()
+                            .into(ivPerfilFoto);
                 } else {
-                    // Si es una ruta local o solo el nombre del archivo
                     File file = new File(uriString);
                     if (file.exists()) {
                         Glide.with(this)
                                 .load(file)
-                                .placeholder(R.drawable.mibombo)
-                                .error(DEFAULT_USER_IMAGE)
+                                .placeholder(R.drawable.ic_user_default)
+                                .error(R.drawable.ic_user_default)
                                 .circleCrop()
                                 .into(ivPerfilFoto);
-                        return;
                     } else {
-                        fotoUrl = BASE_BUCKET + uriString;
+                        Glide.with(this)
+                                .load(BASE_BUCKET + uriString)
+                                .placeholder(R.drawable.ic_user_default)
+                                .error(R.drawable.ic_user_default)
+                                .circleCrop()
+                                .into(ivPerfilFoto);
                     }
                 }
+            } else {
+                Glide.with(this)
+                        .load(R.drawable.ic_user_default)
+                        .circleCrop()
+                        .into(ivPerfilFoto);
             }
-
-            Glide.with(this)
-                    .load(fotoUrl)
-                    .placeholder(R.drawable.mibombo)
-                    .error(DEFAULT_USER_IMAGE)
-                    .circleCrop()
-                    .into(ivPerfilFoto);
         });
 
         btnEditar.setOnClickListener(v -> {

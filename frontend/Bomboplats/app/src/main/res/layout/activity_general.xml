@@ -10,96 +10,157 @@
 
 
     <!-- Contenedor principal: Toolbar + Fragment -->
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/main_content_container"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
+        android:layout_height="match_parent">
 
-        <!-- Toolbar superior -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+
+            <!-- Toolbar superior -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!-- Icono del carrito a la derecha -->
+                    <ImageView
+                        android:id="@+id/toolbar_shopping_cart"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="16dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:contentDescription="Mis Bombos"
+                        android:focusable="true"
+                        android:src="@drawable/ic_shopping_cart"
+                        app:tint="@android:color/white" />
+
+                    <!-- Barra de búsqueda en el centro -->
+                    <LinearLayout
+                        android:id="@+id/search_bar_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="8dp"
+                        android:layout_toStartOf="@+id/toolbar_shopping_cart"
+                        android:background="@drawable/search_bar_background"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <EditText
+                            android:id="@+id/search_edit_text"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@null"
+                            android:hint="@string/buscar_bomboplats"
+                            android:imeOptions="actionSearch"
+                            android:inputType="text"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="8dp"
+                            android:singleLine="true"
+                            android:textColor="@android:color/black"
+                            android:textColorHint="#8A000000"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:id="@+id/search_icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:clickable="true"
+                            android:contentDescription="Buscar"
+                            android:focusable="true"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="12dp"
+                            android:src="@drawable/ic_search"
+                            app:tint="#61000000" />
+                    </LinearLayout>
+
+                </RelativeLayout>
+            </androidx.appcompat.widget.Toolbar>
+
+            <!-- Contenedor de fragments -->
+            <FrameLayout
+                android:id="@+id/container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background"
+                />
+
+        </LinearLayout>
+
+        <!-- Banner de falta de conexión (Pop-up persistente) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/banner_no_internet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="12dp"
+            app:cardBackgroundColor="@color/card_background">
 
             <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:padding="20dp">
 
-                <!-- Icono del carrito a la derecha -->
                 <ImageView
-                    android:id="@+id/toolbar_shopping_cart"
+                    android:id="@+id/btn_close_banner"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="16dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_alignParentTop="true"
+                    android:src="@drawable/ic_close"
+                    android:contentDescription="Cerrar aviso"
+                    app:tint="@color/text_color"
                     android:clickable="true"
-                    android:contentDescription="Mis Bombos"
                     android:focusable="true"
-                    android:src="@drawable/ic_shopping_cart"
-                    app:tint="@android:color/white" />
+                    android:padding="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"/>
 
-                <!-- Barra de búsqueda en el centro -->
-                <LinearLayout
-                    android:id="@+id/search_bar_container"
+                <ImageView
+                    android:id="@+id/iv_wifi_off"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="16dp"
+                    android:src="@android:drawable/ic_dialog_alert"
+                    android:contentDescription="Icono de alerta"
+                    app:tint="@color/primary_red" />
+
+                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="40dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="8dp"
-                    android:layout_toStartOf="@+id/toolbar_shopping_cart"
-                    android:background="@drawable/search_bar_background"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/search_edit_text"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@null"
-                        android:hint="@string/buscar_bomboplats"
-                        android:imeOptions="actionSearch"
-                        android:inputType="text"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="8dp"
-                        android:singleLine="true"
-                        android:textColor="@android:color/black"
-                        android:textColorHint="#8A000000"
-                        android:textSize="16sp" />
-
-                    <ImageView
-                        android:id="@+id/search_icon"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:clickable="true"
-                        android:contentDescription="Buscar"
-                        android:focusable="true"
-                        android:paddingStart="8dp"
-                        android:paddingEnd="12dp"
-                        android:src="@drawable/ic_search"
-                        app:tint="#61000000" />
-                </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/iv_wifi_off"
+                    android:layout_marginTop="20dp"
+                    android:gravity="center"
+                    android:text="@string/error_sin_internet"
+                    android:textColor="@color/text_color"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
             </RelativeLayout>
-        </androidx.appcompat.widget.Toolbar>
+        </androidx.cardview.widget.CardView>
 
-        <!-- Contenedor de fragments -->
-        <FrameLayout
-            android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/background"
-            />
-
-    </LinearLayout>
+    </RelativeLayout>
 
     <!-- Contenedor del menú lateral -->
     <LinearLayout
