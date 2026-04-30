@@ -1,10 +1,14 @@
 package com.example.bomboplats.ui.general;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
@@ -31,6 +35,12 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
     public void setFilteredList(List<Restaurante> filteredList) {
         this.listaRestaurantes = filteredList;
         notifyDataSetChanged();
+    }
+
+    private boolean isOnline(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     @NonNull
@@ -85,7 +95,11 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onRestauranteClick(restaurante);
+                if (isOnline(v.getContext())) {
+                    listener.onRestauranteClick(restaurante);
+                } else {
+                    Toast.makeText(v.getContext(), "No tienes conexion a internet", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

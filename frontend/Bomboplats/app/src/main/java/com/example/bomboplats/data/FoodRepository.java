@@ -71,6 +71,7 @@ public class FoodRepository {
             }
         } catch (ApiException e) {
             Log.e("FoodRepository", "Error refreshing data: " + e.getMessage());
+            // No limpiamos la lista para que el usuario pueda seguir viéndolos offline si ya se cargaron
         }
     }
 

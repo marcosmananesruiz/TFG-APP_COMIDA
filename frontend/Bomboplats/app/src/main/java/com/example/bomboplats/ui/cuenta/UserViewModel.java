@@ -76,6 +76,10 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
             }
 
             if (user != null) {
+                // Notificamos datos locales inmediatamente para que no aparezca el "default"
+                final LoggedInUser initialUser = user;
+                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> loadUserData(initialUser));
+
                 try {
                     User apiUser = userApi.getByEmail(user.getEmail());
                     if (apiUser != null) {
@@ -91,9 +95,15 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                         user.setAddresses(userStringDirs);
                         user.setUserId(apiUser.getId());
                         userId.postValue(apiUser.getId());
+                        
+                        // Actualizamos nombre y foto desde API si han cambiado
+                        user.setDisplayName(apiUser.getNickname());
+                        user.setPhotoPath(apiUser.getIconUrl());
+                        
+                        loginRepository.saveUser(); // Esto guarda la copia offline actualizada
                     }
                 } catch (ApiException e) {
-                    Log.e("UserViewModel", "Error refreshing user data: " + e.getMessage());
+                    Log.e("UserViewModel", "Error refreshing user data (Offline mode?): " + e.getMessage());
                 }
 
                 final LoggedInUser finalUser = user;
@@ -166,7 +176,6 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public void updateAddress(Direccion updatedDir) {
         executorService.execute(() -> {
             try {
-                // Actualizar la dirección en la tabla Direcciones
                 Boolean success = direccionApi.updateDireccion(updatedDir);
                 if (success != null && success) {
                     refreshUserData();
@@ -200,6 +209,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     }
 
     public void loadUserData(LoggedInUser user) {
+        if (user == null) return;
         this.userId.setValue(user.getUserId());
         this.email.setValue(user.getEmail());
         this.name.setValue(user.getDisplayName());
@@ -215,28 +225,32 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
             if (photoFile != null && photoFile.exists()) {
                 photoUri.setValue(photoFile.getAbsolutePath());
             } else {
-                photoUri.setValue(null);
+                photoUri.setValue(user.getPhotoPath()); // Podría ser la ruta relativa del bucket
             }
         }
         
-        List<String> listaFavs = new ArrayList<>();
-        Map<String, List<String>> favMap = user.getFavoritePlates();
-        for (Map.Entry<String, List<String>> entry : favMap.entrySet()) {
-            for (String bId : entry.getValue()) {
-                listaFavs.add(entry.getKey() + ":" + bId);
+        if (user.getFavoritePlates() != null) {
+            List<String> listaFavs = new ArrayList<>();
+            Map<String, List<String>> favMap = user.getFavoritePlates();
+            for (Map.Entry<String, List<String>> entry : favMap.entrySet()) {
+                for (String bId : entry.getValue()) {
+                    listaFavs.add(entry.getKey() + ":" + bId);
+                }
             }
+            favoritos.setValue(listaFavs);
         }
-        favoritos.setValue(listaFavs);
 
-        Map<String, Integer> mapaCarritoUI = new HashMap<>();
-        Map<String, List<String>> cartMap = user.getCartPlates();
-        for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
-            for (String bId : entry.getValue()) {
-                String key = entry.getKey() + ":" + bId;
-                mapaCarritoUI.put(key, mapaCarritoUI.getOrDefault(key, 0) + 1);
+        if (user.getCartPlates() != null) {
+            Map<String, Integer> mapaCarritoUI = new HashMap<>();
+            Map<String, List<String>> cartMap = user.getCartPlates();
+            for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
+                for (String bId : entry.getValue()) {
+                    String key = entry.getKey() + ":" + bId;
+                    mapaCarritoUI.put(key, mapaCarritoUI.getOrDefault(key, 0) + 1);
+                }
             }
+            carrito.setValue(mapaCarritoUI);
         }
-        carrito.setValue(mapaCarritoUI);
     }
 
     public LiveData<String> getUserId() { return userId; }

@@ -1,6 +1,9 @@
 package com.example.bomboplats.ui.carrito;
 
 import android.app.AlertDialog;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -86,13 +89,30 @@ public class RealizarEnvioFragment extends Fragment {
 
         btnConfirmar.setOnClickListener(v -> {
             if (validarCampos()) {
-                procesarPedido();
+                if (isOnline(requireContext())) {
+                    procesarPedido();
+                } else {
+                    Toast.makeText(getContext(), "No se pudo hacer el pedido porque no hay conexión a internet", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
         cardDireccion.setOnClickListener(v -> mostrarDialogoDirecciones());
 
         return view;
+    }
+
+    private boolean isOnline(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm == null) return false;
+        android.net.Network activeNetwork = cm.getActiveNetwork();
+        if (activeNetwork == null) return false;
+        NetworkCapabilities capabilities = cm.getNetworkCapabilities(activeNetwork);
+        return capabilities != null && (
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+        );
     }
 
     private void mostrarDialogoDirecciones() {
@@ -123,9 +143,11 @@ public class RealizarEnvioFragment extends Fragment {
             String userId = userViewModel.getUserId().getValue();
             if (userEmail == null || userId == null) return;
 
+            boolean anySuccess = false;
             try {
-                // 1. Guardar en Base de Datos vía API (Remoto)
-                OffsetDateTime fechaEntregaApi = OffsetDateTime.now().plusMinutes(10);
+                // He ajustado la fecha de entrega para que no incluya nanosegundos (milisegundos),
+                // ya que esto causaba errores al tramitar el pedido con la API.
+                OffsetDateTime fechaEntregaApi = OffsetDateTime.now().plusMinutes(10).withNano(0);
 
                 for (Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
                     Bombo b = buscarBomboPorId(entry.getKey());
@@ -147,16 +169,18 @@ public class RealizarEnvioFragment extends Fragment {
                             apiPedido.setEstado(com.example.bomboplats.api.Pedido.EstadoEnum.PREPARING);
                             apiPedido.setEntrega(fechaEntregaApi);
 
-                            try {
-                                pedidoApi.register2Call(apiPedido, null).execute().close();
-                            } catch (Exception e) {
-                                Log.e("RealizarEnvio", "Error al guardar en API remota: " + e.getMessage());
+                            com.example.bomboplats.api.Pedido result = pedidoApi.register2(apiPedido);
+                            if (result != null) {
+                                anySuccess = true;
                             }
                         }
                     }
                 }
 
-                // 2. Simulación Local
+                if (!anySuccess) {
+                    throw new Exception("El servidor no ha podido registrar el pedido");
+                }
+
                 String localOrderId = String.valueOf(System.currentTimeMillis()).substring(7);
                 String fechaSimulada = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
                 
@@ -166,7 +190,12 @@ public class RealizarEnvioFragment extends Fragment {
                     Bombo b = buscarBomboPorId(entry.getKey());
                     if (b != null) {
                         localItems.add(new PedidoItem(b.getRestauranteId(), b.getId(), entry.getValue()));
-                        total += Double.parseDouble(b.getPrecio()) * entry.getValue();
+                        try {
+                            String precioLimpio = b.getPrecio().replace("€", "").replace(",", ".").trim();
+                            total += Double.parseDouble(precioLimpio) * entry.getValue();
+                        } catch (Exception e) {
+                            Log.e("RealizarEnvio", "Error parseando precio");
+                        }
                     }
                 }
 
@@ -175,18 +204,9 @@ public class RealizarEnvioFragment extends Fragment {
                 );
 
                 HistorialRepository.getInstance().guardarPedido(getContext(), uiPedido);
-                
                 EstadoPedido ep = new EstadoPedido(uiPedido, EstadoPedido.ESTADO_PREPARACION);
                 EstadoBombosRepository.getInstance().agregarPedido(getContext(), ep);
 
-                // MANDAR NOTIFICACIÓN INICIAL "EN PREPARACIÓN"
-                if (getContext() != null) {
-                    String tituloNoti = getContext().getString(R.string.noti_titulo_estado);
-                    String msgNoti = getContext().getString(R.string.noti_msg_preparacion, localOrderId);
-                    NotificationHelper.showNotification(getContext(), tituloNoti, msgNoti);
-                }
-
-                // 3. Finalizar en UI
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
                         Toast.makeText(getContext(), getString(R.string.toast_pedido_realizado_exito, localOrderId), Toast.LENGTH_LONG).show();
@@ -194,18 +214,19 @@ public class RealizarEnvioFragment extends Fragment {
                         historialViewModel.refreshHistorial();
                         estadoBombosViewModel.cargarPedidos();
                         estadoBombosViewModel.lanzarWorkerDeEstado();
-                        
-                        if (getParentFragmentManager() != null) {
-                            getParentFragmentManager().popBackStack();
-                        }
+                        getParentFragmentManager().popBackStack();
                     });
                 }
 
             } catch (Exception e) {
-                Log.e("RealizarEnvio", "Error fatal al tramitar compra: " + e.getMessage());
                 if (getActivity() != null) {
-                    getActivity().runOnUiThread(() -> 
-                        Toast.makeText(getContext(), "Error al tramitar el pedido", Toast.LENGTH_SHORT).show());
+                    getActivity().runOnUiThread(() -> {
+                        if (!isOnline(requireContext())) {
+                            Toast.makeText(getContext(), "No se pudo hacer el pedido porque no hay conexión a internet", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getContext(), "Error al tramitar el pedido: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
         });
