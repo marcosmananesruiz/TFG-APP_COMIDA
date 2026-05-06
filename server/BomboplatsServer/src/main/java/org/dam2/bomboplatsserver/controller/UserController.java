@@ -94,7 +94,7 @@ public class UserController {
         return this.service.update(user);
     }
 
-    @GetMapping(value = "imageUrl", params = "id")
+    @GetMapping(value = "imageUrl", params = "id", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Generar link para subir fotos de usuarios al S3")
     @ApiResponse(responseCode = "200", description = "Se genero el link")
     public Mono<String> createImageUrl(@RequestParam String id) { // Este no va a funcionar hasta que esté en un ECS

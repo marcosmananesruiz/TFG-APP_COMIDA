@@ -14,6 +14,7 @@ import org.dam2.bomboplatsserver.service.IRestauranteService;
 import org.dam2.bomboplatsserver.service.IS3Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
@@ -116,7 +117,7 @@ public class RestauranteController {
         return this.service.findByTag(tag);
     }
 
-    @GetMapping("/icon-upload-url/{id}")
+    @GetMapping(value = "/icon-upload-url/{id}", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Obtener URL prefirmada para subir foto de restaurante")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "URL generada"),
