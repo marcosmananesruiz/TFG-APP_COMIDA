@@ -125,14 +125,16 @@ public class DetalleBomboFragment extends Fragment {
             
             tvDescription.setText(bomboActual.getDescripcion());
             
-            if (bomboActual.getIngredientes() != null && !bomboActual.getIngredientes().isEmpty()) {
-                tvIngredientes.setText(String.join(", ", bomboActual.getIngredientes()));
+            String ingredientesFormateados = formatList(bomboActual.getIngredientes());
+            if (ingredientesFormateados != null) {
+                tvIngredientes.setText(ingredientesFormateados);
             } else {
                 tvIngredientes.setText(getString(R.string.no_especificados));
             }
 
-            if (bomboActual.getAlergenos() != null && !bomboActual.getAlergenos().isEmpty()) {
-                tvAlergenos.setText(String.join(", ", bomboActual.getAlergenos()));
+            String tagsFormateadas = formatList(bomboActual.getEtiquetas());
+            if (tagsFormateadas != null) {
+                tvAlergenos.setText(tagsFormateadas);
             } else {
                 tvAlergenos.setText(getString(R.string.sin_alergenos));
             }
@@ -142,5 +144,19 @@ public class DetalleBomboFragment extends Fragment {
             rvFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
             rvFotos.setAdapter(adapter);
         }
+    }
+
+    private String formatList(List<String> items) {
+        if (items == null || items.isEmpty()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < items.size(); i++) {
+            sb.append("- ").append(items.get(i));
+            if (i < items.size() - 1) {
+                sb.append("\n");
+            }
+        }
+        return sb.toString();
     }
 }

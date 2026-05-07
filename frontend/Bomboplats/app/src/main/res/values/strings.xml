@@ -147,10 +147,10 @@
     <string name="noti_msg_entregado">¡Tu pedido #%1$s ha sido entregado! 😋</string>
 
     <!-- Plato Detail -->
-    <string name="label_ingredientes">Ingredientes:</string>
-    <string name="label_alergenos">Alérgenos:</string>
-    <string name="no_especificados">No especificados</string>
-    <string name="sin_alergenos">Sin alérgenos conocidos</string>
+    <string name="label_ingredientes">Modificaciones:</string>
+    <string name="label_alergenos">Tags:</string>
+    <string name="no_especificados">Sin modificaciones</string>
+    <string name="sin_alergenos">Sin tags</string>
     <string name="placeholder_nombre_plato">Nombre del Plato</string>
     <string name="placeholder_descripcion_plato">Descripción del plato…</string>
 

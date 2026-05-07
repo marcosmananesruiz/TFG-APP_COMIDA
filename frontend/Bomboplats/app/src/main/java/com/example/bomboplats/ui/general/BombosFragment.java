@@ -19,12 +19,8 @@ import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClickListener {
 
@@ -34,11 +30,10 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private BomboAdapter adapter;
     private FotoCarruselAdapter fotoAdapter;
     private String restauranteId;
-    private List<Bombo> listaBombosRestaurante;
+    private List<Bombo> listaBombosRestaurante = new ArrayList<>();
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
-    private Map<String, String> mapaEtiquetas = new HashMap<>();
 
     private static final String DEFAULT_RESTAURANTE_IMAGE = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/restaurantes/default_0.jpg";
 
@@ -72,35 +67,19 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             recyclerViewFotos.setAdapter(fotoAdapter);
         }
 
-        cargarMapaEtiquetas();
-
-        if (restauranteId != null) {
-            listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
-        } else {
-            listaBombosRestaurante = new ArrayList<>();
-        }
-        
-        updateUI(listaBombosRestaurante);
+        // OBSERVADOR CLAVE: Escuchamos cambios en el repositorio para actualizar los platos en tiempo real
+        foodRepository.getRestaurantesLiveData().observe(getViewLifecycleOwner(), restaurantes -> {
+            if (restauranteId != null) {
+                listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
+                updateUI(listaBombosRestaurante);
+            }
+        });
 
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), favs -> {
             if (adapter != null) adapter.notifyDataSetChanged();
         });
 
         return view;
-    }
-
-    private void cargarMapaEtiquetas() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(requireContext().getAssets().open("etiquetas.txt")))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(":");
-                if (parts.length == 2) {
-                    mapaEtiquetas.put(parts[0].trim().toLowerCase(), parts[1].trim().toLowerCase());
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -139,34 +118,15 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         if (query.isEmpty()) {
             filtrados.addAll(listaBombosRestaurante);
         } else {
-            // Buscamos todas las posibles etiquetas finales basadas en prefijos del mapa
-            List<String> querysExpandidas = new ArrayList<>();
-            querysExpandidas.add(query);
-            for (Map.Entry<String, String> entry : mapaEtiquetas.entrySet()) {
-                if (entry.getKey().startsWith(query)) {
-                    querysExpandidas.add(entry.getValue());
-                }
-            }
-
             for (Bombo b : listaBombosRestaurante) {
-                boolean match = false;
+                boolean match = b.getNombre().toLowerCase().contains(query);
                 
-                // 1. Comprobar nombre
-                if (b.getNombre().toLowerCase().contains(query)) {
-                    match = true;
-                }
-                
-                // 2. Comprobar etiquetas expandidas
                 if (!match && b.getEtiquetas() != null) {
                     for (String tag : b.getEtiquetas()) {
-                        String tagLower = tag.toLowerCase();
-                        for (String qExp : querysExpandidas) {
-                            if (tagLower.contains(qExp)) {
-                                match = true;
-                                break;
-                            }
+                        if (tag.toLowerCase().contains(query)) {
+                            match = true;
+                            break;
                         }
-                        if (match) break;
                     }
                 }
                 
@@ -188,10 +148,10 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             
             if (adapter == null) {
                 adapter = new BomboAdapter(lista, this, userViewModel);
+                recyclerViewBombos.setAdapter(adapter);
             } else {
                 adapter.setFilteredList(lista);
             }
-            recyclerViewBombos.setAdapter(adapter);
         }
     }
 }

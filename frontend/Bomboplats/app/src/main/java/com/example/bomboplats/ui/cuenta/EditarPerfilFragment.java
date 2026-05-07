@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.signature.ObjectKey;
 import com.example.bomboplats.R;
 import com.example.bomboplats.api.ApiClient;
 import com.example.bomboplats.api.ApiException;
@@ -117,6 +118,7 @@ public class EditarPerfilFragment extends Fragment {
 
                 Glide.with(this)
                         .load(model)
+                        .signature(new ObjectKey(System.currentTimeMillis())) // Evitar caché antigua
                         .placeholder(R.drawable.ic_user_default)
                         .error(R.drawable.ic_user_default)
                         .circleCrop()
@@ -134,6 +136,7 @@ public class EditarPerfilFragment extends Fragment {
             if (result == null) return;
             
             if (result instanceof Result.Success) {
+                userViewModel.refreshUserData();
                 Toast.makeText(getContext(), getString(R.string.toast_perfil_guardado), Toast.LENGTH_SHORT).show();
                 userViewModel.resetUpdateResult();
                 requireActivity().getSupportFragmentManager().popBackStack();
@@ -143,19 +146,20 @@ public class EditarPerfilFragment extends Fragment {
             }
         });
 
+        // Sincronizamos el ID al inicio para tenerlo disponible
+        userViewModel.getUserId().observe(getViewLifecycleOwner(), this::setId);
+
         btnGuardar.setOnClickListener(v -> {
-            UserControllerApi userApi = new UserControllerApi();
-            if (this.pendingPhoto != null) {
-                this.userViewModel.getUserId().observe(getViewLifecycleOwner(), this::setId);
+            if (this.pendingPhoto != null && this.id != null) {
+                UserControllerApi userApi = new UserControllerApi();
                 this.userViewModel.setPhotoUri("profile/" + this.id + ".jpg");
                 ExecutorService service = Executors.newSingleThreadExecutor();
                 service.execute(() -> {
                     try {
                         String presignedUrl = userApi.createImageUrl(this.id);
                         this.guardarImagen(presignedUrl, this.pendingPhoto);
-
                     } catch (ApiException e) {
-                        throw new RuntimeException(e);
+                        e.printStackTrace();
                     }
                 });
             }
@@ -269,15 +273,22 @@ public class EditarPerfilFragment extends Fragment {
                         .build();
 
                 Response response = client.newCall(request).execute();
-                getActivity().runOnUiThread(() -> {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(getActivity(), "Imagen subida correctamente", Toast.LENGTH_SHORT).show();
-                        // Una vez subida, podemos eliminar el temporal
-                        if (imageFile.exists()) imageFile.delete();
-                    } else {
-                        Toast.makeText(getActivity(), "Error: " + response.code(), Toast.LENGTH_SHORT).show();
-                    }
-                });
+                
+                if (isAdded() && getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        if (response.isSuccessful()) {
+                            userViewModel.refreshUserData();
+                            if (getContext() != null) {
+                                Toast.makeText(getContext(), "Imagen subida correctamente", Toast.LENGTH_SHORT).show();
+                            }
+                            if (imageFile.exists()) imageFile.delete();
+                        } else {
+                            if (getContext() != null) {
+                                Toast.makeText(getContext(), "Error: " + response.code(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
 
             } catch (IOException e) {
                 e.printStackTrace();

@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.signature.ObjectKey;
 import com.example.bomboplats.R;
 import java.io.File;
 
@@ -40,6 +41,9 @@ public class CuentaFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
+        // Refrescamos los datos al entrar para asegurar información actualizada de la base de datos
+        userViewModel.refreshUserData();
+
         userViewModel.getName().observe(getViewLifecycleOwner(), name -> {
             if (name == null || name.isEmpty()) {
                 tvPerfilNombre.setText(R.string.default_nombre_usuario);
@@ -58,9 +62,14 @@ public class CuentaFragment extends Fragment {
         
         userViewModel.getPhotoUri().observe(getViewLifecycleOwner(), uriString -> {
             if (uriString != null && !uriString.isEmpty()) {
+                // Usamos una firma (signature) basada en el tiempo para invalidar la caché de Glide
+                // y que se muestre la foto nueva inmediatamente después del cambio.
+                ObjectKey signature = new ObjectKey(System.currentTimeMillis());
+
                 if (uriString.startsWith("http")) {
                     Glide.with(this)
                             .load(uriString)
+                            .signature(signature)
                             .placeholder(R.drawable.ic_user_default)
                             .error(R.drawable.ic_user_default)
                             .circleCrop()
@@ -70,6 +79,7 @@ public class CuentaFragment extends Fragment {
                     if (file.exists()) {
                         Glide.with(this)
                                 .load(file)
+                                .signature(signature)
                                 .placeholder(R.drawable.ic_user_default)
                                 .error(R.drawable.ic_user_default)
                                 .circleCrop()
@@ -77,6 +87,7 @@ public class CuentaFragment extends Fragment {
                     } else {
                         Glide.with(this)
                                 .load(BASE_BUCKET + uriString)
+                                .signature(signature)
                                 .placeholder(R.drawable.ic_user_default)
                                 .error(R.drawable.ic_user_default)
                                 .circleCrop()
