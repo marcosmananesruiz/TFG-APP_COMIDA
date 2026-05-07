@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.signature.ObjectKey;
 import com.example.bomboplats.R;
 import com.example.bomboplats.api.ApiClient;
 import com.example.bomboplats.api.ApiException;
@@ -104,7 +105,11 @@ public class EditarPerfilFragment extends Fragment {
             if (pendingPhotoUri != null) return;
 
             if (uriString != null && !uriString.isEmpty()) {
+                // Usamos una firma (signature) basada en el tiempo para invalidar la caché de Glide
+                // y que se muestre la foto nueva inmediatamente después del cambio.
+                ObjectKey signature = new ObjectKey(System.currentTimeMillis());
                 Object model;
+
                 if (uriString.startsWith("http")) {
                     model = uriString;
                 } else {
@@ -118,6 +123,7 @@ public class EditarPerfilFragment extends Fragment {
 
                 Glide.with(this)
                         .load(model)
+                        .signature(signature)
                         .placeholder(R.drawable.ic_user_default)
                         .error(R.drawable.ic_user_default)
                         .circleCrop()
