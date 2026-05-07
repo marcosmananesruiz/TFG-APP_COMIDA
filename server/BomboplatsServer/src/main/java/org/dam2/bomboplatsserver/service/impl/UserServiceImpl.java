@@ -28,9 +28,7 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -188,15 +186,16 @@ public class UserServiceImpl implements IUserService {
                 .flatMap(direccionesExistentes -> {
 
                     // Los IDs de las direcciones que tiene el usuario que pasan
-                    Set<String> nuevosIds = user.getDirecciones().stream()
+                    List<String> nuevosIds = user.getDirecciones().stream()
                             .map(Direccion::getId)
                             .filter(Objects::nonNull)
-                            .collect(Collectors.toSet());
+                            .toList();
 
                     // Sacamos todas las direcciones guardadas del usuario y sacamos las que aun se mantienen
-                    Set<String> idsAEliminar = direccionesExistentes.stream()
+                    List<String> idsAEliminar = new ArrayList<>(direccionesExistentes.stream()
                             .map(Direccion::getId)
-                            .collect(Collectors.toSet());
+                            .toList());
+                    Set
                     idsAEliminar.removeAll(nuevosIds);
 
                     // Borrado
