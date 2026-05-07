@@ -309,7 +309,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     }
 
     public void setPhotoUri(String uri) {
-        photoUri.setValue(uri);
+        photoUri.postValue(uri);
         executorService.execute(() -> {
             LoggedInUser user = loginRepository.getUser();
             if (user != null) {

@@ -61,10 +61,10 @@ import com.example.bomboplats.api.auth.ApiKeyAuth;
  */
 public class ApiClient {
 
-    protected String basePath = "http://10.0.2.2:8080";
+    protected String basePath = "http://44.206.152.130:8080";
     protected List<ServerConfiguration> servers = new ArrayList<ServerConfiguration>(Arrays.asList(
     new ServerConfiguration(
-      "http://10.0.2.2:8080",
+      "http://44.206.152.130:8080",
       "Generated server url",
       new HashMap<String, ServerVariable>()
     )

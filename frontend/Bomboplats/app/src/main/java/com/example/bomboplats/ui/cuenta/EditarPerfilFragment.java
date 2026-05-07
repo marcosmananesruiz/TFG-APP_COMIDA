@@ -51,6 +51,8 @@ public class EditarPerfilFragment extends Fragment {
     private Button btnGuardar, btnEditarEmail, btnEditarPassword, btnEliminarCuenta;
     private UserViewModel userViewModel;
     private Uri pendingPhotoUri;
+    private File pendingPhoto;
+    private String id;
 
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
 
@@ -59,13 +61,16 @@ public class EditarPerfilFragment extends Fragment {
                 if (uri != null) {
                     if (isImageSizeValid(uri)) {
                         pendingPhotoUri = uri;
-                        Glide.with(this)
-                                .load(uri)
-                                .placeholder(R.drawable.ic_user_default)
-                                .error(R.drawable.ic_user_default)
-                                .circleCrop()
-                                .into(ivFoto);
-                        Toast.makeText(getContext(), getString(R.string.toast_foto_seleccionada), Toast.LENGTH_SHORT).show();
+                        pendingPhoto = getFileFromUri(uri);
+                        if (pendingPhoto != null) {
+                            Glide.with(this)
+                                    .load(pendingPhoto)
+                                    .placeholder(R.drawable.ic_user_default)
+                                    .error(R.drawable.ic_user_default)
+                                    .circleCrop()
+                                    .into(ivFoto);
+                            Toast.makeText(getContext(), getString(R.string.toast_foto_seleccionada), Toast.LENGTH_SHORT).show();
+                        }
                     } else {
                         Toast.makeText(getContext(), getString(R.string.error_image_too_large), Toast.LENGTH_SHORT).show();
                     }
@@ -139,14 +144,24 @@ public class EditarPerfilFragment extends Fragment {
         });
 
         btnGuardar.setOnClickListener(v -> {
+            UserControllerApi userApi = new UserControllerApi();
+            if (this.pendingPhoto != null) {
+                this.userViewModel.getUserId().observe(getViewLifecycleOwner(), this::setId);
+                this.userViewModel.setPhotoUri("profile/" + this.id + ".jpg");
+                ExecutorService service = Executors.newSingleThreadExecutor();
+                service.execute(() -> {
+                    try {
+                        String presignedUrl = userApi.createImageUrl(this.id);
+                        this.guardarImagen(presignedUrl, this.pendingPhoto);
+
+                    } catch (ApiException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+            
             String nuevoNombre = etNombre.getText().toString().trim();
             if (!nuevoNombre.isEmpty()) {
-                if (pendingPhotoUri != null) {
-                    String localPath = saveImageLocally(pendingPhotoUri);
-                    if (localPath != null) {
-                        userViewModel.setPhotoUri(localPath);
-                    }
-                }
                 userViewModel.setName(nuevoNombre);
             } else {
                 etNombre.setError(getString(R.string.invalid_username));
@@ -165,6 +180,10 @@ public class EditarPerfilFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void setId(String s) {
+        this.id = s;
     }
 
     private void mostrarDialogoEliminar() {
@@ -204,33 +223,31 @@ public class EditarPerfilFragment extends Fragment {
         return false;
     }
 
-    private String saveImageLocally(Uri uri) {
+    private File getFileFromUri(Uri uri) {
         try {
-            Context context = requireContext();
-            InputStream inputStream = context.getContentResolver().openInputStream(uri);
+            InputStream inputStream = requireContext().getContentResolver().openInputStream(uri);
             if (inputStream == null) return null;
 
-            File file = userViewModel.getUserPhotoFile();
-            if (file == null) return null;
+            // Creamos un archivo temporal en la caché que se eliminará al salir
+            File tempFile = File.createTempFile("temp_image", ".jpg", requireContext().getCacheDir());
+            tempFile.deleteOnExit();
 
-            OutputStream outputStream = new FileOutputStream(file);
-
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, length);
+            try (FileOutputStream out = new FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[1024*1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
             }
-
-            outputStream.close();
             inputStream.close();
-            return file.getAbsolutePath();
-        } catch (Exception e) {
+            return tempFile;
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    private void ejemplomostrarSubida(String uploadUrl, File imageFile) {
+    private void guardarImagen(String uploadUrl, File imageFile) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             try {
@@ -255,6 +272,8 @@ public class EditarPerfilFragment extends Fragment {
                 getActivity().runOnUiThread(() -> {
                     if (response.isSuccessful()) {
                         Toast.makeText(getActivity(), "Imagen subida correctamente", Toast.LENGTH_SHORT).show();
+                        // Una vez subida, podemos eliminar el temporal
+                        if (imageFile.exists()) imageFile.delete();
                     } else {
                         Toast.makeText(getActivity(), "Error: " + response.code(), Toast.LENGTH_SHORT).show();
                     }
