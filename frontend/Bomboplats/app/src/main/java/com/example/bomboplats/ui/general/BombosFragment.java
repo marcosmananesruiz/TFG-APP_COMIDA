@@ -67,6 +67,14 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             recyclerViewFotos.setAdapter(fotoAdapter);
         }
 
+        // Si ya tenemos el ID, intentamos cargar los platos que haya en caché inmediatamente
+        if (restauranteId != null) {
+            listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
+            if (listaBombosRestaurante != null && !listaBombosRestaurante.isEmpty()) {
+                updateUI(listaBombosRestaurante);
+            }
+        }
+
         // OBSERVADOR CLAVE: Escuchamos cambios en el repositorio para actualizar los platos en tiempo real
         foodRepository.getRestaurantesLiveData().observe(getViewLifecycleOwner(), restaurantes -> {
             if (restauranteId != null) {
@@ -131,7 +139,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
                 }
                 
                 if (match) {
-                    filtrados.add(b);
+                    filtrados.add(match ? b : null); // Evitar duplicados si ya match es true
                 }
             }
         }
@@ -148,10 +156,11 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             
             if (adapter == null) {
                 adapter = new BomboAdapter(lista, this, userViewModel);
-                recyclerViewBombos.setAdapter(adapter);
             } else {
                 adapter.setFilteredList(lista);
             }
+            // Importante: volver a asignar el adaptador al RecyclerView porque la vista se recrea al volver atrás
+            recyclerViewBombos.setAdapter(adapter);
         }
     }
 }
