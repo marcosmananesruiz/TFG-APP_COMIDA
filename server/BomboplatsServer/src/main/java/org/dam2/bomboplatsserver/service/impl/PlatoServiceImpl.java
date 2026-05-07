@@ -96,10 +96,12 @@ public class PlatoServiceImpl implements IPlatoService {
     public Mono<Boolean> update(Plato plato) {
         PlatoEntity entity = toEntity(plato);
         return this.repo.findById(entity.getId())
-                .flatMap(existing -> this.repo.save(entity)
-                        .doOnNext(u -> LOGGER.info("Plato con ID {} actualizado", u.getId()))
-                        .thenReturn(true)
-                ).defaultIfEmpty(false);
+                .flatMap(existing -> {
+                    entity.setIdRestaurante(existing.getIdRestaurante());
+                    return this.repo.save(entity)
+                            .doOnNext(u -> LOGGER.info("Plato con ID {} actualizado", u.getId()))
+                            .thenReturn(true);
+                }).defaultIfEmpty(false);
     }
 
     @Override
