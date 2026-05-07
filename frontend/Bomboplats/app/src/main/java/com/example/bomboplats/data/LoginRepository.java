@@ -1,5 +1,6 @@
 package com.example.bomboplats.data;
 
+import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.LoggedInUser;
 import java.io.File;
 import java.util.ArrayList;
@@ -99,9 +100,9 @@ public class LoginRepository {
         }
     }
 
-    public void setFavoritesMap(Map<String, List<String>> favoritePlates) {
+    public void setFavorites(List<Bombo> favoritePlates) {
         if (user != null) {
-            user.setFavoritePlates(new HashMap<>(favoritePlates));
+            user.setFavoritePlates(new ArrayList<>(favoritePlates));
             saveUser();
         }
     }

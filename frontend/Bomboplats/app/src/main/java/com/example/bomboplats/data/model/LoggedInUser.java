@@ -13,17 +13,18 @@ public class LoggedInUser {
     private String email;
     private String password;
     private String photoPath;
-    private Map<String, List<String>> favoritePlates = new HashMap<>();
+
+    private List<Bombo> favoritePlates;
     private Map<String, List<String>> cartPlates = new HashMap<>();
     private List<Pedido> orderHistory = new ArrayList<>();
     private List<String> addresses = new ArrayList<>();
 
-    public LoggedInUser(String userId, String displayName, String email, String password, Map<String, List<String>> favoritePlates, Map<String, List<String>> cartPlates, String photoPath) {
+    public LoggedInUser(String userId, String displayName, String email, String password, List<Bombo> favoritePlates, Map<String, List<String>> cartPlates, String photoPath) {
         this.userId = userId;
         this.displayName = displayName;
         this.email = email;
         this.password = password;
-        this.favoritePlates = favoritePlates != null ? favoritePlates : new HashMap<>();
+        this.favoritePlates = favoritePlates;
         this.cartPlates = cartPlates != null ? cartPlates : new HashMap<>();
         this.orderHistory = new ArrayList<>();
         this.addresses = new ArrayList<>();
@@ -36,8 +37,8 @@ public class LoggedInUser {
     public String getPassword() { return password; }
     public String getPhotoPath() { return photoPath; }
 
-    public Map<String, List<String>> getFavoritePlates() {
-        if (favoritePlates == null) favoritePlates = new HashMap<>();
+    public List<Bombo> getFavoritePlates() {
+        if (favoritePlates == null) favoritePlates = new ArrayList<>();
         return favoritePlates;
     }
 
@@ -61,7 +62,7 @@ public class LoggedInUser {
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }
     public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
-    public void setFavoritePlates(Map<String, List<String>> favoritePlates) { this.favoritePlates = favoritePlates; }
+    public void setFavoritePlates(List<Bombo> favoritePlates) { this.favoritePlates = favoritePlates; }
     public void setCartPlates(Map<String, List<String>> cartPlates) { this.cartPlates = cartPlates; }
     public void setOrderHistory(List<Pedido> orderHistory) { this.orderHistory = orderHistory; }
     public void setAddresses(List<String> addresses) { this.addresses = addresses; }

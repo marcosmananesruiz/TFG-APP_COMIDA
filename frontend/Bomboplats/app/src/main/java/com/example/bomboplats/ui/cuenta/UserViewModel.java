@@ -16,6 +16,7 @@ import com.example.bomboplats.api.UserControllerApi;
 import com.example.bomboplats.data.LoginDataSource;
 import com.example.bomboplats.data.LoginRepository;
 import com.example.bomboplats.data.Result;
+import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.LoggedInUser;
 import com.example.bomboplats.ui.general.FavoritosProvider;
 import java.io.File;
@@ -45,7 +46,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private final MutableLiveData<String> password = new MutableLiveData<>();
     private final MutableLiveData<String> photoUri = new MutableLiveData<>();
     
-    private final MutableLiveData<List<String>> favoritos = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<List<Bombo>> favoritos = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Map<String, Integer>> carrito = new MutableLiveData<>(new HashMap<>());
     
     private final MutableLiveData<List<Direccion>> userAddressesObjects = new MutableLiveData<>(new ArrayList<>());
@@ -230,14 +231,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         }
         
         if (user.getFavoritePlates() != null) {
-            List<String> listaFavs = new ArrayList<>();
-            Map<String, List<String>> favMap = user.getFavoritePlates();
-            for (Map.Entry<String, List<String>> entry : favMap.entrySet()) {
-                for (String bId : entry.getValue()) {
-                    listaFavs.add(entry.getKey() + ":" + bId);
-                }
-            }
-            favoritos.setValue(listaFavs);
+            favoritos.setValue(user.getFavoritePlates());
         }
 
         if (user.getCartPlates() != null) {
@@ -258,7 +252,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<String> getEmail() { return email; }
     public LiveData<String> getPassword() { return password; }
     public LiveData<String> getPhotoUri() { return photoUri; }
-    public LiveData<List<String>> getFavoritos() { return favoritos; }
+    public LiveData<List<Bombo>> getFavoritos() { return favoritos; }
     public LiveData<Map<String, Integer>> getCarrito() { return carrito; }
     public LiveData<List<String>> getAddresses() { return addresses; }
     public LiveData<List<Direccion>> getUserAddressesObjects() { return userAddressesObjects; }
@@ -319,30 +313,14 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         });
     }
 
-    public void toggleFavorito(String restauranteId, String bomboId) {
-        List<String> currentList = favoritos.getValue();
-        List<String> listaPlana = (currentList == null) ? new ArrayList<>() : new ArrayList<>(currentList);
-        
-        String key = restauranteId + ":" + bomboId;
-        if (listaPlana.contains(key)) {
-            listaPlana.remove(key);
+    public void toggleFavorito(Bombo bombo) {
+        List<Bombo> favoritos = this.favoritos.getValue();
+        if (esFavorito(bombo.getId())) {
+            favoritos.remove(bombo);
         } else {
-            listaPlana.add(key);
+            favoritos.add(bombo);
         }
-        
-        favoritos.setValue(new ArrayList<>(listaPlana));
-        
-        final List<String> finalLista = new ArrayList<>(listaPlana);
-        executorService.execute(() -> {
-            Map<String, List<String>> mapParaAPI = new HashMap<>();
-            for (String item : finalLista) {
-                String[] parts = item.split(":");
-                if (parts.length == 2) {
-                    mapParaAPI.computeIfAbsent(parts[0], k -> new ArrayList<>()).add(parts[1]);
-                }
-            }
-            loginRepository.setFavoritesMap(mapParaAPI);
-        });
+        this.loginRepository.setFavorites(favoritos);
     }
 
     public void setCarritoUI(Map<String, Integer> nuevoCarritoPlano) {
@@ -364,9 +342,10 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     }
 
     @Override
-    public boolean esFavorito(String restauranteId, String bomboId) {
-        List<String> lista = favoritos.getValue();
-        return lista != null && lista.contains(restauranteId + ":" + bomboId);
+    public boolean esFavorito(String bomboId) {
+        List<Bombo> favoritos = this.favoritos.getValue();
+        if (favoritos == null) return false;
+        return favoritos.stream().anyMatch(bombo -> bombo.getId().equalsIgnoreCase(bomboId));
     }
 
     public void clearError() { error.setValue(null); }

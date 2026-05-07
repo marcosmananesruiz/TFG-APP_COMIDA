@@ -46,26 +46,12 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         foodRepository = FoodRepository.getInstance(requireContext());
 
         // Al observar favoritos, la lista se actualizará automáticamente cuando cambie el usuario en UserViewModel
-        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), idsFavoritos -> {
-            actualizarListaFavoritos(idsFavoritos);
-        });
+        userViewModel.getFavoritos().observe(getViewLifecycleOwner(), this::actualizarListaFavoritos);
 
         return view;
     }
 
-    private void actualizarListaFavoritos(List<String> idsFavoritos) {
-        List<Bombo> todosLosBombos = foodRepository.getBombos();
-        List<Bombo> favoritos = new ArrayList<>();
-        if (idsFavoritos != null) {
-            for (Bombo b : todosLosBombos) {
-                // Ahora comparamos con la clave compuesta restauranteId:bomboId
-                String key = b.getRestauranteId() + ":" + b.getId();
-                if (idsFavoritos.contains(key)) {
-                    favoritos.add(b);
-                }
-            }
-        }
-
+    private void actualizarListaFavoritos(List<Bombo> favoritos) {
         if (favoritos.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyFavoritos.setVisibility(View.VISIBLE);
@@ -102,7 +88,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     @Override
     public void onFavoritoClick(Bombo b) {
         // Pasamos ambos IDs para la nueva lógica de favoritos
-        userViewModel.toggleFavorito(b.getRestauranteId(), b.getId());
+        userViewModel.toggleFavorito(b);
     }
 
     @Override

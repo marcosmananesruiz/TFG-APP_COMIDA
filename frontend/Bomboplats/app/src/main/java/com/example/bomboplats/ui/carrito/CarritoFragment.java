@@ -79,8 +79,8 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
 
     private void actualizarUI() {
         Map<String, Integer> items = carritoViewModel.getItemsCarrito().getValue();
-        List<String> favoritosList = userViewModel.getFavoritos().getValue();
-        Set<String> favoritosSet = favoritosList != null ? new HashSet<>(favoritosList) : new HashSet<>();
+        List<Bombo> favoritosList = userViewModel.getFavoritos().getValue();
+        Set<Bombo> favoritosSet = favoritosList != null ? new HashSet<>(favoritosList) : new HashSet<>();
 
         if (items == null || items.isEmpty()) {
             mostrarCarritoVacio(true);
@@ -110,7 +110,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         }
     }
 
-    private void actualizarListaVisual(Map<String, Integer> items, Set<String> favoritos) {
+    private void actualizarListaVisual(Map<String, Integer> items, Set<Bombo> favoritos) {
         List<BomboConCantidad> listaFinal = new ArrayList<>();
         double totalCompra = 0.0;
 
@@ -143,11 +143,8 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
     }
 
     @Override
-    public void onFavoritoClick(String itemKey) {
-        String[] parts = itemKey.split(":");
-        if (parts.length == 2) {
-            userViewModel.toggleFavorito(parts[0], parts[1]);
-        }
+    public void onFavoritoClick(Bombo bombo) {
+        this.userViewModel.toggleFavorito(bombo);
     }
 
     @Override

@@ -120,7 +120,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
 
     @Override
     public void onFavoritoClick(Bombo bombo) {
-        userViewModel.toggleFavorito(bombo.getRestauranteId(), bombo.getId());
+        userViewModel.toggleFavorito(bombo);
     }
 
     @Override

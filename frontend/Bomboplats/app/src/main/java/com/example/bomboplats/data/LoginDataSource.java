@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import com.example.bomboplats.api.ApiException;
 import com.example.bomboplats.api.LoginAttempt;
 import com.example.bomboplats.api.Plato;
+import com.example.bomboplats.api.PlatoControllerApi;
 import com.example.bomboplats.api.User;
 import com.example.bomboplats.api.UserControllerApi;
 import com.example.bomboplats.api.UserRegister;
@@ -17,8 +18,12 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class LoginDataSource {
 
@@ -48,7 +53,7 @@ public class LoginDataSource {
                 user.getDisplayName(),
                 user.getEmail(),
                 user.getPassword(),
-                null, // No cacheamos favoritos offline por ahora
+                user.getFavoritePlates(), // No cacheamos favoritos offline por ahora
                 null, // No cacheamos carrito offline por ahora
                 user.getPhotoPath()
         );
@@ -130,15 +135,16 @@ public class LoginDataSource {
     public Result<LoggedInUser> saveUserInternal(LoggedInUser localUser) {
         saveProfileOffline(localUser);
         saveCartLocally(localUser.getEmail(), localUser.getCartPlates());
-        
-        try {
-            User apiUser = userControllerApi.getByEmail(localUser.getEmail());
-            if (apiUser != null) {
-                apiUser.setNickname(localUser.getDisplayName());
-                apiUser.setIconUrl(localUser.getPhotoPath());
-                
-                // Sincronizar favoritos con API
-                java.util.Set<Plato> platos = new java.util.LinkedHashSet<>();
+        ExecutorService service = Executors.newSingleThreadExecutor();
+        service.execute(() -> {
+            try {
+                User apiUser = userControllerApi.getByEmail(localUser.getEmail());
+                if (apiUser != null) {
+                    apiUser.setNickname(localUser.getDisplayName());
+                    apiUser.setIconUrl(localUser.getPhotoPath());
+
+                    // Sincronizar favoritos con API
+                /*java.util.Set<Plato> platos = new java.util.LinkedHashSet<>();
                 if (localUser.getFavoritePlates() != null) {
                     for (List<String> ids : localUser.getFavoritePlates().values()) {
                         for (String id : ids) {
@@ -147,12 +153,22 @@ public class LoginDataSource {
                             platos.add(p);
                         }
                     }
-                }
-                apiUser.setPlatosFavoritos(platos);
+                }*/
+                    PlatoControllerApi platosApi = new PlatoControllerApi();
+                    Set<Plato> platos = new HashSet<>();
+                    localUser.getFavoritePlates().forEach(bombo -> {
+                        try {
+                            Plato plato = platosApi.getPlatoById(bombo.getId());
+                            platos.add(plato);
+                        } catch (ApiException e) {}
+                    });
 
-                userControllerApi.updateUser(apiUser);
-            }
-        } catch (ApiException ignored) {}
+                    apiUser.setPlatosFavoritos(platos);
+
+                    userControllerApi.updateUser(apiUser);
+                }
+            } catch (ApiException ignored) {}
+        });
         return new Result.Success<>(localUser);
     }
 
@@ -238,16 +254,13 @@ public class LoginDataSource {
     public void logout() {}
 
     private LoggedInUser convertToLoggedInUser(User apiUser, String password) {
-        Map<String, List<String>> favs = new HashMap<>();
-        if (apiUser.getPlatosFavoritos() != null) {
-            FoodRepository foodRepo = FoodRepository.getInstance(context);
-            for (Plato p : apiUser.getPlatosFavoritos()) {
-                Bombo b = foodRepo.getBomboPorId(p.getId());
-                if (b != null) {
-                    favs.computeIfAbsent(b.getRestauranteId(), k -> new ArrayList<>()).add(p.getId());
-                }
-            }
-        }
+        List<Bombo> favs = new ArrayList<>();
+
+        apiUser.getPlatosFavoritos().forEach(plato -> {
+            Bombo bombo = new Bombo(plato);
+            favs.add(bombo);
+        });
+
         return new LoggedInUser(
                 apiUser.getId(),
                 apiUser.getNickname(),

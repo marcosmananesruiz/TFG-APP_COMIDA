@@ -110,7 +110,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
 
     @Override
     public void onFavoritoClick(Bombo b) {
-        userViewModel.toggleFavorito(b.getRestauranteId(), b.getId());
+        userViewModel.toggleFavorito(b);
     }
 
     @Override

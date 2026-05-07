@@ -20,13 +20,13 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
 
     private List<BomboConCantidad> listaCarrito;
     private OnCarritoActionListener listener;
-    private Set<String> favoritos;
+    private Set<Bombo> favoritos;
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
     private static final String DEFAULT_BOMBO_IMAGE = BASE_BUCKET + "platos/default.jpg";
 
     public interface OnCarritoActionListener {
         void onRestarClick(String itemKey);
-        void onFavoritoClick(String itemKey);
+        void onFavoritoClick(Bombo bombo);
         void onBomboClick(Bombo bombo);
     }
 
@@ -35,7 +35,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         this.listener = listener;
     }
 
-    public void actualizarLista(List<BomboConCantidad> nuevaLista, Set<String> favoritos) {
+    public void actualizarLista(List<BomboConCantidad> nuevaLista, Set<Bombo> favoritos) {
         this.listaCarrito = nuevaLista;
         this.favoritos = favoritos;
         notifyDataSetChanged();
@@ -79,7 +79,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         });
 
         // Configurar favorito usando la clave compuesta y aplicando color
-        boolean esFav = favoritos != null && favoritos.contains(itemKey);
+        boolean esFav = favoritos != null && favoritos.contains(bombo);
         if (esFav) {
             holder.ivFavorito.setImageResource(R.drawable.ic_favorite_filled);
             holder.ivFavorito.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.favorite_red));
@@ -89,7 +89,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         }
 
         holder.ivFavorito.setOnClickListener(v -> {
-            if (listener != null) listener.onFavoritoClick(itemKey);
+            if (listener != null) listener.onFavoritoClick(bombo);
         });
 
         holder.itemView.setOnClickListener(v -> {

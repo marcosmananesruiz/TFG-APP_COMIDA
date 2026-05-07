@@ -1,7 +1,12 @@
 package com.example.bomboplats.data.model;
 
+import com.example.bomboplats.api.Plato;
+import com.example.bomboplats.api.PlatoControllerApi;
+import com.example.bomboplats.api.RestauranteControllerApi;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class Bombo {
     private String id;
@@ -24,6 +29,18 @@ public class Bombo {
         this.fotos = fotos != null ? fotos : new ArrayList<>();
         this.ingredientes = ingredientes != null ? ingredientes : new ArrayList<>();
         this.alergenos = alergenos != null ? alergenos : new ArrayList<>();
+    }
+
+    public Bombo(Plato plato) {
+        this.id = plato.getId();
+        this.restauranteId = "";
+        this.nombre = plato.getNombre();
+        this.descripcion = plato.getDescription();
+        this.precio = String.valueOf(plato.getPrecio());
+        this.etiquetas = plato.getTags();
+        this.fotos = new ArrayList<String>(){{ add(plato.getIconUrl()); }};
+        this.ingredientes = plato.getPossibleModifications();
+        this.alergenos = new ArrayList<>();
     }
 
     public String getId() { return id; }

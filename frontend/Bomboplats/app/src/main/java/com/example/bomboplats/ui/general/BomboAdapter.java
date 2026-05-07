@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
+import com.example.bomboplats.api.User;
 import com.example.bomboplats.data.model.Bombo;
 import java.util.List;
 
@@ -63,7 +64,7 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         holder.tvPrecio.setText(precioStr);
 
         // Aplicar icono y color según si es favorito
-        boolean esFav = favoritosProvider != null && favoritosProvider.esFavorito(bombo.getRestauranteId(), bombo.getId());
+        boolean esFav = favoritosProvider != null && favoritosProvider.esFavorito(bombo.getId());
         if (esFav) {
             holder.btnFav.setImageResource(R.drawable.ic_favorite_filled);
             holder.btnFav.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.favorite_red));

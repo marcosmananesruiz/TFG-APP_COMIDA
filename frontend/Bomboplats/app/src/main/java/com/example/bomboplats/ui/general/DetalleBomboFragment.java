@@ -84,9 +84,9 @@ public class DetalleBomboFragment extends Fragment {
 
         ivFavorito.setOnClickListener(v -> {
             if (bomboActual != null) {
-                userViewModel.toggleFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
+                userViewModel.toggleFavorito(bomboActual);
                 actualizarIconoFavorito();
-                boolean esFavoritoNow = userViewModel.esFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
+                boolean esFavoritoNow = userViewModel.esFavorito(bomboActual.getId());
                 int resId = esFavoritoNow ? R.string.toast_fav_add : R.string.toast_fav_rem;
                 Toast.makeText(getContext(), getString(resId), Toast.LENGTH_SHORT).show();
             }
@@ -108,7 +108,7 @@ public class DetalleBomboFragment extends Fragment {
 
     private void actualizarIconoFavorito() {
         if (bomboActual != null && ivFavorito != null && userViewModel != null) {
-            boolean esFav = userViewModel.esFavorito(bomboActual.getRestauranteId(), bomboActual.getId());
+            boolean esFav = userViewModel.esFavorito(bomboActual.getId());
             ivFavorito.setImageResource(esFav ? R.drawable.ic_favorite_filled : R.drawable.ic_favorite_border);
         }
     }
