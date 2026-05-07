@@ -70,7 +70,9 @@ public class RestauranteController {
             description = "true: Restaurante actualizado. false: No existía o hubo error")
     public Mono<Boolean> updateRestaurante(@RequestBody Restaurante restaurante) {
         Mono<Void> direccionesMono = syncDirecciones(restaurante);
-        return direccionesMono.then(this.service.update(restaurante));
+        Mono<Void> platosMono = syncPlatos(restaurante);
+        return Mono.when(direccionesMono, platosMono)
+                .then(this.service.update(restaurante));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -151,4 +153,13 @@ public class RestauranteController {
                 .flatMap(direccion -> this.direccionService.asignarRestauranteId(direccion, restaurante.getId()))
                 .then();
     }
+    private Mono<Void> syncPlatos(Restaurante restaurante) {
+        if (restaurante.getPlatos() == null || restaurante.getPlatos().isEmpty())
+            return Mono.empty();
+
+        return Flux.fromIterable(restaurante.getPlatos())
+                .flatMap(plato -> this.platoService.update(plato))
+                .then();
+    }
+
 }
