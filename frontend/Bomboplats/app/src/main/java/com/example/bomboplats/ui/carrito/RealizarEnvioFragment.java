@@ -84,6 +84,11 @@ public class RealizarEnvioFragment extends Fragment {
         cardTarjetaDatos = view.findViewById(R.id.card_tarjeta_datos);
         btnConfirmar = view.findViewById(R.id.btn_confirmar_pedido);
 
+        List<String> addresses = this.userViewModel.getAddresses().getValue();
+        if (addresses != null && !addresses.isEmpty()) {
+            this.tvDireccionSeleccionada.setText(getString(R.string.label_seleccionar_direccion));
+        }
+
         rgMetodoPago.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.rb_efectivo) {
                 cardTarjetaDatos.setVisibility(View.GONE);

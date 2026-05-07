@@ -320,6 +320,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         } else {
             favoritos.add(bombo);
         }
+        this.favoritos.setValue(favoritos);
         this.loginRepository.setFavorites(favoritos);
     }
 

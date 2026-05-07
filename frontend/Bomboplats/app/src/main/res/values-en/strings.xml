@@ -41,6 +41,7 @@
     <string name="toast_direccion_borrada">Address deleted</string>
     <string name="toast_direccion_guardada">Address saved</string>
     <string name="label_no_direcciones">You don\'t have saved addresses yet</string>
+    <string name="label_seleccionar_direccion">Press here to select and address</string>
     <string name="buscar_direccion">Search address...</string>
     <string name="no_encontrado_direccion">Didn\'t find your address? Enter it here</string>
     <string name="nueva_direccion_titulo">New Address</string>
