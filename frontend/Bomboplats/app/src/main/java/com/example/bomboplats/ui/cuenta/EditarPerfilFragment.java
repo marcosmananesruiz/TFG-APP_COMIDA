@@ -150,6 +150,17 @@ public class EditarPerfilFragment extends Fragment {
             }
         });
 
+        // Observar si la cuenta ha sido eliminada para salir al Login de forma segura
+        userViewModel.isAccountDeleted().observe(getViewLifecycleOwner(), deleted -> {
+            if (deleted != null && deleted) {
+                Toast.makeText(getContext(), R.string.cuenta_eliminada, Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(requireActivity(), LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                requireActivity().finish();
+            }
+        });
+
         btnGuardar.setOnClickListener(v -> {
             UserControllerApi userApi = new UserControllerApi();
             if (this.pendingPhoto != null) {
@@ -198,6 +209,7 @@ public class EditarPerfilFragment extends Fragment {
                 .setTitle(R.string.dialog_eliminar_cuenta_titulo)
                 .setMessage(R.string.dialog_eliminar_cuenta_mensaje)
                 .setPositiveButton(R.string.si, (d, which) -> {
+                    // Solo pedimos borrar. El observador en onCreateView se encargará del resto.
                     userViewModel.deleteAccount();
                     Toast.makeText(getContext(), R.string.cuenta_eliminada, Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(getActivity(), LoginActivity.class);

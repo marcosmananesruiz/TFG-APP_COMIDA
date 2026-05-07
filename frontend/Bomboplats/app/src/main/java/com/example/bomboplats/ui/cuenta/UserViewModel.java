@@ -54,6 +54,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     
     private final MutableLiveData<String> error = new MutableLiveData<>();
     private final MutableLiveData<Result<Boolean>> updateResult = new MutableLiveData<>();
+    private final MutableLiveData<Boolean> accountDeleted = new MutableLiveData<>(false);
 
     public UserViewModel(@NonNull Application application) {
         super(application);
@@ -202,6 +203,9 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 Direccion savedDir = direccionApi.registerDireccion(d);
                 if (savedDir != null) {
                     addAddressToUser(savedDir);
+                    Log.e("asdasdasdasdasdasasdads", savedDir.toString());
+                } else {
+                    Log.e("asasas", "AQUI ESTA FALLANDO, LA DIRECCION ES NULL");
                 }
             } catch (ApiException e) {
                 error.postValue("Error al guardar la nueva dirección");
@@ -258,6 +262,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<List<Direccion>> getUserAddressesObjects() { return userAddressesObjects; }
     public LiveData<String> getError() { return error; }
     public LiveData<Result<Boolean>> getUpdateResult() { return updateResult; }
+    public LiveData<Boolean> isAccountDeleted() { return accountDeleted; }
 
     public void resetUpdateResult() { updateResult.setValue(null); }
 
@@ -355,6 +360,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         executorService.execute(() -> {
             loginRepository.deleteAccount();
             sharedPreferences.edit().remove(KEY_CURRENT_USER_EMAIL).apply();
+            accountDeleted.postValue(true);
         });
     }
 
