@@ -50,15 +50,16 @@ public class ConfiguracionFragment extends Fragment {
         // 1. Obtener idioma actual (prioridad a AppCompatDelegate)
         String currentLang = AppCompatDelegate.getApplicationLocales().toLanguageTags();
         if (currentLang.isEmpty()) {
-            currentLang = prefs.getString(KEY_LANGUAGE, "es");
+            currentLang = prefs.getString(KEY_LANGUAGE, "en");
         }
 
         // 2. Marcar el RadioButton correcto sin disparar el listener
+        // Este if hacia que petara la app, si quieres que se rompa cambia de lugar los rbEs y rbEn
         isInternalChange = true;
         if (currentLang.startsWith("en")) {
-            rbEn.setChecked(true);
-        } else {
             rbEs.setChecked(true);
+        } else {
+            rbEn.setChecked(true);
         }
         isInternalChange = false;
 
@@ -66,16 +67,16 @@ public class ConfiguracionFragment extends Fragment {
         rgIdioma.setOnCheckedChangeListener((group, checkedId) -> {
             if (isInternalChange) return;
 
-            String selectedLang = (checkedId == R.id.rb_en) ? "en" : "es";
+            String selectedLang = (checkedId == R.id.rb_en) ? "es" : "en";
             
             // Solo actuar si el idioma es realmente diferente
             String currentAppLang = AppCompatDelegate.getApplicationLocales().toLanguageTags();
-            if (currentAppLang.isEmpty()) currentAppLang = "es";
+            if (currentAppLang.isEmpty()) currentAppLang = "en";
 
             if (!selectedLang.equals(currentAppLang)) {
                 // Guardar preferencia
                 prefs.edit().putString(KEY_LANGUAGE, selectedLang).commit();
-                
+
                 // Aplicar cambio. setApplicationLocales recrea la actividad automáticamente.
                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(selectedLang));
             }

@@ -51,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/idioma_es"
+            android:text="@string/idioma_en"
             android:textColor="@color/text_color" />
 
         <RadioButton
@@ -59,7 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/idioma_en"
+            android:text="@string/idioma_es"
             android:textColor="@color/text_color" />
     </RadioGroup>
 
