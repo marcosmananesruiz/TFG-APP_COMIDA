@@ -21,7 +21,7 @@ import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 import java.util.List;
 
-public class DetalleBomboFragment extends Fragment {
+public class DetalleBomboFragment extends Fragment implements ModificacionesAdapter.OnModificacionClickListener {
 
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
@@ -47,8 +47,6 @@ public class DetalleBomboFragment extends Fragment {
         tvNombre = view.findViewById(R.id.tv_bombo_nombre);
         tvPrecio = view.findViewById(R.id.tv_bombo_precio);
         tvDescription = view.findViewById(R.id.tv_bombo_descripcion);
-        tvIngredientes = view.findViewById(R.id.tv_bombo_ingredientes);
-        tvAlergenos = view.findViewById(R.id.tv_bombo_alergenos);
         rvFotos = view.findViewById(R.id.rv_bombo_fotos);
         tvCantidad = view.findViewById(R.id.tv_cantidad);
         ivFavorito = view.findViewById(R.id.iv_favorito);
@@ -158,5 +156,12 @@ public class DetalleBomboFragment extends Fragment {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public void onModificacionClick(String modificacion, boolean isChecked) {
+        if (isChecked) {
+
+        }
     }
 }
