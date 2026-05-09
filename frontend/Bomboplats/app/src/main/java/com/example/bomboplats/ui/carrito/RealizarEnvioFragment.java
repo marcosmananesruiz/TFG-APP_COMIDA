@@ -28,6 +28,7 @@ import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.HistorialRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.EstadoPedido;
+import com.example.bomboplats.ui.cuenta.DireccionesCuentaFragment;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.estadobombos.EstadoBombosViewModel;
 import com.example.bomboplats.ui.historial.HistorialViewModel;
@@ -130,7 +131,12 @@ public class RealizarEnvioFragment extends Fragment {
         java.util.List<String> direccionesStr = userViewModel.getAddresses().getValue();
         
         if (direccionesStr == null || direccionesStr.isEmpty() || direccionesObj == null || direccionesObj.isEmpty()) {
-            Toast.makeText(getContext(), R.string.label_no_direcciones, Toast.LENGTH_SHORT).show();
+            // Si no tiene direcciones, lo llevamos al fragment de gestión de direcciones
+            getParentFragmentManager().beginTransaction()
+                    .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                    .replace(R.id.container, new DireccionesCuentaFragment())
+                    .addToBackStack(null)
+                    .commit();
             return;
         }
 
