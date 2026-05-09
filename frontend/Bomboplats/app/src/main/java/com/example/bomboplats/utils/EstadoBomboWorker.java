@@ -1,17 +1,23 @@
 package com.example.bomboplats.utils;
 
 import android.content.Context;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 import com.example.bomboplats.R;
+import com.example.bomboplats.api.ApiException;
+import com.example.bomboplats.api.Pedido;
+import com.example.bomboplats.api.PedidoControllerApi;
 import com.example.bomboplats.data.EstadoBombosRepository;
 import com.example.bomboplats.data.model.EstadoPedido;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class EstadoBomboWorker extends Worker {
@@ -45,7 +51,10 @@ public class EstadoBomboWorker extends Worker {
                 String titulo = context.getString(R.string.noti_titulo_estado);
                 String msg = context.getString(R.string.noti_msg_entregado, ep.getPedido().getId());
                 NotificationHelper.showNotification(context, titulo, msg);
-                
+                ep.setEstado(EstadoPedido.ESTADO_ENTREGADO);
+                guardarEstado(ep);
+
+
                 // Se quita de la lista de estados activos
                 iterator.remove();
                 huboCambios = true;
@@ -55,6 +64,7 @@ public class EstadoBomboWorker extends Worker {
             // 2. Lógica de evolución: A los 3 minutos (180.000 ms) pasa a "De camino" (En reparto)
             if (transcurrido >= 180000 && EstadoPedido.ESTADO_PREPARACION.equals(ep.getEstado())) {
                 ep.setEstado(EstadoPedido.ESTADO_CAMINO);
+                guardarEstado(ep);
             }
 
             // 3. Notificar cambios de estado (si ha evolucionado a "De camino")
@@ -87,5 +97,31 @@ public class EstadoBomboWorker extends Worker {
         }
 
         return Result.success();
+    }
+
+    private void guardarEstado(EstadoPedido ep) {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            PedidoControllerApi pedidoApi = new PedidoControllerApi();
+            try {
+                Pedido pedido = pedidoApi.getPedidoById(ep.getPedido().getId());
+                pedido.setEstado(convertEstado(ep.getEstado()));
+                boolean success = pedidoApi.updatePedido(pedido);
+                if (success) {
+                    Log.i("", "Se ha actualizado el estado del pedido");
+                } else {
+                    Log.e("", "Se ha producido un error actualizando el estado del pedido");
+                }
+            } catch (ApiException e) {
+                Log.e("", e.getMessage());
+            }
+        });
+    }
+
+    private Pedido.EstadoEnum convertEstado(String estado) {
+        return switch (estado) {
+            case EstadoPedido.ESTADO_CAMINO -> Pedido.EstadoEnum.DELIVERING;
+            case EstadoPedido.ESTADO_ENTREGADO -> Pedido.EstadoEnum.DELIVERED;
+            default -> Pedido.EstadoEnum.PREPARING;
+        };
     }
 }

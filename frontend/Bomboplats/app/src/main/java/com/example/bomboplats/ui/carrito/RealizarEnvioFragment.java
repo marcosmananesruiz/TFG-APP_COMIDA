@@ -165,6 +165,8 @@ public class RealizarEnvioFragment extends Fragment {
                 // Usamos withNano(0) para simplificar el envío, pero la API debería aceptarlo.
                 OffsetDateTime fechaEntregaApi = OffsetDateTime.now(ZoneOffset.UTC).plusMinutes(10).withNano(0);
 
+                String id = "";
+
                 for (Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
                     Bombo b = buscarBomboPorId(entry.getKey());
                     if (b != null) {
@@ -188,6 +190,7 @@ public class RealizarEnvioFragment extends Fragment {
                             try {
                                 // Realizamos la llamada. Si llega al servidor y se guarda (200 OK), anySuccess será true.
                                 com.example.bomboplats.api.Pedido result = pedidoApi.register2(apiPedido);
+                                id = result.getId();
                                 anySuccess = true;
                             } catch (Exception apiEx) {
                                 // Si el error es de parseo (Json o ParseException), lo ignoramos profesionalmente
@@ -210,7 +213,7 @@ public class RealizarEnvioFragment extends Fragment {
                 }
 
                 // Generamos los datos locales para el historial y el estado independientemente del parseo de la API
-                String localOrderId = String.valueOf(System.currentTimeMillis()).substring(7);
+                //String localOrderId = String.valueOf(System.currentTimeMillis()).substring(7);
                 String fechaSimulada = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
                 
                 List<PedidoItem> localItems = new ArrayList<>();
@@ -229,7 +232,7 @@ public class RealizarEnvioFragment extends Fragment {
                 }
 
                 com.example.bomboplats.ui.historial.Pedido uiPedido = new com.example.bomboplats.ui.historial.Pedido(
-                        localOrderId, fechaSimulada, localItems, total, tvDireccionSeleccionada.getText().toString()
+                        id, fechaSimulada, localItems, total, tvDireccionSeleccionada.getText().toString()
                 );
 
                 // Guardamos en historial, estado y lanzamos notificaciones/workers
@@ -238,8 +241,9 @@ public class RealizarEnvioFragment extends Fragment {
                 EstadoBombosRepository.getInstance().agregarPedido(getContext(), ep);
 
                 if (getActivity() != null) {
+                    String finalId = id;
                     getActivity().runOnUiThread(() -> {
-                        Toast.makeText(getContext(), getString(R.string.toast_pedido_realizado_exito, localOrderId), Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), getString(R.string.toast_pedido_realizado_exito, finalId), Toast.LENGTH_LONG).show();
                         carritoViewModel.limpiarCarrito();
                         historialViewModel.refreshHistorial();
                         estadoBombosViewModel.cargarPedidos();

@@ -36,8 +36,11 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
@@ -255,9 +258,14 @@ public class JSON {
                 default:
                     String date = in.nextString();
                     if (date.endsWith("+0000")) {
-                        date = date.substring(0, date.length()-5) + "Z";
+                        date = date.substring(0, date.length() - 5) + "Z";
                     }
-                    return OffsetDateTime.parse(date, formatter);
+                    try {
+                        return OffsetDateTime.parse(date, formatter);
+                    } catch (DateTimeParseException e) {
+                        // El servidor devolvió fecha sin offset (ej: "2026-05-09T11:09:48") → asumir UTC
+                        return LocalDateTime.parse(date).atOffset(ZoneOffset.UTC);
+                    }
             }
         }
     }
