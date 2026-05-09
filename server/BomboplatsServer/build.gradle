@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'org.dam2'
-version = '1.7'
+version = '1.8'
 description = 'BomboplatsServer'
 
 java {
