@@ -14,7 +14,7 @@
     <string name="drawer_close">Cerrar menú</string>
     <string name="pagar_ahora">PAGAR AHORA</string>
     <string name="confirmar_pedido">CONFIRMAR PEDIDO</string>
-    <string name="realizar_pedido">REALIZAR PEDIDO</string>
+    <string name="realizar_pedido">AÑADIR AL CARRITO</string>
     <string name="guardar_cambios">GUARDAR CAMBIOS</string>
     <string name="confirmar_cambio">CONFIRMAR CAMBIO</string>
     <string name="cambiar_correo_electronico">CAMBIAR CORREO ELECTRÓNICO</string>

@@ -124,6 +124,8 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 LoggedInUser loggedUser = loginRepository.getUser();
                 if (loggedUser != null) {
                     User apiUser = userApi.getByEmail(loggedUser.getEmail());
+                    if (apiUser == null || apiUser.getId() == null) return;
+                    
                     Set<Direccion> userDirs = apiUser.getDirecciones();
                     if (userDirs == null) userDirs = new LinkedHashSet<>();
                     
@@ -193,6 +195,18 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public void registerAndAssignAddress(String poblacion, String calle, String cp, int portal, String piso) {
         executorService.execute(() -> {
             try {
+                LoggedInUser loggedUser = loginRepository.getUser();
+                if (loggedUser == null) return;
+
+                // 1. Asegurar que tenemos al usuario con su ID correcto desde la API antes de proceder
+                User apiUser = userApi.getByEmail(loggedUser.getEmail());
+                if (apiUser == null || apiUser.getId() == null) {
+                    Log.e("UserViewModel", "No se pudo obtener el usuario o el ID es nulo antes de registrar dirección");
+                    error.postValue("Error al identificar al usuario");
+                    return;
+                }
+
+                // 2. Crear y registrar la dirección
                 Direccion d = new Direccion();
                 d.setPoblacion(poblacion);
                 d.setCalle(calle);
@@ -201,13 +215,26 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 d.setPiso(piso);
 
                 Direccion savedDir = direccionApi.registerDireccion(d);
-                if (savedDir != null) {
-                    addAddressToUser(savedDir);
-                    Log.e("asdasdasdasdasdasasdads", savedDir.toString());
+                if (savedDir != null && savedDir.getId() != null) {
+                    // 3. Vincular la dirección al usuario (apiUser ya tiene ID verificado)
+                    Set<Direccion> userDirs = apiUser.getDirecciones();
+                    if (userDirs == null) userDirs = new LinkedHashSet<>();
+                    
+                    userDirs.add(savedDir);
+                    apiUser.setDirecciones(userDirs);
+                    
+                    // 4. Actualizar el usuario en el servidor con el objeto completo (incluyendo su ID)
+                    Boolean success = userApi.updateUser(apiUser);
+                    if (success != null && success) {
+                        refreshUserData();
+                    } else {
+                        error.postValue("No se pudo vincular la dirección al usuario");
+                    }
                 } else {
-                    Log.e("asasas", "AQUI ESTA FALLANDO, LA DIRECCION ES NULL");
+                    error.postValue("Error al registrar la dirección en el servidor");
                 }
             } catch (ApiException e) {
+                Log.e("UserViewModel", "Error al crear y asignar dirección: " + e.getMessage());
                 error.postValue("Error al guardar la nueva dirección");
             }
         });
