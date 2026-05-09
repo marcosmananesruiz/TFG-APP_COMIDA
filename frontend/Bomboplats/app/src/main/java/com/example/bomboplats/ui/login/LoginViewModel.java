@@ -47,10 +47,8 @@ public class LoginViewModel extends ViewModel {
                 loginResult.postValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
             } else if (result instanceof Result.Error) {
                 String errorMsg = ((Result.Error) result).getError().getMessage();
-                if (LoginDataSource.ERROR_WRONG_PASSWORD.equals(errorMsg)) {
-                    loginResult.postValue(new LoginResult(R.string.invalid_password));
-                } else if (LoginDataSource.ERROR_USER_NOT_FOUND.equals(errorMsg)) {
-                    loginResult.postValue(new LoginResult(R.string.invalid_username));
+                if (LoginDataSource.ERROR_WRONG_PASSWORD.equals(errorMsg) || LoginDataSource.ERROR_USER_NOT_FOUND.equals(errorMsg)) {
+                    loginResult.postValue(new LoginResult(R.string.login_invalid_credentials));
                 } else {
                     loginResult.postValue(new LoginResult(R.string.login_failed));
                 }

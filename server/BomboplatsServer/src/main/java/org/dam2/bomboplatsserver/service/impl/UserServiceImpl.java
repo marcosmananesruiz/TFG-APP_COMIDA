@@ -195,7 +195,6 @@ public class UserServiceImpl implements IUserService {
                     List<String> idsAEliminar = new ArrayList<>(direccionesExistentes.stream()
                             .map(Direccion::getId)
                             .toList());
-                    Set
                     idsAEliminar.removeAll(nuevosIds);
 
                     // Borrado
