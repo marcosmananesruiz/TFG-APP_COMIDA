@@ -122,20 +122,6 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
             tvPrecio.setText(precio);
             
             tvDescription.setText(bomboActual.getDescripcion());
-            
-            String ingredientesFormateados = formatList(bomboActual.getIngredientes());
-            if (ingredientesFormateados != null) {
-                tvIngredientes.setText(ingredientesFormateados);
-            } else {
-                tvIngredientes.setText(getString(R.string.no_especificados));
-            }
-
-            String tagsFormateadas = formatList(bomboActual.getEtiquetas());
-            if (tagsFormateadas != null) {
-                tvAlergenos.setText(tagsFormateadas);
-            } else {
-                tvAlergenos.setText(getString(R.string.sin_alergenos));
-            }
 
             List<String> fotos = bomboActual.getFotos();
             FotoCarruselAdapter adapter = new FotoCarruselAdapter(fotos, DEFAULT_BOMBO_IMAGE);
