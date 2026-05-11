@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
@@ -30,6 +31,7 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
     private List<Restaurante> listaCompleta = new ArrayList<>();
     private FoodRepository foodRepository;
     private Map<String, String> mapaEtiquetas = new HashMap<>();
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Nullable
     @Override
@@ -38,6 +40,8 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
 
         recyclerView = view.findViewById(R.id.rv_restaurantes);
         tvEmptyError = view.findViewById(R.id.tv_empty_error);
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_inicio);
+        
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new RestauranteAdapter(new ArrayList<>(), this);
@@ -45,8 +49,16 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
 
         foodRepository = FoodRepository.getInstance(requireContext());
         
+        // Configurar el refresco manual
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            foodRepository.refreshData();
+        });
+        
         // Observar los cambios en los restaurantes para actualizar la UI automáticamente
         foodRepository.getRestaurantesLiveData().observe(getViewLifecycleOwner(), restaurantes -> {
+            // Detener la animación de carga
+            swipeRefreshLayout.setRefreshing(false);
+
             if (restaurantes != null && !restaurantes.isEmpty()) {
                 listaCompleta = restaurantes;
                 adapter.setFilteredList(new ArrayList<>(listaCompleta));

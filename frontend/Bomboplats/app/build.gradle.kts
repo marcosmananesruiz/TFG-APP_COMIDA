@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.gson)
     implementation(libs.androidx.work.runtime)
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -57,6 +58,7 @@ dependencies {
     // Anotaciones
     implementation("com.google.code.findbugs:jsr305:3.0.2")
     implementation("jakarta.annotation:jakarta.annotation-api:1.3.5")
+    implementation(libs.androidx.swiperefreshlayout)
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 
     // Glide

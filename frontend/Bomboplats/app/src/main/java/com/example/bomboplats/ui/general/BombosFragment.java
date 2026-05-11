@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
@@ -36,6 +37,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
+    private SwipeRefreshLayout swipeRefreshLayout;
     
     private ChipGroup cgCategories;
     private String categoriaSeleccionada = "TODO";
@@ -56,6 +58,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         TextView tvUbicacion = view.findViewById(R.id.tv_restaurante_ubicacion);
         TextView tvDescripcion = view.findViewById(R.id.tv_restaurante_descripcion);
         recyclerViewFotos = view.findViewById(R.id.rv_restaurante_fotos);
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_bombos);
         
         recyclerViewBombos = view.findViewById(R.id.rv_bombos);
         tvEmptyBombos = view.findViewById(R.id.tv_empty_bombos);
@@ -78,12 +81,20 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             recyclerViewFotos.setAdapter(fotoAdapter);
         }
 
+        // Configurar el refresco manual
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            foodRepository.refreshData();
+        });
+
         if (restauranteId != null) {
             listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
             aplicarFiltros();
         }
 
         foodRepository.getRestaurantesLiveData().observe(getViewLifecycleOwner(), restaurantes -> {
+            // Detener la animación de carga
+            swipeRefreshLayout.setRefreshing(false);
+            
             if (restauranteId != null) {
                 listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
                 aplicarFiltros();
@@ -133,14 +144,14 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     }
 
     @Override
-    public void onFavoritoClick(Bombo b) {
-        userViewModel.toggleFavorito(b);
+    public void onFavoritoClick(Bombo bombo) {
+        userViewModel.toggleFavorito(bombo);
     }
 
     @Override
-    public void onAgregarCarritoClick(Bombo b) {
-        carritoViewModel.agregarAlCarrito(b, 1, new ArrayList<>());
-        String mensaje = getString(R.string.carrito_item_added, 1, b.getNombre());
+    public void onAgregarCarritoClick(Bombo bombo) {
+        carritoViewModel.agregarAlCarrito(bombo, 1, new ArrayList<>());
+        String mensaje = getString(R.string.carrito_item_added, 1, bombo.getNombre());
         Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
@@ -154,14 +165,14 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         
         List<Bombo> filtrados = new ArrayList<>();
         
-        for (Bombo b : listaBombosRestaurante) {
+        for (Bombo bombo : listaBombosRestaurante) {
             // Filtro 1: Categoría
             boolean coincideCategoria = false;
             
             if (categoriaSeleccionada.equals("TODO")) {
                 coincideCategoria = true;
-            } else if (b.getEtiquetas() != null && !b.getEtiquetas().isEmpty()) {
-                String primerTag = b.getEtiquetas().get(0).toUpperCase();
+            } else if (bombo.getEtiquetas() != null && !bombo.getEtiquetas().isEmpty()) {
+                String primerTag = bombo.getEtiquetas().get(0).toUpperCase();
                 if (primerTag.equals(categoriaSeleccionada)) {
                     coincideCategoria = true;
                 }
@@ -171,11 +182,11 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
 
             // Filtro 2: Texto de búsqueda (si hay alguno)
             if (queryActual.isEmpty()) {
-                filtrados.add(b);
+                filtrados.add(bombo);
             } else {
-                boolean matchTexto = b.getNombre().toLowerCase().contains(queryActual);
-                if (!matchTexto && b.getEtiquetas() != null) {
-                    for (String tag : b.getEtiquetas()) {
+                boolean matchTexto = bombo.getNombre().toLowerCase().contains(queryActual);
+                if (!matchTexto && bombo.getEtiquetas() != null) {
+                    for (String tag : bombo.getEtiquetas()) {
                         if (tag.toLowerCase().contains(queryActual)) {
                             matchTexto = true;
                             break;
@@ -183,7 +194,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
                     }
                 }
                 if (matchTexto) {
-                    filtrados.add(b);
+                    filtrados.add(bombo);
                 }
             }
         }
