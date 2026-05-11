@@ -17,6 +17,12 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+
+/**
+ * Controlador REST para la gestión de platos.
+ * Expone endpoints para crear, consultar, actualizar y eliminar platos,
+ * así como para obtener URLs de subida de imágenes.
+ */
 @RestController
 @RequestMapping("/plato")
 public class PlatoController {
@@ -24,6 +30,11 @@ public class PlatoController {
     @Autowired private IPlatoService service;
     @Autowired private IS3Service s3Service;
 
+    /**
+     * Devuelve todos los platos disponibles en el sistema.
+     *
+     * @return flujo con todos los platos
+     */
     @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los platos")
     @ApiResponses({
@@ -36,6 +47,12 @@ public class PlatoController {
         return this.service.findAll();
     }
 
+    /**
+     * Busca un plato por su id único.
+     *
+     * @param id identificador del plato
+     * @return el plato encontrado, o 404 si no existe
+     */
     @GetMapping("/get/{id}")
     @Operation(summary = "Obtener un plato por su ID")
     @ApiResponses({
@@ -50,6 +67,12 @@ public class PlatoController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
+    /**
+     * Registra un nuevo plato en el sistema.
+     *
+     * @param plato datos del plato a registrar
+     * @return el plato creado con su ID asignado, o 400 si los datos son inválidos
+     */
     @PostMapping("/register")
     @Operation(summary = "Registrar un nuevo plato")
     @ApiResponse(responseCode = "200",
@@ -59,6 +82,13 @@ public class PlatoController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST)));
     }
 
+
+    /**
+     * Actualiza los datos de un plato existente.
+     *
+     * @param plato datos actualizados del plato
+     * @return {@code true} si se actualizó correctamente, {@code false} si no existía o hubo un error
+     */
     @PutMapping("/save")
     @Operation(summary = "Actualizar un plato existente")
     @ApiResponse(responseCode = "200",
@@ -67,6 +97,12 @@ public class PlatoController {
         return this.service.update(plato);
     }
 
+    /**
+     * Elimina un plato por su identificador.
+     *
+     * @param id identificador del plato a eliminar
+     * @return {@code true} si se eliminó correctamente, {@code false} si no existía o hubo un error
+     */
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Eliminar un plato por su ID")
     @ApiResponse(responseCode = "200",
@@ -75,6 +111,12 @@ public class PlatoController {
         return this.service.deletePlatoById(id);
     }
 
+    /**
+     * Busca platos cuyo nombre contenga el texto indicado.
+     *
+     * @param nombre texto a buscar en el nombre del plato
+     * @return flujo de platos que coinciden con la búsqueda
+     */
     @GetMapping(value = "/getpornombre", params = "nombre")
     @Operation(summary = "Buscar platos por nombre")
     @ApiResponses({
@@ -87,6 +129,13 @@ public class PlatoController {
         return this.service.findByNombreContaining(nombre);
     }
 
+
+    /**
+     * Devuelve todos los platos pertenecientes a un restaurante concreto.
+     *
+     * @param idRestaurante identificador del restaurante
+     * @return flujo de platos asociados a ese restaurante
+     */
     @GetMapping(value = "/getporid", params = "idRestaurante")
     @Operation(summary = "Buscar platos por ID de restaurante")
     @ApiResponses({
@@ -99,6 +148,13 @@ public class PlatoController {
         return this.service.findByIdRestaurante(idRestaurante);
     }
 
+    /**
+     * Busca platos de un restaurante concreto cuyo nombre contenga el texto indicado.
+     *
+     * @param idRestaurante identificador del restaurante
+     * @param nombre        texto a buscar en el nombre del plato
+     * @return flujo de platos que coinciden con ambos criterios
+     */
     @GetMapping(value = "/getporplatoynombre", params = {"idRestaurante", "nombre"})
     @Operation(summary = "Buscar platos por restaurante y nombre")
     @ApiResponses({
@@ -112,7 +168,12 @@ public class PlatoController {
             @RequestParam String nombre) {
         return this.service.findByIdRestauranteAndNombreContaining(idRestaurante, nombre);
     }
-
+    /**
+     * Busca platos asociados a un tag concreto.
+     *
+     * @param tag etiqueta por la que filtrar
+     * @return flujo de platos que tienen ese tag
+     */
     @GetMapping(value = "/getportag", params = "tag")
     @Operation(summary = "Buscar platos por tag")
     @ApiResponses({
@@ -125,6 +186,14 @@ public class PlatoController {
         return this.service.findByTag(tag);
     }
 
+
+
+    /**
+     * Genera una URL prefirmada para subir la imagen de un plato a S3, AWS.
+     *
+     * @param id identificador del plato
+     * @return URL prefirmada como texto plano, o 404 si el plato no existe
+     */
     @GetMapping(value = "/icon-upload-url/{id}", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Obtener URL prefirmada para subir foto de plato")
     @ApiResponses({

@@ -20,6 +20,12 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+
+/**
+ * Controlador REST para la gestión de restaurantes.
+ * Expone endpoints para crear, consultar, actualizar y eliminar restaurantes,
+ * así como para registrar platos y obtener URLs de subida de imágenes.
+ */
 @RestController
 @RequestMapping("/restaurante")
 public class RestauranteController {
@@ -29,6 +35,11 @@ public class RestauranteController {
     @Autowired private IPlatoService platoService;
     @Autowired private IDireccionService direccionService;
 
+    /**
+     * Devuelve todos los restaurantes disponibles.
+     *
+     * @return flujo con todos los restaurantes
+     */
     @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los restaurantes")
     @ApiResponses({
@@ -41,6 +52,13 @@ public class RestauranteController {
         return this.service.findAll();
     }
 
+
+    /**
+     * Busca un restaurante por su id único, su clave principal.
+     *
+     * @param id identificador del restaurante
+     * @return el restaurante encontrado, o 404 si no existe
+     */
     @GetMapping("/get/{id}")
     @Operation(summary = "Obtener restaurante por ID")
     @ApiResponses({
@@ -55,6 +73,12 @@ public class RestauranteController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)));
     }
 
+    /**
+     * Registra un nuevo restaurante en el sistema.
+     *
+     * @param restaurante datos del restaurante a registrar
+     * @return el restaurante creado con su ID asignado, o 400 si los datos son inválidos
+     */
     @PostMapping("/register")
     @Operation(summary = "Registrar un restaurante")
     @ApiResponse(responseCode = "200",
@@ -64,6 +88,13 @@ public class RestauranteController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST)));
     }
 
+    /**
+     * Actualiza los datos de un restaurante existente.
+     * Sincroniza también sus direcciones y platos asociados.
+     *
+     * @param restaurante datos actualizados del restaurante
+     * @return {@code true} si se actualizó correctamente, {@code false} si no existía o hubo un error
+     */
     @PutMapping("/save")
     @Operation(summary = "Actualizar un restaurante")
     @ApiResponse(responseCode = "200",
@@ -75,6 +106,12 @@ public class RestauranteController {
                 .then(this.service.update(restaurante));
     }
 
+    /**
+     * Elimina un restaurante por su id.
+     *
+     * @param id identificador del restaurante a eliminar
+     * @return {@code true} si se eliminó correctamente, {@code false} si no existía o hubo un error
+     */
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Eliminar un restaurante")
     @ApiResponse(responseCode = "200",
@@ -83,6 +120,12 @@ public class RestauranteController {
         return this.service.deleteRestauranteById(id);
     }
 
+    /**
+     * Busca restaurantes cuyo nombre contenga el texto indicado.
+     *
+     * @param nombre texto a buscar en el nombre del restaurante
+     * @return flujo de restaurantes que coinciden con la búsqueda
+     */
     @GetMapping(value = "/getpornombre", params = "nombre")
     @Operation(summary = "Buscar restaurantes por nombre")
     @ApiResponses({
@@ -95,6 +138,12 @@ public class RestauranteController {
         return this.service.findByNombreContaining(nombre);
     }
 
+    /**
+     * Busca restaurantes cuya descripción contenga el texto indicado.
+     *
+     * @param description texto a buscar en la descripción del restaurante
+     * @return flujo de restaurantes que coinciden con la búsqueda
+     */
     @GetMapping(value = "/getporescription", params = "description")
     @Operation(summary = "Buscar restaurantes por descripción")
     @ApiResponses({
@@ -107,6 +156,12 @@ public class RestauranteController {
         return this.service.findByDescriptionContaining(description);
     }
 
+    /**
+     * Busca restaurantes asociados a un tag concreto.
+     *
+     * @param tag etiqueta por la que filtrar
+     * @return flujo de restaurantes que tienen ese tag
+     */
     @GetMapping(value = "/getportag", params = "tag")
     @Operation(summary = "Buscar restaurantes por tag")
     @ApiResponses({
@@ -119,6 +174,13 @@ public class RestauranteController {
         return this.service.findByTag(tag);
     }
 
+    /**
+     * Genera una URL prefirmada para subir la imagen de un restaurante a S3, AWS.
+     *
+     * @param id identificador del restaurante
+     * @param index índice de la imagen (por defecto 0)
+     * @return URL prefirmada como texto plano, o 404 si el restaurante no existe
+     */
     @GetMapping(value = "/icon-upload-url/{id}", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Obtener URL prefirmada para subir foto de restaurante")
     @ApiResponses({
@@ -132,7 +194,13 @@ public class RestauranteController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(r -> this.s3Service.generateRestauranteIconUrl(id, index));
     }
-
+    /**
+     * Registra un nuevo plato asociado a un restaurante existente.
+     *
+     * @param idRestaurante identificador del restaurante al que va a pertenecer el plato
+     * @param plato datos del plato a registrar
+     * @return el plato creado con su ID asignado, o 404 si el restaurante no existe
+     */
     @PostMapping("/{idRestaurante}/plato/register")
     @Operation(summary = "Registrar un plato asociado a un restaurante")
     @ApiResponse(responseCode = "200",
@@ -144,7 +212,14 @@ public class RestauranteController {
                 .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.NOT_FOUND)))
                 .flatMap(r -> this.platoService.registerConRestaurante(plato, idRestaurante));
     }
-
+    /**
+     * Sincroniza las direcciones del restaurante asignándoles el ID correspondiente.
+     * Se utiliza en actualizar restaurante.
+     * No hace nada si la lista de direcciones está vacía o es nula.
+     *
+     * @param restaurante restaurante cuyas direcciones se van a sincronizar
+     * @return Mono vacío al completarse la operación
+     */
     private Mono<Void> syncDirecciones(Restaurante restaurante) {
         if (restaurante.getDirecciones() == null || restaurante.getDirecciones().isEmpty())
             return Mono.empty();
@@ -153,6 +228,14 @@ public class RestauranteController {
                 .flatMap(direccion -> this.direccionService.asignarRestauranteId(direccion, restaurante.getId()))
                 .then();
     }
+    /**
+     * Sincroniza los platos del restaurante actualizándolos en el sistema.
+     * Se utiliza en actualizar restaurante.
+     * No hace nada si la lista de platos está vacía o es nula.
+     *
+     * @param restaurante restaurante cuyos platos se van a sincronizar
+     * @return Mono vacío al completarse la operación
+     */
     private Mono<Void> syncPlatos(Restaurante restaurante) {
         if (restaurante.getPlatos() == null || restaurante.getPlatos().isEmpty())
             return Mono.empty();

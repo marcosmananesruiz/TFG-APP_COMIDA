@@ -16,6 +16,11 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * Implementación del servicio de restaurantes.
+ * Gestiona las operaciones CRUD sobre restaurantes, incluyendo
+ * la conversión entre entidad y DTO, y la generación de IDs únicos.
+ */
 @Service
 public class RestauranteServiceImpl implements IRestauranteService {
 
@@ -26,6 +31,7 @@ public class RestauranteServiceImpl implements IRestauranteService {
     @Autowired private IDireccionService direccionService;
 
     public static Logger LOGGER = LoggerFactory.getLogger(RestauranteServiceImpl.class);
+    //prefijo que usamos para generar los IDs de los restaurantes en la bbdd
     private final String UNIQUE_CHAR = "R";
 
     private Mono<Restaurante> enrich(RestauranteEntity entity) {
