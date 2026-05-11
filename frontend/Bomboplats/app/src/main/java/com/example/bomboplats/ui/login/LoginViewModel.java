@@ -64,7 +64,7 @@ public class LoginViewModel extends ViewModel {
                     email,
                     password,
                     new ArrayList<>(),
-                    new HashMap<>(),
+                    new ArrayList<>(),
                     null
             );
 

@@ -28,6 +28,7 @@ import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.HistorialRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.EstadoPedido;
+import com.example.bomboplats.data.model.StagedBombo;
 import com.example.bomboplats.ui.cuenta.DireccionesCuentaFragment;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.estadobombos.EstadoBombosViewModel;
@@ -151,8 +152,8 @@ public class RealizarEnvioFragment extends Fragment {
     }
 
     private void procesarPedido() {
-        Map<String, Integer> itemsMap = carritoViewModel.getItemsCarrito().getValue();
-        if (itemsMap == null || itemsMap.isEmpty()) return;
+        List<StagedBombo> stagedBombos = carritoViewModel.getItemsCarrito().getValue();
+        if (stagedBombos == null || stagedBombos.isEmpty()) return;
 
         executorService.execute(() -> {
             String userEmail = userViewModel.getEmail().getValue();
@@ -167,10 +168,10 @@ public class RealizarEnvioFragment extends Fragment {
 
                 String id = "";
 
-                for (Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
-                    Bombo b = buscarBomboPorId(entry.getKey());
+                for (StagedBombo stagedBombo : stagedBombos) {
+                    Bombo b = stagedBombo.getBombo();
                     if (b != null) {
-                        for (int i = 0; i < entry.getValue(); i++) {
+                        for (int i = 0; i < stagedBombo.getCantidad(); i++) {
                             com.example.bomboplats.api.Pedido apiPedido = new com.example.bomboplats.api.Pedido();
                             Plato apiPlato = new Plato();
                             apiPlato.setId(b.getId());
@@ -186,6 +187,7 @@ public class RealizarEnvioFragment extends Fragment {
                             apiPedido.setUser(apiUser);
                             apiPedido.setEstado(com.example.bomboplats.api.Pedido.EstadoEnum.PREPARING);
                             apiPedido.setEntrega(fechaEntregaApi);
+                            apiPedido.setModifications(stagedBombo.getModificaciones());
 
                             try {
                                 // Realizamos la llamada. Si llega al servidor y se guarda (200 OK), anySuccess será true.
@@ -218,13 +220,14 @@ public class RealizarEnvioFragment extends Fragment {
                 
                 List<PedidoItem> localItems = new ArrayList<>();
                 double total = 0;
-                for (Map.Entry<String, Integer> entry : itemsMap.entrySet()) {
-                    Bombo b = buscarBomboPorId(entry.getKey());
+
+                for (StagedBombo stagedBombo : stagedBombos) {
+                    Bombo b = stagedBombo.getBombo();
                     if (b != null) {
-                        localItems.add(new PedidoItem(b.getRestauranteId(), b.getId(), entry.getValue()));
+                        localItems.add(new PedidoItem(b.getRestauranteId(), b.getId(), stagedBombo.getCantidad()));
                         try {
                             String precioLimpio = b.getPrecio().replace("€", "").replace(",", ".").trim();
-                            total += Double.parseDouble(precioLimpio) * entry.getValue();
+                            total += Double.parseDouble(precioLimpio) * stagedBombo.getCantidad();
                         } catch (Exception e) {
                             Log.e("RealizarEnvio", "Error parseando precio");
                         }

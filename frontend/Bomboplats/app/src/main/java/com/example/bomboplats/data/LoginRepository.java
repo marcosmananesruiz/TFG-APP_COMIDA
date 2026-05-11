@@ -2,6 +2,8 @@ package com.example.bomboplats.data;
 
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.LoggedInUser;
+import com.example.bomboplats.data.model.StagedBombo;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,9 +109,9 @@ public class LoginRepository {
         }
     }
 
-    public void setCartMap(Map<String, List<String>> cartPlates) {
+    public void setCartMap(List<StagedBombo> cartPlates) {
         if (user != null) {
-            user.setCartPlates(new HashMap<>(cartPlates));
+            user.setCartPlates(new ArrayList<>(cartPlates));
             saveUser();
         }
     }

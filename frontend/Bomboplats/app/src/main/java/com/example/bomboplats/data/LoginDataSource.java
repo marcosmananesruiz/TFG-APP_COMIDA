@@ -11,6 +11,7 @@ import com.example.bomboplats.api.UserControllerApi;
 import com.example.bomboplats.api.UserRegister;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.LoggedInUser;
+import com.example.bomboplats.data.model.StagedBombo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
@@ -172,20 +173,20 @@ public class LoginDataSource {
         return new Result.Success<>(localUser);
     }
 
-    private void saveCartLocally(String email, Map<String, List<String>> cart) {
+    private void saveCartLocally(String email, List<StagedBombo> cart) {
         if (cart == null) return;
         SharedPreferences prefs = context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString("cart_" + email, gson.toJson(cart)).apply();
     }
 
-    private Map<String, List<String>> loadCartLocally(String email) {
+    private List<StagedBombo> loadCartLocally(String email) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString("cart_" + email, null);
         if (json != null) {
-            Type type = new TypeToken<Map<String, List<String>>>(){}.getType();
+            Type type = new TypeToken<List<StagedBombo>>(){}.getType();
             return gson.fromJson(json, type);
         }
-        return new HashMap<>();
+        return new ArrayList<>();
     }
 
     public Result<LoggedInUser> updateName(String email, String newName) {
@@ -211,7 +212,7 @@ public class LoginDataSource {
                 LoggedInUser user = convertToLoggedInUser(apiUser, null);
                 saveProfileOffline(user);
                 // Migrar carrito local
-                Map<String, List<String>> cart = loadCartLocally(oldEmail);
+                List<StagedBombo> cart = loadCartLocally(oldEmail);
                 saveCartLocally(newEmail, cart);
                 // Borrar perfil viejo
                 context.getSharedPreferences(PREF_USER_DATA, Context.MODE_PRIVATE).edit().remove("profile_" + oldEmail).apply();

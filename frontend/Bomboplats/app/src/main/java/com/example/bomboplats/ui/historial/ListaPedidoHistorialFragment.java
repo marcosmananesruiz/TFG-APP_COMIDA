@@ -115,8 +115,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
 
     @Override
     public void onAgregarCarritoClick(Bombo b) {
-        String itemKey = b.getRestauranteId() + ":" + b.getId();
-        carritoViewModel.agregarAlCarrito(itemKey, 1);
+        carritoViewModel.agregarAlCarrito(b, 1, new ArrayList<>());
         
         // Usamos el recurso carrito_item_added para evitar hardcodeo en el Toast
         String mensaje = getString(R.string.carrito_item_added, 1, b.getNombre());

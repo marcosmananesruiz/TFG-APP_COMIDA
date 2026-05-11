@@ -18,6 +18,7 @@ import com.example.bomboplats.data.LoginRepository;
 import com.example.bomboplats.data.Result;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.LoggedInUser;
+import com.example.bomboplats.data.model.StagedBombo;
 import com.example.bomboplats.ui.general.FavoritosProvider;
 import java.io.File;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     private final MutableLiveData<String> photoUri = new MutableLiveData<>();
     
     private final MutableLiveData<List<Bombo>> favoritos = new MutableLiveData<>(new ArrayList<>());
-    private final MutableLiveData<Map<String, Integer>> carrito = new MutableLiveData<>(new HashMap<>());
+    private final MutableLiveData<List<StagedBombo>> carrito = new MutableLiveData<>(new ArrayList<>());
     
     private final MutableLiveData<List<Direccion>> userAddressesObjects = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<List<String>> addresses = new MutableLiveData<>(new ArrayList<>());
@@ -266,15 +267,8 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         }
 
         if (user.getCartPlates() != null) {
-            Map<String, Integer> mapaCarritoUI = new HashMap<>();
-            Map<String, List<String>> cartMap = user.getCartPlates();
-            for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
-                for (String bId : entry.getValue()) {
-                    String key = entry.getKey() + ":" + bId;
-                    mapaCarritoUI.put(key, mapaCarritoUI.getOrDefault(key, 0) + 1);
-                }
-            }
-            carrito.setValue(mapaCarritoUI);
+            List<StagedBombo> cartMap = user.getCartPlates();
+            carrito.setValue(cartMap);
         }
     }
 
@@ -284,7 +278,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<String> getPassword() { return password; }
     public LiveData<String> getPhotoUri() { return photoUri; }
     public LiveData<List<Bombo>> getFavoritos() { return favoritos; }
-    public LiveData<Map<String, Integer>> getCarrito() { return carrito; }
+    public LiveData<List<StagedBombo>> getCarrito() { return carrito; }
     public LiveData<List<String>> getAddresses() { return addresses; }
     public LiveData<List<Direccion>> getUserAddressesObjects() { return userAddressesObjects; }
     public LiveData<String> getError() { return error; }
@@ -356,21 +350,10 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
         this.loginRepository.setFavorites(favoritos);
     }
 
-    public void setCarritoUI(Map<String, Integer> nuevoCarritoPlano) {
-        carrito.setValue(new HashMap<>(nuevoCarritoPlano));
-        
-        final Map<String, Integer> finalCarrito = new HashMap<>(nuevoCarritoPlano);
+    public void setCarritoUI(List<StagedBombo> nuevoCarritoPlano) {
+        carrito.setValue(new ArrayList<>(nuevoCarritoPlano));
         executorService.execute(() -> {
-            Map<String, List<String>> mapParaAPI = new HashMap<>();
-            for (Map.Entry<String, Integer> entry : finalCarrito.entrySet()) {
-                String[] parts = entry.getKey().split(":");
-                if (parts.length == 2) {
-                    for (int i = 0; i < entry.getValue(); i++) {
-                        mapParaAPI.computeIfAbsent(parts[0], k -> new ArrayList<>()).add(parts[1]);
-                    }
-                }
-            }
-            loginRepository.setCartMap(mapParaAPI);
+            loginRepository.setCartMap(this.carrito.getValue());
         });
     }
 

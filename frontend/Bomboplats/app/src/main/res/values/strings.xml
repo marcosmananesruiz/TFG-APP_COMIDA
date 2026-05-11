@@ -15,6 +15,7 @@
     <string name="pagar_ahora">PAGAR AHORA</string>
     <string name="confirmar_pedido">CONFIRMAR PEDIDO</string>
     <string name="realizar_pedido">AÑADIR AL CARRITO</string>
+    <string name="eliminar_del_carro">ELIMINAR DEL CARRITO</string>
     <string name="guardar_cambios">GUARDAR CAMBIOS</string>
     <string name="confirmar_cambio">CONFIRMAR CAMBIO</string>
     <string name="cambiar_correo_electronico">CAMBIAR CORREO ELECTRÓNICO</string>
@@ -87,6 +88,7 @@
     <string name="toast_perfil_guardado">Perfil actualizado correctamente</string>
     <string name="toast_fav_add">Añadido a favoritos</string>
     <string name="toast_fav_rem">Eliminado de favoritos</string>
+    <string name="bombo_eliminado_del_carro">Se ha eliminado el plato del carrito</string>
     <string name="default_nombre_usuario">User</string>
     <string name="default_email_usuario">mail@example.com</string>
     <string name="cambiar_correo_titulo">Cambiar Correo</string>

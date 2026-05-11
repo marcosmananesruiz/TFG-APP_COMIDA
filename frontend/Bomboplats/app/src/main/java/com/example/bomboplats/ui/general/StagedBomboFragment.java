@@ -1,7 +1,6 @@
 package com.example.bomboplats.ui.general;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,35 +8,33 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
+import com.example.bomboplats.data.model.StagedBombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DetalleBomboFragment extends Fragment implements ModificacionesAdapter.OnModificacionClickListener {
+public class StagedBomboFragment extends Fragment {
 
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
-    private FoodRepository foodRepository;
-    private TextView tvNombre, tvPrecio, tvDescription, tvIngredientes, tvAlergenos, tvCantidad;
+    private TextView tvNombre, tvPrecio, tvDescription, tvModificaciones, tvCantidad;
     private ImageView ivFavorito;
     private RecyclerView rvFotos;
-    private RecyclerView rvModificaciones;
-    private String bomboId;
+    private StagedBombo stagedBombo;
     private Bombo bomboActual;
-
-    private ModificacionesAdapter adapter;
-    private List<String> selectedModifications;
     private int cantidad = 1;
 
     private static final String DEFAULT_BOMBO_IMAGE = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/platos/default.jpg";
@@ -45,12 +42,11 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_detalle_bombo, container, false);
+        View view = inflater.inflate(R.layout.fragment_staged_bombo_view, container, false);
 
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-        this.selectedModifications = new ArrayList<>();
-        foodRepository = FoodRepository.getInstance(requireContext());
+
 
         tvNombre = view.findViewById(R.id.tv_bombo_nombre);
         tvPrecio = view.findViewById(R.id.tv_bombo_precio);
@@ -58,37 +54,31 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
         rvFotos = view.findViewById(R.id.rv_bombo_fotos);
         tvCantidad = view.findViewById(R.id.tv_cantidad);
         ivFavorito = view.findViewById(R.id.iv_favorito);
-        rvModificaciones = view.findViewById(R.id.rv_ingredientes);
-        
+        tvModificaciones = view.findViewById(R.id.tv_ingredientes);
+
         View btnMenos = view.findViewById(R.id.btn_menos);
         View btnMas = view.findViewById(R.id.btn_mas);
-        Button btnPedido = view.findViewById(R.id.btn_realizar_pedido);
+        Button btnEliminar = view.findViewById(R.id.btn_realizar_pedido);
 
         if (getArguments() != null) {
-            bomboId = getArguments().getString("bomboId");
+            int id = getArguments().getInt("staged_bombo");
+            this.stagedBombo = this.carritoViewModel.findStagedBomboById(id);
+            this.bomboActual = this.stagedBombo.getBombo();
+            this.cantidad = this.stagedBombo.getCantidad();
+            this.tvCantidad.setText(String.valueOf(this.cantidad));
         }
-
-        if (bomboId != null) {
-            bomboActual = foodRepository.getBomboPorId(bomboId);
-
-            this.adapter = new ModificacionesAdapter(bomboActual.getIngredientes(), this);
-            this.rvModificaciones.setAdapter(this.adapter);
-        }
-        
-        mostrarInfoBombo();
-
-        // Inicializar estado de favorito
-        actualizarIconoFavorito();
 
         btnMas.setOnClickListener(v -> {
             cantidad++;
             tvCantidad.setText(String.valueOf(cantidad));
+            this.stagedBombo.setCantidad(cantidad);
         });
 
         btnMenos.setOnClickListener(v -> {
             if (cantidad > 1) {
                 cantidad--;
                 tvCantidad.setText(String.valueOf(cantidad));
+                this.stagedBombo.setCantidad(cantidad);
             }
         });
 
@@ -102,16 +92,13 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
             }
         });
 
-        btnPedido.setOnClickListener(v -> {
-            if (bomboActual != null) {
-                carritoViewModel.agregarAlCarrito(bomboActual, cantidad, this.selectedModifications); // TODO: CAMBIAR ESTO CUANDO TENGAMOS LAS MODIFICACIONES
-                String mensaje = getString(R.string.carrito_item_added, cantidad, bomboActual.getNombre());
-                Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
-            }
+        btnEliminar.setOnClickListener(v -> {
+            this.carritoViewModel.removerDelCarrito(this.stagedBombo);
+            Toast.makeText(getContext(), getString(R.string.bombo_eliminado_del_carro), Toast.LENGTH_SHORT).show();
         });
 
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), ids -> actualizarIconoFavorito());
-
+        mostrarInfoBombo();
         return view;
     }
 
@@ -125,44 +112,25 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
     private void mostrarInfoBombo() {
         if (bomboActual != null) {
             tvNombre.setText(bomboActual.getNombre());
-            
+
             String precio = bomboActual.getPrecio();
             if (precio != null && !precio.contains("€")) {
                 precio += "€";
             }
             tvPrecio.setText(precio);
-            
+
             tvDescription.setText(bomboActual.getDescripcion());
 
             List<String> fotos = bomboActual.getFotos();
             FotoCarruselAdapter adapter = new FotoCarruselAdapter(fotos, DEFAULT_BOMBO_IMAGE);
             rvFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
             rvFotos.setAdapter(adapter);
-        }
-    }
 
-    private String formatList(List<String> items) {
-        if (items == null || items.isEmpty()) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < items.size(); i++) {
-            sb.append("- ").append(items.get(i));
-            if (i < items.size() - 1) {
-                sb.append("\n");
-            }
-        }
-        return sb.toString();
-    }
-
-    @Override
-    public void onModificacionClick(String modificacion, boolean isChecked) {
-        if (isChecked) {
-            this.selectedModifications.add(modificacion);
-            Log.d("modificaciones", modificacion + " SELECCIONADA " + isChecked);
-        } else {
-            this.selectedModifications.remove(modificacion);
-            Log.d("modificaciones", modificacion + " SELECCIONADA " + isChecked);
+            String modficaciones = this.stagedBombo.getModificaciones().stream()
+                    .map(m -> "- " + m + "\n")
+                    .reduce((m1, m2) -> m1+m2)
+                    .orElse("No hay ninguna modificación seleccionada.");
+            this.tvModificaciones.setText(modficaciones);
         }
     }
 }

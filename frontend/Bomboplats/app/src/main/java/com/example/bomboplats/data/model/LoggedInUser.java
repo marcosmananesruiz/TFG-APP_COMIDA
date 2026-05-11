@@ -15,17 +15,17 @@ public class LoggedInUser {
     private String photoPath;
 
     private List<Bombo> favoritePlates;
-    private Map<String, List<String>> cartPlates = new HashMap<>();
+    private List<StagedBombo> cartPlates = new ArrayList<>();
     private List<Pedido> orderHistory = new ArrayList<>();
     private List<String> addresses = new ArrayList<>();
 
-    public LoggedInUser(String userId, String displayName, String email, String password, List<Bombo> favoritePlates, Map<String, List<String>> cartPlates, String photoPath) {
+    public LoggedInUser(String userId, String displayName, String email, String password, List<Bombo> favoritePlates, List<StagedBombo> cartPlates, String photoPath) {
         this.userId = userId;
         this.displayName = displayName;
         this.email = email;
         this.password = password;
         this.favoritePlates = favoritePlates;
-        this.cartPlates = cartPlates != null ? cartPlates : new HashMap<>();
+        this.cartPlates = cartPlates != null ? cartPlates : new ArrayList<>();
         this.orderHistory = new ArrayList<>();
         this.addresses = new ArrayList<>();
         this.photoPath = photoPath;
@@ -42,8 +42,8 @@ public class LoggedInUser {
         return favoritePlates;
     }
 
-    public Map<String, List<String>> getCartPlates() {
-        if (cartPlates == null) cartPlates = new HashMap<>();
+    public List<StagedBombo> getCartPlates() {
+        if (cartPlates == null) cartPlates = new ArrayList<>();
         return cartPlates;
     }
 
@@ -63,7 +63,7 @@ public class LoggedInUser {
     public void setPassword(String password) { this.password = password; }
     public void setPhotoPath(String photoPath) { this.photoPath = photoPath; }
     public void setFavoritePlates(List<Bombo> favoritePlates) { this.favoritePlates = favoritePlates; }
-    public void setCartPlates(Map<String, List<String>> cartPlates) { this.cartPlates = cartPlates; }
+    public void setCartPlates(List<StagedBombo> cartPlates) { this.cartPlates = cartPlates; }
     public void setOrderHistory(List<Pedido> orderHistory) { this.orderHistory = orderHistory; }
     public void setAddresses(List<String> addresses) { this.addresses = addresses; }
 }

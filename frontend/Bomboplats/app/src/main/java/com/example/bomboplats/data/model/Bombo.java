@@ -1,11 +1,14 @@
 package com.example.bomboplats.data.model;
 
+import androidx.annotation.Nullable;
+
 import com.example.bomboplats.api.Plato;
 import com.example.bomboplats.api.PlatoControllerApi;
 import com.example.bomboplats.api.RestauranteControllerApi;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 
 public class Bombo {
@@ -53,4 +56,15 @@ public class Bombo {
     public List<String> getFotos() { return fotos; }
     public List<String> getIngredientes() { return ingredientes; }
     public List<String> getAlergenos() { return alergenos; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Bombo bombo)) return false;
+        return Objects.equals(id, bombo.id) && Objects.equals(restauranteId, bombo.restauranteId) && Objects.equals(nombre, bombo.nombre) && Objects.equals(descripcion, bombo.descripcion) && Objects.equals(precio, bombo.precio) && Objects.equals(etiquetas, bombo.etiquetas) && Objects.equals(fotos, bombo.fotos) && Objects.equals(ingredientes, bombo.ingredientes) && Objects.equals(alergenos, bombo.alergenos);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, restauranteId, nombre, descripcion, precio, etiquetas, fotos, ingredientes, alergenos);
+    }
 }

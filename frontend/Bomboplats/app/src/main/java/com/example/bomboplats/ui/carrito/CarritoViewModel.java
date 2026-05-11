@@ -9,7 +9,10 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.bomboplats.data.LoginDataSource;
 import com.example.bomboplats.data.LoginRepository;
+import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.LoggedInUser;
+import com.example.bomboplats.data.model.StagedBombo;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +23,7 @@ import java.util.concurrent.Executors;
 public class CarritoViewModel extends AndroidViewModel {
     
     // Clave: "restauranteId:bomboId", Valor: cantidad
-    private final MutableLiveData<Map<String, Integer>> itemsCarrito = new MutableLiveData<>(new HashMap<>());
+    private final MutableLiveData<List<StagedBombo>> itemsCarrito = new MutableLiveData<>(new ArrayList<>());
     private final LoginRepository loginRepository;
     private static final String PREFS_NAME = "user_prefs";
     private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
@@ -47,75 +50,53 @@ public class CarritoViewModel extends AndroidViewModel {
         });
     }
 
-    public LiveData<Map<String, Integer>> getItemsCarrito() {
+    public LiveData<List<StagedBombo>> getItemsCarrito() {
         return itemsCarrito;
     }
 
     private void cargarDatosDesdeAPI() {
         LoggedInUser user = loginRepository.getUser();
         if (user != null) {
-            Map<String, Integer> mapaCargado = new HashMap<>();
             // Nueva estructura: Map<RestauranteId, List<BomboId>>
-            Map<String, List<String>> cartMap = user.getCartPlates();
-            if (cartMap != null) {
-                for (Map.Entry<String, List<String>> entry : cartMap.entrySet()) {
-                    String restauranteId = entry.getKey();
-                    for (String bomboId : entry.getValue()) {
-                        String key = restauranteId + ":" + bomboId;
-                        mapaCargado.put(key, mapaCargado.getOrDefault(key, 0) + 1);
-                    }
-                }
-            }
-            itemsCarrito.postValue(mapaCargado);
+            List<StagedBombo> cartMap = user.getCartPlates();
+            itemsCarrito.postValue(cartMap);
         }
     }
 
-    public void agregarAlCarrito(String itemKey, int cantidad) {
-        Map<String, Integer> mapaActual = itemsCarrito.getValue();
-        if (mapaActual == null) mapaActual = new HashMap<>();
-        
-        int cantidadExistente = mapaActual.getOrDefault(itemKey, 0);
-        mapaActual.put(itemKey, cantidadExistente + cantidad);
-        itemsCarrito.setValue(new HashMap<>(mapaActual));
+    public void agregarAlCarrito(Bombo bombo, int cantidad, List<String> modificaciones) {
+
+        if (this.itemsCarrito.getValue() == null) {
+            this.itemsCarrito.postValue(new ArrayList<>());
+        }
+
+        List<StagedBombo> stagedBombos = this.itemsCarrito.getValue();
+        stagedBombos.add(new StagedBombo(bombo, cantidad, modificaciones));
+        this.itemsCarrito.postValue(stagedBombos);
+
         sincronizarConAPI();
     }
 
-    public void removerDelCarrito(String itemKey) {
-        Map<String, Integer> mapaActual = itemsCarrito.getValue();
-        if (mapaActual != null && mapaActual.containsKey(itemKey)) {
-            int cantidadActual = mapaActual.get(itemKey);
-            if (cantidadActual > 1) {
-                mapaActual.put(itemKey, cantidadActual - 1);
-            } else {
-                mapaActual.remove(itemKey);
-            }
-            itemsCarrito.setValue(new HashMap<>(mapaActual));
-            sincronizarConAPI();
+    public void removerDelCarrito(StagedBombo bombo) {
+        if (this.itemsCarrito.getValue() == null) {
+            this.itemsCarrito.postValue(new ArrayList<>());
+        } else {
+            List<StagedBombo> stagedBombos = this.itemsCarrito.getValue();
+            stagedBombos.remove(bombo);
         }
+        sincronizarConAPI();
     }
 
     public void limpiarCarrito() {
-        itemsCarrito.setValue(new HashMap<>());
+        itemsCarrito.setValue(new ArrayList<>());
         sincronizarConAPI();
     }
 
     private void sincronizarConAPI() {
-        final Map<String, Integer> mapaUI = itemsCarrito.getValue();
+        final List<StagedBombo> mapaUI = itemsCarrito.getValue();
         if (mapaUI != null) {
             executorService.execute(() -> {
                 // Convertir el mapa plano "restauranteId:bomboId" al mapa jerárquico
-                Map<String, List<String>> mapParaAPI = new HashMap<>();
-                for (Map.Entry<String, Integer> entry : mapaUI.entrySet()) {
-                    String[] parts = entry.getKey().split(":");
-                    if (parts.length == 2) {
-                        String restauranteId = parts[0];
-                        String bomboId = parts[1];
-                        for (int i = 0; i < entry.getValue(); i++) {
-                            mapParaAPI.computeIfAbsent(restauranteId, k -> new ArrayList<>()).add(bomboId);
-                        }
-                    }
-                }
-                loginRepository.setCartMap(mapParaAPI);
+                loginRepository.setCartMap(mapaUI);
             });
         }
     }
@@ -124,5 +105,12 @@ public class CarritoViewModel extends AndroidViewModel {
     protected void onCleared() {
         super.onCleared();
         executorService.shutdown();
+    }
+
+
+    public StagedBombo findStagedBomboById(int id) {
+        List<StagedBombo> stagedBombos = this.itemsCarrito.getValue();
+        if (stagedBombos == null) return null;
+        return stagedBombos.stream().filter(stagedBombo -> stagedBombo.getId() == id).findFirst().orElse(null);
     }
 }

@@ -94,8 +94,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     @Override
     public void onAgregarCarritoClick(Bombo b) {
         // Usamos la clave compuesta para el carrito
-        String itemKey = b.getRestauranteId() + ":" + b.getId();
-        carritoViewModel.agregarAlCarrito(itemKey, 1);
+        carritoViewModel.agregarAlCarrito(b, 1, new ArrayList<>());
         String mensaje = getString(R.string.carrito_item_added, 1, b.getNombre());
         Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }

@@ -112,8 +112,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
 
     @Override
     public void onAgregarCarritoClick(Bombo bombo) {
-        String itemKey = bombo.getRestauranteId() + ":" + bombo.getId();
-        carritoViewModel.agregarAlCarrito(itemKey, 1);
+        carritoViewModel.agregarAlCarrito(bombo, 1, new ArrayList<>());
         String mensaje = getString(R.string.carrito_item_added, 1, bombo.getNombre());
         Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }

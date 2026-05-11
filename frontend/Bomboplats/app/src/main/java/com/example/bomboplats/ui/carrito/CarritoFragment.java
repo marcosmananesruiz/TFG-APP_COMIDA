@@ -17,8 +17,11 @@ import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
+import com.example.bomboplats.data.model.StagedBombo;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
 import com.example.bomboplats.ui.general.DetalleBomboFragment;
+import com.example.bomboplats.ui.general.StagedBomboFragment;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -78,7 +81,7 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
     }
 
     private void actualizarUI() {
-        Map<String, Integer> items = carritoViewModel.getItemsCarrito().getValue();
+        List<StagedBombo> items = carritoViewModel.getItemsCarrito().getValue();
         List<Bombo> favoritosList = userViewModel.getFavoritos().getValue();
         Set<Bombo> favoritosSet = favoritosList != null ? new HashSet<>(favoritosList) : new HashSet<>();
 
@@ -110,36 +113,20 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         }
     }
 
-    private void actualizarListaVisual(Map<String, Integer> items, Set<Bombo> favoritos) {
-        List<BomboConCantidad> listaFinal = new ArrayList<>();
-        double totalCompra = 0.0;
+    private void actualizarListaVisual(List<StagedBombo> carrito, Set<Bombo> favoritos) {
 
-        for (Map.Entry<String, Integer> entry : items.entrySet()) {
-            String key = entry.getKey(); // Formato "restauranteId:bomboId"
-            int cantidad = entry.getValue();
-            
-            String[] parts = key.split(":");
-            String bomboId = parts.length == 2 ? parts[1] : key;
-            
-            Bombo b = buscarBomboPorId(bomboId);
-            if (b != null) {
-                listaFinal.add(new BomboConCantidad(b, cantidad));
-                try {
-                    String precioLimpio = b.getPrecio().replace("€", "").replace(",", ".").trim();
-                    totalCompra += Double.parseDouble(precioLimpio) * cantidad;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        float totalCompra = (float) carrito.stream()
+                .mapToDouble(stagedBombo -> stagedBombo.getCantidad() * Double.parseDouble(stagedBombo.getBombo().getPrecio()))
+                .sum();
         
-        adapter.actualizarLista(listaFinal, favoritos);
+        adapter.actualizarLista(carrito, favoritos);
         tvTotalPrecio.setText(String.format(Locale.getDefault(), "%.2f€", totalCompra));
     }
 
     @Override
-    public void onRestarClick(String itemKey) {
-        carritoViewModel.removerDelCarrito(itemKey);
+    public void onRestarClick(StagedBombo bombo) {
+        carritoViewModel.removerDelCarrito(bombo);
+        this.actualizarUI();
     }
 
     @Override
@@ -148,13 +135,10 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
     }
 
     @Override
-    public void onBomboClick(Bombo b) {
-        DetalleBomboFragment fragment = new DetalleBomboFragment();
+    public void onBomboClick(StagedBombo b) {
+        StagedBomboFragment fragment = new StagedBomboFragment();
         Bundle args = new Bundle();
-        args.putString("bomboId", b.getId());
-        args.putString("nombre", b.getNombre());
-        args.putString("precio", b.getPrecio());
-        args.putString("desc", b.getDescripcion());
+        args.putInt("staged_bombo", b.getId());
         fragment.setArguments(args);
 
         if (getActivity() instanceof GeneralActivity) {
@@ -162,8 +146,10 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         }
     }
 
-    private Bombo buscarBomboPorId(String id) {
-        return foodRepository.getBomboPorId(id);
+    private StagedBombo obtenerStagedBombo(Bombo bombo) {
+        List<StagedBombo> stagedBombos = this.carritoViewModel.getItemsCarrito().getValue();
+        if (stagedBombos == null) return null;
+        return stagedBombos.stream().filter(stagedBombo -> stagedBombo.getBombo().equals(bombo)).findFirst().orElse(null);
     }
 
     public void filtrar(String texto) {}

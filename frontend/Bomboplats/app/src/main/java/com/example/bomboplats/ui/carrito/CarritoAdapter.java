@@ -13,29 +13,31 @@ import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.BomboConCantidad;
+import com.example.bomboplats.data.model.StagedBombo;
+
 import java.util.List;
 import java.util.Set;
 
 public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoViewHolder> {
 
-    private List<BomboConCantidad> listaCarrito;
+    private List<StagedBombo> listaCarrito;
     private OnCarritoActionListener listener;
     private Set<Bombo> favoritos;
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
     private static final String DEFAULT_BOMBO_IMAGE = BASE_BUCKET + "platos/default.jpg";
 
     public interface OnCarritoActionListener {
-        void onRestarClick(String itemKey);
+        void onRestarClick(StagedBombo bombo);
         void onFavoritoClick(Bombo bombo);
-        void onBomboClick(Bombo bombo);
+        void onBomboClick(StagedBombo bombo);
     }
 
-    public CarritoAdapter(List<BomboConCantidad> listaCarrito, OnCarritoActionListener listener) {
+    public CarritoAdapter(List<StagedBombo> listaCarrito, OnCarritoActionListener listener) {
         this.listaCarrito = listaCarrito;
         this.listener = listener;
     }
 
-    public void actualizarLista(List<BomboConCantidad> nuevaLista, Set<Bombo> favoritos) {
+    public void actualizarLista(List<StagedBombo> nuevaLista, Set<Bombo> favoritos) {
         this.listaCarrito = nuevaLista;
         this.favoritos = favoritos;
         notifyDataSetChanged();
@@ -50,10 +52,8 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
 
     @Override
     public void onBindViewHolder(@NonNull CarritoViewHolder holder, int position) {
-        BomboConCantidad item = listaCarrito.get(position);
+        StagedBombo item = listaCarrito.get(position);
         Bombo bombo = item.getBombo();
-        // Usamos la clave compuesta "restauranteId:bomboId" para las acciones
-        String itemKey = bombo.getRestauranteId() + ":" + bombo.getId();
         
         holder.tvNombre.setText(bombo.getNombre());
         holder.tvDescripcion.setText(bombo.getDescripcion());
@@ -75,7 +75,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         // Mostramos el botón de restar (el -)
         holder.btnRestar.setVisibility(View.VISIBLE);
         holder.btnRestar.setOnClickListener(v -> {
-            if (listener != null) listener.onRestarClick(itemKey);
+            if (listener != null) listener.onRestarClick(item);
         });
 
         // Configurar favorito usando la clave compuesta y aplicando color
@@ -93,7 +93,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         });
 
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onBomboClick(bombo);
+            if (listener != null) listener.onBomboClick(item);
         });
 
         // Carga de imagen con Glide desde S3
