@@ -9,6 +9,10 @@ import reactor.core.publisher.Flux;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Mapper encargado de convertir entre {@link Plato} (modelo de API)
+ * y {@link PlatoEntity} (entidad de base de datos).
+ */
 @Component
 public class PlatoEntityMapper implements EntityMapper<PlatoEntity, Plato> {
 
@@ -19,6 +23,13 @@ public class PlatoEntityMapper implements EntityMapper<PlatoEntity, Plato> {
                 .toArray(String[]::new);
     }
 
+    /**
+     * Convierte un {@link Plato} a su representación como entidad de base de datos.
+     * Las listas de tags y modificaciones se transforman a arrays para su almacenamiento.
+     *
+     * @param o Mono con el plato a convertir
+     * @return Mono con la entidad resultante
+     */
     @Override
     public Mono<PlatoEntity> map(Mono<Plato> o) {
         return o.map(plato -> PlatoEntity.builder()
@@ -36,6 +47,14 @@ public class PlatoEntityMapper implements EntityMapper<PlatoEntity, Plato> {
                 .build());
     }
 
+    /**
+     * Convierte una {@link PlatoEntity} a su representación como modelo de API.
+     * Gestiona la conversión de arrays genéricos a listas de Strings,
+     * ya que algunos drivers de base de datos devuelven los arrays como {@code Object[]}.
+     *
+     * @param o Mono con la entidad a convertir
+     * @return Mono con el plato resultante
+     */
     @Override
     public Mono<Plato> unmap(Mono<PlatoEntity> o) {
         return o.map(entity -> {
@@ -58,7 +77,12 @@ public class PlatoEntityMapper implements EntityMapper<PlatoEntity, Plato> {
                     .build();
         });
     }
-
+    /**
+     * Convierte un flujo de entidades {@link PlatoEntity} a un flujo de objetos {@link Plato}.
+     *
+     * @param o Flux con las entidades a convertir
+     * @return Flux con los platos resultantes
+     */
     @Override
     public Flux<Plato> mapFlux(Flux<PlatoEntity> o) {
         return o.flatMap(entity -> unmap(Mono.just(entity)));
