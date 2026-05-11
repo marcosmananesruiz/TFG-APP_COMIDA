@@ -18,6 +18,8 @@ import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,10 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
+    
+    private ChipGroup cgCategories;
+    private String categoriaSeleccionada = "ENTRANTES";
+    private String queryActual = "";
 
     private static final String DEFAULT_RESTAURANTE_IMAGE = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/restaurantes/default_0.jpg";
 
@@ -53,7 +59,12 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         
         recyclerViewBombos = view.findViewById(R.id.rv_bombos);
         tvEmptyBombos = view.findViewById(R.id.tv_empty_bombos);
+        cgCategories = view.findViewById(R.id.cg_categories);
+        
         recyclerViewBombos.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Configuración de categorías
+        setupCategories();
 
         if (getArguments() != null) {
             restauranteId = getArguments().getString("restauranteId");
@@ -67,19 +78,15 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             recyclerViewFotos.setAdapter(fotoAdapter);
         }
 
-        // Si ya tenemos el ID, intentamos cargar los platos que haya en caché inmediatamente
         if (restauranteId != null) {
             listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
-            if (listaBombosRestaurante != null && !listaBombosRestaurante.isEmpty()) {
-                updateUI(listaBombosRestaurante);
-            }
+            aplicarFiltros();
         }
 
-        // OBSERVADOR CLAVE: Escuchamos cambios en el repositorio para actualizar los platos en tiempo real
         foodRepository.getRestaurantesLiveData().observe(getViewLifecycleOwner(), restaurantes -> {
             if (restauranteId != null) {
                 listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
-                updateUI(listaBombosRestaurante);
+                aplicarFiltros();
             }
         });
 
@@ -88,6 +95,26 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         });
 
         return view;
+    }
+
+    private void setupCategories() {
+        // Seleccionamos "ENTRANTES" por defecto
+        cgCategories.check(R.id.chip_entrantes);
+        
+        cgCategories.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (checkedIds.isEmpty()) {
+                // Si el usuario intenta desmarcar, volvemos a marcar el anterior o el primero
+                group.check(R.id.chip_entrantes);
+                return;
+            }
+            
+            int checkedId = checkedIds.get(0);
+            Chip chip = group.findViewById(checkedId);
+            if (chip != null) {
+                categoriaSeleccionada = chip.getText().toString().toUpperCase();
+                aplicarFiltros();
+            }
+        });
     }
 
     @Override
@@ -118,36 +145,53 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     }
 
     public void filtrar(String texto) {
+        this.queryActual = texto.toLowerCase().trim();
+        aplicarFiltros();
+    }
+
+    private void aplicarFiltros() {
         if (listaBombosRestaurante == null) return;
-        List<Bombo> filtrados = new ArrayList<>();
-        String query = texto.toLowerCase().trim();
         
-        if (query.isEmpty()) {
-            filtrados.addAll(listaBombosRestaurante);
-        } else {
-            for (Bombo b : listaBombosRestaurante) {
-                boolean match = b.getNombre().toLowerCase().contains(query);
-                
-                if (!match && b.getEtiquetas() != null) {
+        List<Bombo> filtrados = new ArrayList<>();
+        
+        for (Bombo b : listaBombosRestaurante) {
+            // Filtro 1: Categoría (basado en el primer tag)
+            boolean coincideCategoria = false;
+            if (b.getEtiquetas() != null && !b.getEtiquetas().isEmpty()) {
+                String primerTag = b.getEtiquetas().get(0).toUpperCase();
+                if (primerTag.equals(categoriaSeleccionada)) {
+                    coincideCategoria = true;
+                }
+            }
+            
+            if (!coincideCategoria) continue;
+
+            // Filtro 2: Texto de búsqueda (si hay alguno)
+            if (queryActual.isEmpty()) {
+                filtrados.add(b);
+            } else {
+                boolean matchTexto = b.getNombre().toLowerCase().contains(queryActual);
+                if (!matchTexto && b.getEtiquetas() != null) {
                     for (String tag : b.getEtiquetas()) {
-                        if (tag.toLowerCase().contains(query)) {
-                            match = true;
+                        if (tag.toLowerCase().contains(queryActual)) {
+                            matchTexto = true;
                             break;
                         }
                     }
                 }
-                
-                if (match) {
-                    filtrados.add(match ? b : null); // Evitar duplicados si ya match es true
+                if (matchTexto) {
+                    filtrados.add(b);
                 }
             }
         }
+        
         updateUI(filtrados);
     }
 
     private void updateUI(List<Bombo> lista) {
         if (lista == null || lista.isEmpty()) {
             recyclerViewBombos.setVisibility(View.GONE);
+            tvEmptyBombos.setText("No hay ningún plato en esta categoría");
             tvEmptyBombos.setVisibility(View.VISIBLE);
         } else {
             recyclerViewBombos.setVisibility(View.VISIBLE);
@@ -158,7 +202,6 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             } else {
                 adapter.setFilteredList(lista);
             }
-            // Importante: volver a asignar el adaptador al RecyclerView porque la vista se recrea al volver atrás
             recyclerViewBombos.setAdapter(adapter);
         }
     }

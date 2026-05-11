@@ -66,6 +66,57 @@
             android:background="#DDDDDD"
             app:layout_constraintTop_toBottomOf="@id/tv_restaurante_descripcion" />
 
+        <HorizontalScrollView
+            android:id="@+id/hsv_categories"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:scrollbars="none"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cg_categories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                app:selectionRequired="true"
+                app:singleLine="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_entrantes"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ENTRANTES" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_principal"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PLATO PRINCIPAL" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_postre"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="POSTRE" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_bebidas"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="BEBIDAS" />
+
+            </com.google.android.material.chip.ChipGroup>
+        </HorizontalScrollView>
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_bombos"
             android:layout_width="0dp"
@@ -74,14 +125,14 @@
             android:nestedScrollingEnabled="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider"
+            app:layout_constraintTop_toBottomOf="@id/hsv_categories"
             tools:listitem="@layout/item_bombo" />
 
         <TextView
             android:id="@+id/tv_empty_bombos"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No hay bombos disponibles para este restaurante"
+            android:text="No hay ningún plato en esta categoría"
             android:textColor="@color/text_color"
             android:textSize="16sp"
             android:visibility="gone"
