@@ -38,7 +38,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private FoodRepository foodRepository;
     
     private ChipGroup cgCategories;
-    private String categoriaSeleccionada = "ENTRANTES";
+    private String categoriaSeleccionada = "TODO";
     private String queryActual = "";
 
     private static final String DEFAULT_RESTAURANTE_IMAGE = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/restaurantes/default_0.jpg";
@@ -98,13 +98,13 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     }
 
     private void setupCategories() {
-        // Seleccionamos "ENTRANTES" por defecto
-        cgCategories.check(R.id.chip_entrantes);
+        // Seleccionamos "TODO" por defecto
+        cgCategories.check(R.id.chip_todo);
         
         cgCategories.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds.isEmpty()) {
                 // Si el usuario intenta desmarcar, volvemos a marcar el anterior o el primero
-                group.check(R.id.chip_entrantes);
+                group.check(R.id.chip_todo);
                 return;
             }
             
@@ -133,14 +133,14 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     }
 
     @Override
-    public void onFavoritoClick(Bombo bombo) {
-        userViewModel.toggleFavorito(bombo);
+    public void onFavoritoClick(Bombo b) {
+        userViewModel.toggleFavorito(b);
     }
 
     @Override
-    public void onAgregarCarritoClick(Bombo bombo) {
-        carritoViewModel.agregarAlCarrito(bombo, 1, new ArrayList<>());
-        String mensaje = getString(R.string.carrito_item_added, 1, bombo.getNombre());
+    public void onAgregarCarritoClick(Bombo b) {
+        carritoViewModel.agregarAlCarrito(b, 1, new ArrayList<>());
+        String mensaje = getString(R.string.carrito_item_added, 1, b.getNombre());
         Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
@@ -155,9 +155,12 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         List<Bombo> filtrados = new ArrayList<>();
         
         for (Bombo b : listaBombosRestaurante) {
-            // Filtro 1: Categoría (basado en el primer tag)
+            // Filtro 1: Categoría
             boolean coincideCategoria = false;
-            if (b.getEtiquetas() != null && !b.getEtiquetas().isEmpty()) {
+            
+            if (categoriaSeleccionada.equals("TODO")) {
+                coincideCategoria = true;
+            } else if (b.getEtiquetas() != null && !b.getEtiquetas().isEmpty()) {
                 String primerTag = b.getEtiquetas().get(0).toUpperCase();
                 if (primerTag.equals(categoriaSeleccionada)) {
                     coincideCategoria = true;
