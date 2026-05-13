@@ -15,12 +15,19 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * Controlador REST para el manejo de las direcciones
+ */
 @RestController
 @RequestMapping("/direccion")
 public class DireccionController {
 
     @Autowired private IDireccionService service;
 
+    /**
+     * Obtener todas las direcciones
+     * @return {@link Flux}<{@link Direccion}> con todas las direcciones
+     */
     @GetMapping("/getAll")
     @Operation(summary = "Obtener direcciones")
     @ApiResponses({
@@ -33,6 +40,11 @@ public class DireccionController {
         return this.service.findAll();
     }
 
+    /**
+     * Obtener una direccion con su ID
+     * @param id Id de la direccion a obtener
+     * @return {@link Mono}<{@link Direccion}> con la direccion correspondiente
+     */
     @GetMapping(value = "/get", params = "id")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -45,6 +57,11 @@ public class DireccionController {
         return this.service.findById(id);
     }
 
+    /**
+     * Obtener las direcciones de un usuario
+     * @param user Id del usuario del que se quiere obtener las direcciones
+     * @return {@link Flux}<{@link Direccion}> con las direcciones asignadas al usuario
+     */
     @GetMapping(value = "/getByUser", params = "user")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -57,6 +74,11 @@ public class DireccionController {
         return this.service.getDireccionesOfUser(user);
     }
 
+    /**
+     * Obtener todas las direcciones de un restaurante
+     * @param restaurante Id del restaurante del que se quiere obtener las direcciones
+     * @return {@link Flux}<{@link Direccion}> con las direcciones asignadas al restaurante
+     */
     @GetMapping(value = "/getByRestaurante", params = "restaurante")
     @ApiResponses({
             @ApiResponse(responseCode = "200",
@@ -69,6 +91,11 @@ public class DireccionController {
         return this.service.getDireccionesOfRestaurante(restaurante);
     }
 
+    /**
+     * Registrar una direccion
+     * @param direccion Direccion a registrar
+     * @return {@link Mono}<{@link Direccion}> con la direccion registrada (Campo Id actualizado)
+     */
     @PostMapping("/register")
     @Operation(summary = "Registrar una dirección")
     @ApiResponse(responseCode = "200", description = "true: Registro exitoso. false: El registro ya existe o se produjo un error")
@@ -76,6 +103,11 @@ public class DireccionController {
         return this.service.register(direccion);
     }
 
+    /**
+     * Borrar una direccion
+     * @param id Id de la Dirección a borrar
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha borrado correctamente, {@code false} si no
+     */
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Borrar una dirección por su Id")
     @ApiResponse(responseCode = "200", description = "true: Borrado exitoso. false: El registro no existe o se produjo un error")
@@ -83,6 +115,11 @@ public class DireccionController {
         return this.service.deleteDireccionByID(id);
     }
 
+    /**
+     * Actualizar una direccion
+     * @param direccion Dirección a actualizar
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha actualizado correctamente, {@code false} si no
+     */
     @PutMapping("/save")
     @Operation(summary = "Actualizar una dirección")
     @ApiResponse(responseCode = "200", description = "true: Actualization exitosa. false: El registro no existe o se produjo un error")
@@ -90,6 +127,10 @@ public class DireccionController {
         return this.service.update(direccion);
     }
 
+    /**
+     * Obtener todas las IDs de las direcciones
+     * @return {@link Mono}<{@link List}<{@link String}>> con todos los IDs
+     */
     @GetMapping("/get/id")
     @Operation(summary = "Obtener unicamente los ID de las direcciones")
     @ApiResponses({

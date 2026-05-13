@@ -7,9 +7,6 @@ import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * @author Marcos Mañanes
- */
 public interface IDireccionService {
 
     /**
@@ -97,7 +94,25 @@ public interface IDireccionService {
      */
     Flux<Direccion> getDireccionesOfRestaurante(String restauranteId);
 
+    /**
+     * Asigna una direccion a un usuario
+     * @param direccion Direccion a asignar
+     * @param userId Id del usuario
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se asigno correctamente, o {@code false} si no
+     */
     Mono<Boolean> asignarUserId(Direccion direccion, String userId);
-    Mono<Boolean> asignarRestauranteId(Direccion direccion, String direccionId);
+
+    /**
+     * Asigna una direccion a un restaurante
+     * @param direccion Direccion a asignar
+     * @param restauranteId Id del restaurante
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se asigno correctamente
+     */
+    Mono<Boolean> asignarRestauranteId(Direccion direccion, String restauranteId);
+
+    /**
+     * Obtener todos los Ids de las direcciones
+     * @return {@link Flux}<{@link String}> con todos los Ids de las direcciones
+     */
     Flux<String> getIDs();
 }

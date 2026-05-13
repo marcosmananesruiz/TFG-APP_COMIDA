@@ -8,9 +8,6 @@ import org.dam2.bomboplatsserver.modelo.entity.UserEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * @author Marcos Mañanes
- */
 public interface IUserService {
 
     /**
@@ -69,13 +66,39 @@ public interface IUserService {
      */
     Mono<User> findByEmail(String email);
 
+    /**
+     * Verificar el login de un usuario
+     * @param loginAttempt Informacion del Login
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si el login es correcto, o {@code false} si no
+     */
     Mono<Boolean> verifyLogin(LoginAttempt loginAttempt);
 
+    /**
+     * Actualizar la contraseña de un usuario
+     * @param userId Id del usuario
+     * @param newPassword Nueva contraseña
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se actualizo correctamente, o {@code false} si no
+     */
     Mono<Boolean> updatePassword(String userId, String newPassword);
 
+    /**
+     * Obtener los platos favoritos de un usuario
+     * @param userId Id del usuario
+     * @return {@link Flux}<{@link Plato}> con los platos favoritos del usuario
+     */
     Flux<Plato> getPlatosFavoritos(String userId);
 
+    /**
+     * Obtener todos los Ids de los usuarios
+     * @return {@link Flux}<{@link String}> con todos los Ids
+     */
     Flux<String> getUserIds();
 
+    /**
+     * Guardar la entidad de un usuario
+     * @param user Usuario a guardar
+     * @return {@link Mono}<{@link Void}>
+     * @apiNote Usado para evitar bucles en las dependencias
+     */
     Mono<Void> saveUserEntity(User user);
 }
