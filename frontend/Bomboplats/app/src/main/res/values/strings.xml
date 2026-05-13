@@ -143,6 +143,8 @@
     <string name="historial_vacio">Aún no has realizado ningún pedido</string>
     <string name="notificaciones_vacia">Aún no hay notificaciones de ningún bombo</string>
     <string name="favoritos_vacio">Aún no hay platos favoritos</string>
+    <string name="dialog_vaciar_carrito_titulo">¿Vaciar carrito?</string>
+    <string name="dialog_vaciar_carrito_mensaje">¿Estás seguro de que quieres borrar todos los platos del carrito?</string>
 
     <!-- Notificaciones dinámicas -->
     <string name="noti_titulo_estado">Estado de Bombos</string>

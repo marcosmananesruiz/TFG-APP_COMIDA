@@ -143,6 +143,8 @@
     <string name="historial_vacio">You haven\'t made any orders yet</string>
     <string name="notificaciones_vacia">No notifications for any bombos yet</string>
     <string name="favoritos_vacio">No favorite dishes yet</string>
+    <string name="dialog_vaciar_carrito_titulo">Empty cart?</string>
+    <string name="dialog_vaciar_carrito_mensaje">Are you sure you want to remove all items from the cart?</string>
 
     <!-- Dynamic Notifications -->
     <string name="noti_titulo_estado">Bombos Status</string>

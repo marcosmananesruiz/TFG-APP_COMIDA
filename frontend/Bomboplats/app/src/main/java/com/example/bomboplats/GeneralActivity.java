@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
@@ -167,8 +168,15 @@ public class GeneralActivity extends AppCompatActivity {
         cartButton.setOnClickListener(v -> {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
             if (currentFragment instanceof CarritoFragment) {
-                carritoViewModel.limpiarCarrito();
-                Toast.makeText(this, getString(R.string.toast_carrito_vaciado), Toast.LENGTH_SHORT).show();
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.dialog_vaciar_carrito_titulo)
+                        .setMessage(R.string.dialog_vaciar_carrito_mensaje)
+                        .setPositiveButton(R.string.si, (dialog, which) -> {
+                            carritoViewModel.limpiarCarrito();
+                            Toast.makeText(this, getString(R.string.toast_carrito_vaciado), Toast.LENGTH_SHORT).show();
+                        })
+                        .setNegativeButton(R.string.no, null)
+                        .show();
             } else if (currentFragment instanceof RealizarEnvioFragment) {
                 getSupportFragmentManager().popBackStack();
             } else {
