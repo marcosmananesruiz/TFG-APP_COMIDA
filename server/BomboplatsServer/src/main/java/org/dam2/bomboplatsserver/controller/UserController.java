@@ -21,6 +21,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
+/**
+ * Controlador REST para el manejo de usuario
+ */
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -28,6 +31,11 @@ public class UserController {
     @Autowired private IUserService service;
     @Autowired private IS3Service s3Service;
 
+    /**
+     * Comrpueba el login de un usuario
+     * @param loginAttempt Información del Login
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si el login es correcto, o {@code false} si no
+     */
     @PutMapping("/login")
     @Operation(summary = "Comprueba el login de un usuario")
     @ApiResponse(responseCode = "200", description = "true si el login es correcto, false si el login es incorrecto o no se encuentra ese email")
@@ -35,6 +43,11 @@ public class UserController {
         return this.service.verifyLogin(loginAttempt);
     }
 
+    /**
+     * Obtener un usuario según su Id
+     * @param id Id del usuario a buscar
+     * @return {@link Mono}<{@link User}> con el usuario correspondiente
+     */
     @GetMapping( value = "/get", params = "id")
     @Operation(summary = "Obtener un usuario por su ID")
     @ApiResponses({
@@ -48,6 +61,11 @@ public class UserController {
         return this.service.findByID(id);
     }
 
+    /**
+     * Obtener un usuario según us email
+     * @param email Email del usuario
+     * @return {@link Mono}<{@link User}> con el usuario correspondiente
+     */
     @GetMapping(value = "/getByEmail", params = "email")
     @Operation(summary = "Obtener un usuario por su Email")
     @ApiResponses({
@@ -61,6 +79,11 @@ public class UserController {
         return this.service.findByEmail(email);
     }
 
+    /**
+     * Registrar un usuario
+     * @param register Información del registro
+     * @return {@link Mono}<{@link User}> con el usuario registrado (Con el Id actualizado)
+     */
     @PostMapping("/register")
     @Operation(summary = "Registrar un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario registrado. false: Usuario ya existía o hubo un error")
@@ -68,6 +91,11 @@ public class UserController {
         return this.service.register(register);
     }
 
+    /**
+     * Borrar un usuario
+     * @param id Id del usuario a eliminar
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha eliminado correctamente, {@code false} si no
+     */
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Eliminar un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario eliminado. false: Usuario no existía o hubo un error")
@@ -75,6 +103,10 @@ public class UserController {
         return this.service.deleteUserByID(id);
     }
 
+    /**
+     * Obtener todos los usuarios
+     * @return {@link Flux}<{@link User}> con todos los usuarios
+     */
     @GetMapping("/getAll")
     @Operation(summary = "Obtener todos los usuarios")
     @ApiResponses({
@@ -87,6 +119,11 @@ public class UserController {
         return this.service.findAll();
     }
 
+    /**
+     * Actualizar un usuario
+     * @param user Usuario a actualizar
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha actualizado correctamente, o {@code false} si no
+     */
     @PutMapping("/save")
     @Operation(summary = "Actualizar información de un usuario")
     @ApiResponse(responseCode = "200", description = "true: Usuario actualizado. false: Usuario no existía o hubo un error")
@@ -94,6 +131,11 @@ public class UserController {
         return this.service.update(user);
     }
 
+    /**
+     * Generar el link para la subida de foto de perfil de un usuario
+     * @param id Id del usuario de la foto de perfil
+     * @return {@link Mono}<{@link String}> con el link de subida al S3
+     */
     @GetMapping(value = "imageUrl", params = "id", produces = MediaType.TEXT_PLAIN_VALUE)
     @Operation(summary = "Generar link para subir fotos de usuarios al S3")
     @ApiResponse(responseCode = "200", description = "Se genero el link")
@@ -101,6 +143,12 @@ public class UserController {
         return this.s3Service.generateUserIconUrl(id);
     }
 
+    /**
+     * Actualizar contraseña de un usuario
+     * @param userId Id del usuario
+     * @param password Nueva contraseña
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha actualizado correctamente, o {@code false} si no
+     */
     @PutMapping(value = "/updatePass", params = {"userId", "password"})
     @Operation(summary = "Actualizar la contraseña de un usuario segun su id")
     @ApiResponses({
@@ -111,6 +159,11 @@ public class UserController {
         return this.service.updatePassword(userId, password);
     }
 
+    /**
+     * Obtener los platos favoritos de un usuario
+     * @param id Id del usuario
+     * @return {@link Flux}<{@link Plato}> con los platos favoritos del usuario
+     */
     @GetMapping(value = "/  platosfavoritos", params = "id")
     @Operation(summary = "Obtener los platos favoritos de un usuario")
     @ApiResponses({
@@ -121,6 +174,10 @@ public class UserController {
         return this.service.getPlatosFavoritos(id);
     }
 
+    /**
+     * Obtener todos los Ids de los usuarios
+     * @return {@link Mono}<{@link List}<{@link String}>> con todos los ids de los usuarios
+     */
     @GetMapping(value = "/get/id", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Obtener todos los IDs")
     @ApiResponses({

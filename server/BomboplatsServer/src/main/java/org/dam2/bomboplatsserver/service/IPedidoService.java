@@ -5,9 +5,6 @@ import org.dam2.bomboplatsserver.modelo.entity.PedidoEntity;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-/**
- * @author Marcos Mañanes
- */
 public interface IPedidoService {
 
     /**
@@ -66,9 +63,23 @@ public interface IPedidoService {
      */
     Flux<Pedido> findByPlatoId(String platoId);
 
+    /**
+     * Obtener todos los Ids de los pedidos
+     * @return {@link Flux}<{@link String}> con todos los ids de los pedidos
+     */
     Flux<String> getIDs();
 
+    /**
+     * Comprobar si existe un pedido asignado a un usuario
+     * @param idUser Id del usuario
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si existe un pedido de ese usuario, o {@code false} si no
+     */
     Mono<Boolean> existsByUserId(String idUser);
 
+    /**
+     * Comprobar si existe un pedido asignado a un plato
+     * @param idPlato Id del plato
+     * @return {@link Mono}<{@link Boolean}> con {@code true} si existe un pedido de ese plato, o {@code false} si no
+     */
     Mono<Boolean> existsByPlatoId(String idPlato);
 }
