@@ -241,6 +241,7 @@ public class RealizarEnvioFragment extends Fragment {
                 // Guardamos en historial, estado y lanzamos notificaciones/workers
                 HistorialRepository.getInstance().guardarPedido(getContext(), uiPedido);
                 EstadoPedido ep = new EstadoPedido(uiPedido, EstadoPedido.ESTADO_PREPARACION);
+                Log.e("", ep.getEstado());
                 EstadoBombosRepository.getInstance().agregarPedido(getContext(), ep);
 
                 if (getActivity() != null) {
