@@ -33,7 +33,9 @@ public class LoginDataSource {
     public static final String ERROR_WRONG_PASSWORD = "WRONG_PASSWORD";
     
     private static final String PREF_CART_NAME = "user_carts";
-    private static final String PREF_USER_DATA = "user_profiles";
+    private static final String PREF_USER_DATA = "user_prefs";
+
+    private static final String PREF_USER_EMAIL = "current_user_email";
     
     private final UserControllerApi userControllerApi;
     private final Context context;
@@ -42,6 +44,13 @@ public class LoginDataSource {
     public LoginDataSource(Context context) {
         this.context = context;
         this.userControllerApi = new UserControllerApi();
+    }
+
+    public void persistirSesion(String email) {
+        context.getSharedPreferences(PREF_USER_DATA, Context.MODE_PRIVATE)
+                .edit()
+                .putString(PREF_USER_EMAIL, email)
+                .apply();
     }
 
     private void saveProfileOffline(LoggedInUser user) {
@@ -87,6 +96,7 @@ public class LoginDataSource {
                 User apiUser = userControllerApi.getByEmail(email);
                 LoggedInUser user = convertToLoggedInUser(apiUser, password);
                 saveProfileOffline(user);
+                persistirSesion(email);
                 return new Result.Success<>(user);
             } else {
                 return new Result.Error(new IOException(ERROR_WRONG_PASSWORD));
@@ -107,6 +117,7 @@ public class LoginDataSource {
             if (apiUser != null) {
                 LoggedInUser registeredUser = convertToLoggedInUser(apiUser, user.getPassword());
                 saveProfileOffline(registeredUser);
+                persistirSesion(registeredUser.getEmail());
                 return new Result.Success<>(registeredUser);
             }
             return new Result.Error(new IOException("Error al registrar usuario"));
@@ -252,7 +263,12 @@ public class LoginDataSource {
         return new File(root, email + ".jpg");
     }
 
-    public void logout() {}
+    public void logout() {
+        context.getSharedPreferences(PREF_USER_DATA, Context.MODE_PRIVATE)
+                .edit()
+                .remove(PREF_USER_EMAIL)
+                .apply();
+    }
 
     private LoggedInUser convertToLoggedInUser(User apiUser, String password) {
         List<Bombo> favs = new ArrayList<>();

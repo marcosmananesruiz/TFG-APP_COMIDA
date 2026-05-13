@@ -2,6 +2,8 @@ package com.example.bomboplats.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.bomboplats.data.model.EstadoPedido;
@@ -18,7 +20,8 @@ import java.util.List;
 public class EstadoBombosRepository {
     private static EstadoBombosRepository instance;
     private final MutableLiveData<List<EstadoPedido>> pedidosEnEstado = new MutableLiveData<>(new ArrayList<>());
-    
+
+    private List<EstadoPedido> estadoPedidos = new ArrayList<>();
     private static final String PREF_NAME = "bomboplats_estados_prefs";
     private static final String USER_PREFS = "user_prefs";
     private static final String KEY_CURRENT_USER_EMAIL = "current_user_email";
@@ -44,21 +47,38 @@ public class EstadoBombosRepository {
 
     public void cargarDesdeDisco(Context context) {
         String email = getActiveEmail(context);
-        if (email == null) return;
+        if (email == null){
+            Log.e("", "NO HAY EMAIL");
+            Log.e("", "NO HAY EMAIL");
+            Log.e("", "NO HAY EMAIL");
+            Log.e("", "NO HAY EMAIL");
+            Log.e("", "NO HAY EMAIL");
+            Log.e("", "NO HAY EMAIL");Log.e("", "NO HAY EMAIL");
+            Log.e("", "NO HAY EMAIL");
+
+
+            return;
+        }
+        Log.w("", email);
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString("estados_" + email, null);
-        
+
+        Log.w("", json);
+
         List<EstadoPedido> lista = new ArrayList<>();
         if (json != null) {
             try {
                 Type type = new TypeToken<ArrayList<EstadoPedido>>() {}.getType();
                 lista = gson.fromJson(json, type);
+                Log.e("", lista.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        pedidosEnEstado.postValue(lista != null ? lista : new ArrayList<>());
+        Log.e("", lista.toString());
+        this.estadoPedidos = lista;
+        Log.e("", lista.toString());
     }
 
     public void guardarEnDisco(Context context, List<EstadoPedido> lista) {
@@ -79,7 +99,12 @@ public class EstadoBombosRepository {
     }
 
     public List<EstadoPedido> getListaActual() {
-        List<EstadoPedido> actual = pedidosEnEstado.getValue();
+        List<EstadoPedido> actual = this.estadoPedidos;
+        if (actual == null) {
+            Log.e("", "benja,min netanyahu deja nuestro proyecto porfgavor");
+        } else {
+            Log.w("", actual.toString());
+        }
         return actual != null ? actual : new ArrayList<>();
     }
 }
