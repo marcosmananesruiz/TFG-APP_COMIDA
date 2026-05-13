@@ -224,7 +224,7 @@ public class RealizarEnvioFragment extends Fragment {
                 for (StagedBombo stagedBombo : stagedBombos) {
                     Bombo b = stagedBombo.getBombo();
                     if (b != null) {
-                        localItems.add(new PedidoItem(b.getRestauranteId(), b.getId(), stagedBombo.getCantidad()));
+                        localItems.add(new PedidoItem(b.getRestauranteId(), b.getId(), stagedBombo.getCantidad(), stagedBombo.getModificaciones()));
                         try {
                             String precioLimpio = b.getPrecio().replace("€", "").replace(",", ".").trim();
                             total += Double.parseDouble(precioLimpio) * stagedBombo.getCantidad();

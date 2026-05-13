@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -16,21 +15,19 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
-import com.example.bomboplats.ui.carrito.CarritoViewModel;
+import com.example.bomboplats.data.model.StagedBombo;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
-import com.example.bomboplats.ui.general.BomboAdapter;
 import com.example.bomboplats.ui.general.DetalleBomboFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapter.OnBomboClickListener {
+public class ListaPedidoHistorialFragment extends Fragment implements HistorialDetalleAdapter.OnItemClickListener {
 
     private TextView tvId, tvFecha;
     private RecyclerView recyclerView;
-    private BomboAdapter adapter;
+    private HistorialDetalleAdapter adapter;
     private Pedido pedido;
     private UserViewModel userViewModel;
-    private CarritoViewModel carritoViewModel;
     private FoodRepository foodRepository;
 
     public static ListaPedidoHistorialFragment newInstance(Pedido pedido) {
@@ -56,27 +53,25 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-        carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
         foodRepository = FoodRepository.getInstance(requireContext());
 
         if (pedido != null) {
-            // Usamos el recurso prefix_pedido_id para evitar hardcodeo
             String prefixId = getString(R.string.prefix_pedido_id);
             tvId.setText(prefixId + pedido.getId());
             tvFecha.setText(pedido.getFecha());
 
-            List<Bombo> bombos = new ArrayList<>();
+            List<StagedBombo> itemsHistorial = new ArrayList<>();
             if (pedido.getItems() != null) {
                 for (PedidoItem item : pedido.getItems()) {
                     String itemKey = item.getRestauranteId() + ":" + item.getBomboId();
                     Bombo b = foodRepository.getBomboPorId(itemKey);
                     if (b != null) {
-                        bombos.add(b);
+                        itemsHistorial.add(new StagedBombo(b, item.getCantidad(), item.getModificaciones()));
                     }
                 }
             }
 
-            adapter = new BomboAdapter(bombos, this, userViewModel);
+            adapter = new HistorialDetalleAdapter(itemsHistorial, this, userViewModel);
             recyclerView.setAdapter(adapter);
         }
 
@@ -88,14 +83,17 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
     }
 
     @Override
-    public void onBomboClick(Bombo b) {
+    public void onBomboClick(StagedBombo stagedBombo) {
+        Bombo b = stagedBombo.getBombo();
         DetalleBomboFragment fragment = new DetalleBomboFragment();
         Bundle args = new Bundle();
-        args.putString("restauranteId", b.getRestauranteId());
         args.putString("bomboId", b.getId());
-        args.putString("nombre", b.getNombre());
-        args.putString("precio", b.getPrecio());
-        args.putString("desc", b.getDescripcion());
+        
+        // Pasamos los datos del pedido para el modo lectura
+        args.putBoolean("modoLectura", true);
+        args.putInt("cantidad", stagedBombo.getCantidad());
+        args.putStringArrayList("modificaciones", new ArrayList<>(stagedBombo.getModificaciones()));
+
         fragment.setArguments(args);
 
         if (getActivity() instanceof GeneralActivity) {
@@ -111,14 +109,5 @@ public class ListaPedidoHistorialFragment extends Fragment implements BomboAdapt
     @Override
     public void onFavoritoClick(Bombo b) {
         userViewModel.toggleFavorito(b);
-    }
-
-    @Override
-    public void onAgregarCarritoClick(Bombo b) {
-        carritoViewModel.agregarAlCarrito(b, 1, new ArrayList<>());
-        
-        // Usamos el recurso carrito_item_added para evitar hardcodeo en el Toast
-        String mensaje = getString(R.string.carrito_item_added, 1, b.getNombre());
-        Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 }

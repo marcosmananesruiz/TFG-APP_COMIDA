@@ -11,10 +11,14 @@ import com.example.bomboplats.R;
 
 import java.util.List;
 
+/**
+ * Adaptador para la selección de ingredientes/modificaciones en la pantalla de detalle.
+ * Mantenido simple para su uso exclusivo en el flujo de compra.
+ */
 public class ModificacionesAdapter extends RecyclerView.Adapter<ModificacionesAdapter.ModificacionesViewHolder> {
 
-    private List<String> listaModificaciones;
-    private OnModificacionClickListener listener;
+    private final List<String> listaModificaciones;
+    private final OnModificacionClickListener listener;
 
     public ModificacionesAdapter(List<String> listaModificaciones, OnModificacionClickListener listener) {
         this.listaModificaciones = listaModificaciones;
@@ -31,7 +35,10 @@ public class ModificacionesAdapter extends RecyclerView.Adapter<ModificacionesAd
     @Override
     public void onBindViewHolder(@NonNull ModificacionesViewHolder holder, int position) {
         String modificacion = listaModificaciones.get(position);
+        holder.checkBox.setOnCheckedChangeListener(null);
         holder.checkBox.setText(modificacion);
+        holder.checkBox.setChecked(false); // Por defecto desmarcado al cargar
+        
         holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (listener != null) listener.onModificacionClick(modificacion, isChecked);
         });
@@ -43,7 +50,7 @@ public class ModificacionesAdapter extends RecyclerView.Adapter<ModificacionesAd
 
     @Override
     public int getItemCount() {
-        return listaModificaciones.size();
+        return listaModificaciones != null ? listaModificaciones.size() : 0;
     }
 
     public static class ModificacionesViewHolder extends RecyclerView.ViewHolder {

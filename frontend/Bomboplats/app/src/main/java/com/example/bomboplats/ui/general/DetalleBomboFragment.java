@@ -1,7 +1,6 @@
 package com.example.bomboplats.ui.general;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +19,7 @@ import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.cuenta.UserViewModel;
+import com.example.bomboplats.utils.BomboUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,29 +29,53 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
-    private TextView tvNombre, tvPrecio, tvDescription, tvIngredientes, tvAlergenos, tvCantidad;
+    
+    private TextView tvNombre, tvPrecio, tvDescription, tvCantidad, tvModificacionesResumen, tvLabelIngredientes;
     private ImageView ivFavorito;
-    private RecyclerView rvFotos;
-    private RecyclerView rvModificaciones;
+    private RecyclerView rvFotos, rvModificaciones;
+    private View layoutCantidad, btnMas, btnMenos;
+    private Button btnPedido;
+
     private String bomboId;
     private Bombo bomboActual;
-
-    private ModificacionesAdapter adapter;
-    private List<String> selectedModifications;
+    private final List<String> selectedModifications = new ArrayList<>();
     private int cantidad = 1;
 
-    private static final String DEFAULT_BOMBO_IMAGE = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/platos/default.jpg";
+    private boolean modoLectura = false;
+    private List<String> modificacionesHistorial;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            bomboId = getArguments().getString("bomboId");
+            modoLectura = getArguments().getBoolean("modoLectura", false);
+            cantidad = getArguments().getInt("cantidad", 1);
+            modificacionesHistorial = getArguments().getStringArrayList("modificaciones");
+        }
+    }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_detalle_bombo, container, false);
+        
+        initViews(view);
+        initViewModels();
 
-        carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-        this.selectedModifications = new ArrayList<>();
-        foodRepository = FoodRepository.getInstance(requireContext());
+        if (bomboId != null) {
+            bomboActual = foodRepository.getBomboPorId(bomboId);
+            if (bomboActual != null) {
+                mostrarInfoBomboBasica();
+                setupUIByMode();
+            }
+        }
 
+        setupFavoritoLogic();
+        return view;
+    }
+
+    private void initViews(View view) {
         tvNombre = view.findViewById(R.id.tv_bombo_nombre);
         tvPrecio = view.findViewById(R.id.tv_bombo_precio);
         tvDescription = view.findViewById(R.id.tv_bombo_descripcion);
@@ -59,110 +83,94 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
         tvCantidad = view.findViewById(R.id.tv_cantidad);
         ivFavorito = view.findViewById(R.id.iv_favorito);
         rvModificaciones = view.findViewById(R.id.rv_ingredientes);
-        
-        View btnMenos = view.findViewById(R.id.btn_menos);
-        View btnMas = view.findViewById(R.id.btn_mas);
-        Button btnPedido = view.findViewById(R.id.btn_realizar_pedido);
+        tvModificacionesResumen = view.findViewById(R.id.tv_modificaciones_resumen);
+        tvLabelIngredientes = view.findViewById(R.id.label_ingredientes);
+        layoutCantidad = view.findViewById(R.id.layout_cantidad);
+        btnMas = view.findViewById(R.id.btn_mas);
+        btnMenos = view.findViewById(R.id.btn_menos);
+        btnPedido = view.findViewById(R.id.btn_realizar_pedido);
+    }
 
-        if (getArguments() != null) {
-            bomboId = getArguments().getString("bomboId");
-        }
+    private void initViewModels() {
+        carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        foodRepository = FoodRepository.getInstance(requireContext());
+    }
 
-        if (bomboId != null) {
-            bomboActual = foodRepository.getBomboPorId(bomboId);
+    private void setupUIByMode() {
+        tvCantidad.setText(String.valueOf(cantidad));
 
-            this.adapter = new ModificacionesAdapter(bomboActual.getIngredientes(), this);
-            this.rvModificaciones.setAdapter(this.adapter);
-        }
-        
-        mostrarInfoBombo();
-
-        // Inicializar estado de favorito
-        actualizarIconoFavorito();
-
-        btnMas.setOnClickListener(v -> {
-            cantidad++;
-            tvCantidad.setText(String.valueOf(cantidad));
-        });
-
-        btnMenos.setOnClickListener(v -> {
-            if (cantidad > 1) {
-                cantidad--;
-                tvCantidad.setText(String.valueOf(cantidad));
+        if (modoLectura) {
+            layoutCantidad.setVisibility(View.GONE);
+            btnPedido.setVisibility(View.GONE);
+            rvModificaciones.setVisibility(View.GONE);
+            
+            if (tvLabelIngredientes != null) tvLabelIngredientes.setText(R.string.label_modificaciones_pedido);
+            
+            if (modificacionesHistorial != null && !modificacionesHistorial.isEmpty()) {
+                tvModificacionesResumen.setText(BomboUtils.formatModificaciones(modificacionesHistorial));
+            } else {
+                tvModificacionesResumen.setText(getString(R.string.no_especificados));
             }
-        });
+            tvModificacionesResumen.setVisibility(View.VISIBLE);
+        } else {
+            tvModificacionesResumen.setVisibility(View.GONE);
+            rvModificaciones.setVisibility(View.VISIBLE);
+            
+            rvModificaciones.setAdapter(new ModificacionesAdapter(bomboActual.getIngredientes(), this));
 
+            btnMas.setOnClickListener(v -> {
+                cantidad++;
+                tvCantidad.setText(String.valueOf(cantidad));
+            });
+
+            btnMenos.setOnClickListener(v -> {
+                if (cantidad > 1) {
+                    cantidad--;
+                    tvCantidad.setText(String.valueOf(cantidad));
+                }
+            });
+
+            btnPedido.setOnClickListener(v -> {
+                carritoViewModel.agregarAlCarrito(bomboActual, cantidad, selectedModifications);
+                Toast.makeText(getContext(), getString(R.string.carrito_item_added, cantidad, bomboActual.getNombre()), Toast.LENGTH_SHORT).show();
+            });
+        }
+    }
+
+    private void mostrarInfoBomboBasica() {
+        tvNombre.setText(bomboActual.getNombre());
+        tvPrecio.setText(BomboUtils.formatPrecio(bomboActual.getPrecio()));
+        tvDescription.setText(bomboActual.getDescripcion());
+
+        rvFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvFotos.setAdapter(new FotoCarruselAdapter(bomboActual.getFotos(), BomboUtils.DEFAULT_BOMBO_IMAGE));
+    }
+
+    private void setupFavoritoLogic() {
+        actualizarIconoFavorito();
         ivFavorito.setOnClickListener(v -> {
             if (bomboActual != null) {
                 userViewModel.toggleFavorito(bomboActual);
                 actualizarIconoFavorito();
-                boolean esFavoritoNow = userViewModel.esFavorito(bomboActual.getId());
-                int resId = esFavoritoNow ? R.string.toast_fav_add : R.string.toast_fav_rem;
-                Toast.makeText(getContext(), getString(resId), Toast.LENGTH_SHORT).show();
+                boolean esFav = userViewModel.esFavorito(bomboActual.getId());
+                Toast.makeText(getContext(), getString(esFav ? R.string.toast_fav_add : R.string.toast_fav_rem), Toast.LENGTH_SHORT).show();
             }
         });
-
-        btnPedido.setOnClickListener(v -> {
-            if (bomboActual != null) {
-                carritoViewModel.agregarAlCarrito(bomboActual, cantidad, this.selectedModifications); // TODO: CAMBIAR ESTO CUANDO TENGAMOS LAS MODIFICACIONES
-                String mensaje = getString(R.string.carrito_item_added, cantidad, bomboActual.getNombre());
-                Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
-            }
-        });
-
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), ids -> actualizarIconoFavorito());
-
-        return view;
     }
 
     private void actualizarIconoFavorito() {
-        if (bomboActual != null && ivFavorito != null && userViewModel != null) {
+        if (bomboActual != null && ivFavorito != null) {
             boolean esFav = userViewModel.esFavorito(bomboActual.getId());
             ivFavorito.setImageResource(esFav ? R.drawable.ic_favorite_filled : R.drawable.ic_favorite_border);
         }
     }
 
-    private void mostrarInfoBombo() {
-        if (bomboActual != null) {
-            tvNombre.setText(bomboActual.getNombre());
-            
-            String precio = bomboActual.getPrecio();
-            if (precio != null && !precio.contains("€")) {
-                precio += "€";
-            }
-            tvPrecio.setText(precio);
-            
-            tvDescription.setText(bomboActual.getDescripcion());
-
-            List<String> fotos = bomboActual.getFotos();
-            FotoCarruselAdapter adapter = new FotoCarruselAdapter(fotos, DEFAULT_BOMBO_IMAGE);
-            rvFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-            rvFotos.setAdapter(adapter);
-        }
-    }
-
-    private String formatList(List<String> items) {
-        if (items == null || items.isEmpty()) {
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < items.size(); i++) {
-            sb.append("- ").append(items.get(i));
-            if (i < items.size() - 1) {
-                sb.append("\n");
-            }
-        }
-        return sb.toString();
-    }
-
     @Override
     public void onModificacionClick(String modificacion, boolean isChecked) {
-        if (isChecked) {
-            this.selectedModifications.add(modificacion);
-            Log.d("modificaciones", modificacion + " SELECCIONADA " + isChecked);
-        } else {
-            this.selectedModifications.remove(modificacion);
-            Log.d("modificaciones", modificacion + " SELECCIONADA " + isChecked);
-        }
+        if (modoLectura) return;
+        if (isChecked) selectedModifications.add(modificacion);
+        else selectedModifications.remove(modificacion);
     }
 }

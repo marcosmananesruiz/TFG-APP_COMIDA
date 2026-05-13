@@ -159,6 +159,7 @@
     <string name="sin_alergenos">No tags</string>
     <string name="placeholder_nombre_plato">Dish Name</string>
     <string name="placeholder_descripcion_plato">Dish description…</string>
+    <string name="label_modificaciones_pedido">Order modifications:</string>
 
     <!-- Home -->
     <string name="inicio_error_carga">Could not load restaurants</string>
