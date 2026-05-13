@@ -1,9 +1,12 @@
 package com.example.bomboplats.ui.login;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -21,6 +24,8 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -56,6 +61,28 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         // ----------------------------------------------
+
+        boolean isFirstRun = prefs.getBoolean("is_first_run", true);
+        if (isFirstRun) {
+            // El permiso POST_NOTIFICATIONS solo es necesario desde Android 13 (API 33) en adelante
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    // Pedimos el permiso oficialmente al sistema
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.POST_NOTIFICATIONS}, 101);
+                }
+            } else {
+                // Para versiones antiguas donde no hay diálogo de permiso, podrías mostrar un Toast
+                Toast.makeText(this, "¡Bienvenido! No olvides revisar tus notificaciones.", Toast.LENGTH_SHORT).show();
+            }
+
+            // Marcamos que ya no es la primera vez para que no vuelva a saltar
+            prefs.edit().putBoolean("is_first_run", false).apply();
+        }
+
+
 
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
