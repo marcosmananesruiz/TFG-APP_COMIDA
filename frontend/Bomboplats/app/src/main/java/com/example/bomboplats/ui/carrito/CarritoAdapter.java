@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
-import com.example.bomboplats.data.model.BomboConCantidad;
 import com.example.bomboplats.data.model.StagedBombo;
 
 import java.util.List;
@@ -57,6 +56,22 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         
         holder.tvNombre.setText(bombo.getNombre());
         holder.tvDescripcion.setText(bombo.getDescripcion());
+        
+        // Manejo de modificaciones
+        List<String> mods = item.getModificaciones();
+        if (mods != null && !mods.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < mods.size(); i++) {
+                sb.append("- ").append(mods.get(i));
+                if (i < mods.size() - 1) {
+                    sb.append("\n");
+                }
+            }
+            holder.tvModificaciones.setText(sb.toString());
+            holder.tvModificaciones.setVisibility(View.VISIBLE);
+        } else {
+            holder.tvModificaciones.setVisibility(View.GONE);
+        }
         
         // Añadir € al precio si no lo tiene
         String precio = bombo.getPrecio();
@@ -122,7 +137,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
     }
 
     public static class CarritoViewHolder extends RecyclerView.ViewHolder {
-        TextView tvNombre, tvDescripcion, tvPrecio, tvCantidad;
+        TextView tvNombre, tvDescripcion, tvModificaciones, tvPrecio, tvCantidad;
         ImageView imgBombo, btnMasCarrito, ivFavorito;
         Button btnRestar;
 
@@ -130,6 +145,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
             super(itemView);
             tvNombre = itemView.findViewById(R.id.tv_nombre_bombo);
             tvDescripcion = itemView.findViewById(R.id.tv_descripcion_bombo);
+            tvModificaciones = itemView.findViewById(R.id.tv_modificaciones_bombo);
             tvPrecio = itemView.findViewById(R.id.tv_precio_bombo);
             tvCantidad = itemView.findViewById(R.id.tv_cantidad_bombo);
             imgBombo = itemView.findViewById(R.id.img_bombo);
