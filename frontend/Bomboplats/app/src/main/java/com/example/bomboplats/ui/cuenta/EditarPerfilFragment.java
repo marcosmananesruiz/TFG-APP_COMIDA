@@ -62,6 +62,18 @@ public class EditarPerfilFragment extends Fragment {
     private final ActivityResultLauncher<PickVisualMediaRequest> pickMedia =
             registerForActivityResult(new ActivityResultContracts.PickVisualMedia(), uri -> {
                 if (uri != null) {
+
+                    String mimeType = requireContext()
+                            .getContentResolver()
+                            .getType(uri);
+                    if(mimeType == null || (!mimeType.equals("image/jpeg")&& !mimeType.equals("image/jpg"))){
+
+                        Toast.makeText(getContext(),"Solo se permiten imágenes JPG y JPEG",Toast.LENGTH_SHORT).show();
+                        return;
+
+                    }
+
+
                     if (isImageSizeValid(uri)) {
                         pendingPhotoUri = uri;
                         pendingPhoto = getFileFromUri(uri);
