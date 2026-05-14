@@ -57,7 +57,7 @@ public class EditarPasswordFragment extends Fragment {
                 return;
             }
 
-            if (nueva.length() < 5) {
+            if (nueva.length() <= 5) {
                 etPassNueva.setError("La contraseña debe tener al menos 5 caracteres");
                 return;
             }
