@@ -81,20 +81,36 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, getString(R.string.toast_rellenar_campos), Toast.LENGTH_SHORT).show();
             return;
         }
+        if (name.length() > 32) {
+            editTextName.setError(getString(R.string.error_nickname_largo));
+            return;
+        }
+
 
         // Validación de formato de email mediante Regex (Patterns.EMAIL_ADDRESS)
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, getString(R.string.invalid_username), Toast.LENGTH_SHORT).show();
             return;
         }
+        if (email.length() > 254) {
+            editTextEmail.setError(getString(R.string.error_email_largo));
+            return;
+        }
+
 
         if (!password.equals(confirmPassword)) {
             Toast.makeText(this, getString(R.string.error_passwords_dont_match), Toast.LENGTH_SHORT).show();
             return;
         }
 
+
         if (password.length() <= 5) {
             Toast.makeText(this, getString(R.string.invalid_password), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (password.length() > 60) {
+            editTextPassword.setError(getString(R.string.error_password_largo));
             return;
         }
 

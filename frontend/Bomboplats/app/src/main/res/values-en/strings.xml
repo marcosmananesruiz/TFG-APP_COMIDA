@@ -114,6 +114,9 @@
     <string name="si">YES</string>
     <string name="no">NO</string>
     <string name="cuenta_eliminada">Account deleted successfully</string>
+    <string name="error_nickname_largo">Name is too long (maximum 32 characters)</string>
+    <string name="error_email_largo">Email is too long (maximum 254 characters)</string>
+    <string name="error_password_largo">Password is too long (maximum 60 characters)</string>
 
     <!-- Cart and Orders -->
     <string name="carrito_vacio">Your cart is empty</string>

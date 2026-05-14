@@ -26,6 +26,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
+        app:counterEnabled="true"
+        app:counterMaxLength="32"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle">
@@ -36,6 +38,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/prompt_name"
             android:inputType="textPersonName"
+            android:maxLength="32"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color_secondary" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -55,6 +58,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/prompt_email"
             android:inputType="textEmailAddress"
+            android:maxLength="254"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color_secondary" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -64,6 +68,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        app:counterEnabled="true"
+        app:counterMaxLength="30"
         app:endIconMode="password_toggle"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -75,6 +81,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/prompt_password"
             android:inputType="textPassword"
+            android:maxLength="30"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color_secondary" />
     </com.google.android.material.textfield.TextInputLayout>
@@ -95,6 +102,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/prompt_confirm_password"
             android:inputType="textPassword"
+            android:maxLength="30"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color_secondary" />
     </com.google.android.material.textfield.TextInputLayout>

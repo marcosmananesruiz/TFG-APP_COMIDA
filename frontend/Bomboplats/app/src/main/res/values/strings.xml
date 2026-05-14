@@ -114,6 +114,10 @@
     <string name="si">SÍ</string>
     <string name="no">NO</string>
     <string name="cuenta_eliminada">Cuenta eliminada correctamente</string>
+    <string name="error_nickname_largo">El nombre es demasiado largo (máximo 32 caracteres)</string>
+    <string name="error_email_largo">El correo electrónico es demasiado largo (máximo 254 caracteres)</string>
+    <string name="error_password_largo">La contraseña es demasiado larga (máximo 60 caracteres)</string>
+
 
     <!-- Carrito y Pedidos -->
     <string name="carrito_vacio">Tu carrito está vacío</string>
