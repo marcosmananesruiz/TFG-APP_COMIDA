@@ -64,8 +64,6 @@ public class EstadoBombosRepository {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString("estados_" + email, null);
 
-        Log.w("", json);
-
         List<EstadoPedido> lista = new ArrayList<>();
         if (json != null) {
             try {
