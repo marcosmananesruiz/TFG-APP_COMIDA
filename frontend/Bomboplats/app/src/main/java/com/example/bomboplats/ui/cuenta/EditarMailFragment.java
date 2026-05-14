@@ -58,6 +58,10 @@ public class EditarMailFragment extends Fragment {
                 Toast.makeText(getContext(), getString(R.string.toast_rellenar_campos), Toast.LENGTH_SHORT).show();
                 return;
             }
+            if (nuevo.length() > 254) {
+                etMailNuevo.setError(getString(R.string.error_email_largo));
+                return;
+            }
 
             if (!Patterns.EMAIL_ADDRESS.matcher(nuevo).matches()) {
                 etMailNuevo.setError(getString(R.string.error_mail_invalido));

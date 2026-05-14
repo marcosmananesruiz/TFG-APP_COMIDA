@@ -49,6 +49,7 @@
                     android:textColor="@color/text_color"
                     android:textColorHint="@color/text_color_secondary"
                     android:alpha="0.8"
+                    android:maxLength="254"
                     android:inputType="textEmailAddress" />
 
             </LinearLayout>
