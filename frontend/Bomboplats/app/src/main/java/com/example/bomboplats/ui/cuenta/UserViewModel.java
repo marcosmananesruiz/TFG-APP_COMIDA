@@ -186,11 +186,12 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                 Boolean success = direccionApi.updateDireccion(updatedDir);
                 if (success != null && success) {
                     refreshUserData();
+                    updateAddressResult.postValue(true);
                 } else {
-                    error.postValue("No se pudo actualizar la dirección");
+                    updateAddressResult.postValue(false);
                 }
             } catch (ApiException e) {
-                error.postValue("Error al actualizar la dirección en el servidor");
+                updateAddressResult.postValue(false);
             }
         });
     }
@@ -230,8 +231,9 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
                     Boolean success = userApi.updateUser(apiUser);
                     if (success != null && success) {
                         refreshUserData();
+                        updateAddressResult.postValue(true);
                     } else {
-                        error.postValue("No se pudo vincular la dirección al usuario");
+                        updateAddressResult.postValue(false);
                     }
                 } else {
                     error.postValue("Error al registrar la dirección en el servidor");
@@ -239,6 +241,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
             } catch (ApiException e) {
                 Log.e("UserViewModel", "Error al crear y asignar dirección: " + e.getMessage());
                 error.postValue("Error al guardar la nueva dirección");
+                updateAddressResult.postValue(false);
             }
         });
     }
@@ -287,6 +290,10 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public LiveData<Result<Boolean>> getUpdateResult() { return updateResult; }
     public LiveData<Boolean> isAccountDeleted() { return accountDeleted; }
 
+    private final MutableLiveData<Boolean> updateAddressResult = new MutableLiveData<>();
+
+    public LiveData<Boolean> getUpdateAddressResult() { return updateAddressResult; }
+    public void resetUpdateAddressResult() { updateAddressResult.postValue(null); }
     public void resetUpdateResult() { updateResult.setValue(null); }
 
     public void setName(String newName) {

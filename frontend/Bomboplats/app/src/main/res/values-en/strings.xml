@@ -60,6 +60,7 @@
     <string name="toast_campos_obligatorios">Please fill in all required fields</string>
     <string name="error_cp_invalido">Postal code must be exactly 5 digits</string>
     <string name="label_busca_entrega">Search for a delivery address</string>
+    <string name="error_guardar_direccion">Error saving the address</string>
 
     <!-- Navigation Drawer -->
     <string name="nav_inicio">Home</string>

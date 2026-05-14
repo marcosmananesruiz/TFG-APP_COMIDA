@@ -59,6 +59,7 @@
     <string name="toast_campos_obligatorios">Por favor, rellena todos los campos obligatorios</string>
     <string name="error_cp_invalido">El código postal debe tener exactamente 5 cifras</string>
     <string name="label_busca_entrega">Busca una dirección de entrega</string>
+    <string name="error_guardar_direccion">Error al guardar la dirección</string>
 
     <!-- Navigation Drawer -->
     <string name="nav_inicio">Inicio</string>

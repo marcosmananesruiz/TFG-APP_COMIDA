@@ -29,13 +29,16 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:hint="@string/poblacion"
+            app:counterEnabled="true"
+            app:counterMaxLength="24"
             app:layout_constraintTop_toBottomOf="@id/tv_nueva_direccion_titulo">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_poblacion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="text"
+                android:maxLength="24"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -45,12 +48,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="@string/calle"
+            app:counterEnabled="true"
+            app:counterMaxLength="32"
             app:layout_constraintTop_toBottomOf="@id/til_poblacion">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_calle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLength="32"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -61,12 +67,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="@string/codigo_postal"
+            app:counterEnabled="true"
+            app:counterMaxLength="5"
             app:layout_constraintTop_toBottomOf="@id/til_calle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_codigo_postal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLength="5"
                 android:inputType="number" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -78,6 +87,8 @@
             android:layout_marginTop="12dp"
             android:layout_marginEnd="8dp"
             android:hint="@string/portal"
+            app:counterEnabled="true"
+            app:counterMaxLength="4"
             app:layout_constraintEnd_toStartOf="@+id/til_piso"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/til_codigo_postal">
@@ -86,7 +97,8 @@
                 android:id="@+id/et_portal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:inputType="number"
+                android:maxLength="4"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -96,6 +108,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:hint="@string/piso"
+            app:counterEnabled="true"
+            app:counterMaxLength="8"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/til_portal"
             app:layout_constraintTop_toBottomOf="@id/til_codigo_postal">
@@ -104,6 +118,7 @@
                 android:id="@+id/et_piso"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLength="8"
                 android:inputType="text" />
         </com.google.android.material.textfield.TextInputLayout>
 

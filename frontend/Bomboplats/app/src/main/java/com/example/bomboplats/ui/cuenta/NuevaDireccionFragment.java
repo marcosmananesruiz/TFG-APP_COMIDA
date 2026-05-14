@@ -40,6 +40,7 @@ public class NuevaDireccionFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_nueva_direccion, container, false);
 
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        userViewModel.resetUpdateAddressResult();
 
         tvTitulo = view.findViewById(R.id.tv_nueva_direccion_titulo);
         etPoblacion = view.findViewById(R.id.et_poblacion);
@@ -55,6 +56,19 @@ public class NuevaDireccionFragment extends Fragment {
             prellenarCampos();
             tvTitulo.setText(R.string.editar_direccion_titulo);
         }
+
+        userViewModel.getUpdateAddressResult().observe(getViewLifecycleOwner(), success -> {
+            if (success == null) return;
+            if (success) {
+                Toast.makeText(getContext(),
+                        direccionAEditar != null ? R.string.toast_direccion_actualizada : R.string.toast_direccion_guardada,
+                        Toast.LENGTH_SHORT).show();
+                requireActivity().getSupportFragmentManager().popBackStack();
+            } else {
+                Toast.makeText(getContext(), R.string.error_guardar_direccion, Toast.LENGTH_SHORT).show();
+            }
+        });
+
 
         btnGuardar.setOnClickListener(v -> {
             String poblacion = etPoblacion.getText().toString().trim();
@@ -85,14 +99,13 @@ public class NuevaDireccionFragment extends Fragment {
                     direccionAEditar.setPiso(piso);
                     
                     userViewModel.updateAddress(direccionAEditar);
-                    Toast.makeText(getContext(), R.string.toast_direccion_actualizada, Toast.LENGTH_SHORT).show();
+
                 } else {
                     // Modo creación
                     userViewModel.registerAndAssignAddress(poblacion, calle, cp, portal, piso);
-                    Toast.makeText(getContext(), R.string.toast_direccion_guardada, Toast.LENGTH_SHORT).show();
                 }
-                
-                requireActivity().getSupportFragmentManager().popBackStack();
+
+                //requireActivity().getSupportFragmentManager().popBackStack();
             } catch (NumberFormatException e) {
                 Toast.makeText(getContext(), "Portal debe ser un número", Toast.LENGTH_SHORT).show();
             }
