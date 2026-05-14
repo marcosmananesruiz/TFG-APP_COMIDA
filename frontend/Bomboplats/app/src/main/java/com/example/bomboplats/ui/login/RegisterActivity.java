@@ -72,7 +72,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void registerUser() {
         String name = editTextName.getText().toString().trim();
-        String email = editTextEmail.getText().toString().trim();
+        String email = editTextEmail.getText().toString().trim().toLowerCase();
         String password = editTextPassword.getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getText().toString().trim();
 

@@ -40,7 +40,8 @@ public class LoginViewModel extends ViewModel {
 
     public void login(Cuenta cuenta) {
         executorService.execute(() -> {
-            Result<LoggedInUser> result = loginRepository.login(cuenta.getEmail(), cuenta.getPassword());
+            String emailLowerCase = cuenta.getEmail().toLowerCase().trim();
+            Result<LoggedInUser> result = loginRepository.login(emailLowerCase, cuenta.getPassword());
 
             if (result instanceof Result.Success) {
                 LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();

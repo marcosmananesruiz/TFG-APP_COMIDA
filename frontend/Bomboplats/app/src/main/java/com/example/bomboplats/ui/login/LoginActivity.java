@@ -148,7 +148,7 @@ public class LoginActivity extends AppCompatActivity {
                     showLoginFailed(loginResult.getError());
                 }
                 if (loginResult.getSuccess() != null) {
-                    String email = usernameEditText.getText().toString();
+                    String email = usernameEditText.getText().toString().trim().toLowerCase();
                     boolean shouldKeepForever = keepSessionCheckBox.isChecked();
                     
                     // --- GUARDAR SESIÓN (TOKEN SIMULADO) ---
