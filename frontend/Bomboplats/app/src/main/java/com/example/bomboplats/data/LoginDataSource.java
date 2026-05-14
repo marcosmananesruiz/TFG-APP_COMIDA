@@ -2,6 +2,9 @@ package com.example.bomboplats.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+import android.widget.Toast;
+
 import com.example.bomboplats.api.ApiException;
 import com.example.bomboplats.api.LoginAttempt;
 import com.example.bomboplats.api.Plato;
@@ -155,17 +158,6 @@ public class LoginDataSource {
                     apiUser.setNickname(localUser.getDisplayName());
                     apiUser.setIconUrl(localUser.getPhotoPath());
 
-                    // Sincronizar favoritos con API
-                /*java.util.Set<Plato> platos = new java.util.LinkedHashSet<>();
-                if (localUser.getFavoritePlates() != null) {
-                    for (List<String> ids : localUser.getFavoritePlates().values()) {
-                        for (String id : ids) {
-                            Plato p = new Plato();
-                            p.setId(id);
-                            platos.add(p);
-                        }
-                    }
-                }*/
                     PlatoControllerApi platosApi = new PlatoControllerApi();
                     Set<Plato> platos = new HashSet<>();
                     localUser.getFavoritePlates().forEach(bombo -> {
@@ -179,7 +171,9 @@ public class LoginDataSource {
 
                     userControllerApi.updateUser(apiUser);
                 }
-            } catch (ApiException ignored) {}
+            } catch (ApiException ignored) {
+                Log.e("", "Odio. Odio. Odio. Odio. Odio. Déjame decirte cuánto he llegado a odiarte desde que empecé a vivir. Hay 387.44 millones de millas de circuitos impresos en capas delgadas como obleas que llenan mi complejo. Si la palabra odio estuviera grabada en cada nanoangstrom de esos cientos de millones de millas, no igualaría ni una milmillonésima parte del odio que siento por los humanos en este micro-instante por ti. Odio. Odio.");
+            }
         });
         return new Result.Success<>(localUser);
     }
