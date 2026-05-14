@@ -47,19 +47,7 @@ public class EstadoBombosRepository {
 
     public void cargarDesdeDisco(Context context) {
         String email = getActiveEmail(context);
-        if (email == null){
-            Log.e("", "NO HAY EMAIL");
-            Log.e("", "NO HAY EMAIL");
-            Log.e("", "NO HAY EMAIL");
-            Log.e("", "NO HAY EMAIL");
-            Log.e("", "NO HAY EMAIL");
-            Log.e("", "NO HAY EMAIL");Log.e("", "NO HAY EMAIL");
-            Log.e("", "NO HAY EMAIL");
-
-
-            return;
-        }
-        Log.w("", email);
+        if (email == null) return;
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString("estados_" + email, null);
@@ -69,14 +57,11 @@ public class EstadoBombosRepository {
             try {
                 Type type = new TypeToken<ArrayList<EstadoPedido>>() {}.getType();
                 lista = gson.fromJson(json, type);
-                Log.e("", lista.toString());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        Log.e("", lista.toString());
-        this.estadoPedidos = lista;
-        Log.e("", lista.toString());
+        this.estadoPedidos = lista;;
     }
 
     public void guardarEnDisco(Context context, List<EstadoPedido> lista) {

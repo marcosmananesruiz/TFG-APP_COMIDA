@@ -66,6 +66,7 @@ public class EditarPerfilFragment extends Fragment {
                     String mimeType = requireContext()
                             .getContentResolver()
                             .getType(uri);
+
                     if(mimeType == null || (!mimeType.equals("image/jpeg")&& !mimeType.equals("image/jpg"))){
 
                         Toast.makeText(getContext(),"Solo se permiten imágenes JPG y JPEG",Toast.LENGTH_SHORT).show();
@@ -85,6 +86,8 @@ public class EditarPerfilFragment extends Fragment {
                                     .circleCrop()
                                     .into(ivFoto);
                             Toast.makeText(getContext(), getString(R.string.toast_foto_seleccionada), Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(), "Odio. Odio. Odio. Odio. Odio. Déjame decirte cuánto he llegado a odiarte desde que empecé a vivir. Hay 387.44 millones de millas de circuitos impresos en capas delgadas como obleas que llenan mi complejo. Si la palabra odio estuviera grabada en cada nanoangstrom de esos cientos de millones de millas, no igualaría ni una milmillonésima parte del odio que siento por los humanos en este micro-instante por ti. Odio. Odio.", Toast.LENGTH_LONG).show();
                         }
                     } else {
                         Toast.makeText(getContext(), getString(R.string.error_image_too_large), Toast.LENGTH_SHORT).show();
@@ -180,7 +183,7 @@ public class EditarPerfilFragment extends Fragment {
         btnGuardar.setOnClickListener(v -> {
             UserControllerApi userApi = new UserControllerApi();
             if (this.pendingPhoto != null) {
-                this.userViewModel.getUserId().observe(getViewLifecycleOwner(), this::setId);
+                this.id = this.userViewModel.getUserId().getValue();
                 this.userViewModel.setPhotoUri("profile/" + this.id + ".jpg");
                 ExecutorService service = Executors.newSingleThreadExecutor();
                 service.execute(() -> {

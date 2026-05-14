@@ -3,6 +3,8 @@ package com.example.bomboplats.ui.cuenta;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -81,7 +83,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
             if (user != null) {
                 // Notificamos datos locales inmediatamente para que no aparezca el "default"
                 final LoggedInUser initialUser = user;
-                new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> loadUserData(initialUser));
+                new Handler(Looper.getMainLooper()).post(() -> loadUserData(initialUser));
 
                 try {
                     User apiUser = userApi.getByEmail(user.getEmail());
