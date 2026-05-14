@@ -43,20 +43,15 @@ public class EstadoBomboWorker extends Worker {
         repository.cargarDesdeDisco(context);
         List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
 
-        Log.d("EstadoBomboWorker", "Ejecutando worker. Pedidos en lista: " + listaActual.size());
-
         boolean huboCambios = false;
         boolean pendientes = false;
         long ahora = System.currentTimeMillis();
 
         Iterator<EstadoPedido> iterator = listaActual.iterator();
-        Log.e("", listaActual.toString());
         while (iterator.hasNext()) {
             EstadoPedido ep = iterator.next();
             long transcurrido = ahora - ep.getTimestampCreacion();
             String estadoAnterior = ep.getEstado();
-
-            Log.d("EstadoBomboWorker", "Pedido " + ep.getPedido().getId() + " | Estado: " + ep.getEstado());
 
             if (ahora >= ep.getTimestampEntrega()) {
                 String titulo = context.getString(R.string.noti_titulo_estado);
@@ -92,8 +87,6 @@ public class EstadoBomboWorker extends Worker {
         if (huboCambios) {
             repository.guardarEnDisco(context, listaActual);
         }
-
-        Log.d("EstadoBomboWorker", "pendientes=" + pendientes + " | huboCambios=" + huboCambios);
 
         if (pendientes) {
             Log.d("EstadoBomboWorker", "Encolando siguiente ejecución en 30s...");
