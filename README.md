@@ -30,7 +30,7 @@ Aplicación móvil Android destinada a la gestión de pedidos de comida.
 
 ## Instalación
 
-Descargar la última versión disponible en el apartado [Releases]() del repositorio.
+Descargar la última versión disponible en el apartado [Releases](https://github.com/marcosmananesruiz/TFG-APP_COMIDA/releases) del repositorio.
 
 Para ejecutar la aplicación puede probar de dos formas:
 
