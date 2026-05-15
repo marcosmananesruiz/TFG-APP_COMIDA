@@ -16,11 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-/**
- * Implementación del servicio de restaurantes.
- * Gestiona las operaciones CRUD sobre restaurantes, incluyendo
- * la conversión entre entidad y DTO, y la generación de IDs únicos.
- */
+
 @Service
 public class RestauranteServiceImpl implements IRestauranteService {
 
@@ -106,35 +102,20 @@ public class RestauranteServiceImpl implements IRestauranteService {
                 .build();
     }
 
-    /**
-     * Busca un restaurante por su identificador y lo enriquece con sus platos y direcciones.
-     *
-     * @param id identificador del restaurante
-     * @return Mono con el restaurante completo, o vacío si no existe
-     */
+
     @Override
     public Mono<Restaurante> findById(String id) {
         return this.repo.findById(id).flatMap(this::enrich);
     }
 
-    /**
-     * Devuelve todos los restaurantes del sistema, cada uno enriquecido con sus platos y direcciones.
-     *
-     * @return Flux con todos los restaurantes
-     */
+
     @Override
     public Flux<Restaurante> findAll() {
         return this.repo.findAll().flatMap(this::enrich);
     }
 
 
-    /**
-     * Registra un nuevo restaurante generando un ID único con el formato "R{número}".
-     * En caso de error, lo registra en el log y devuelve un Mono vacío.
-     *
-     * @param restaurante datos del restaurante a registrar
-     * @return Mono con el restaurante creado y enriquecido, o vacío si hubo un error
-     */
+
     @Override
     public Mono<Restaurante> register(Restaurante restaurante) {
         RestauranteEntity entity = toEntity(restaurante);
@@ -151,12 +132,7 @@ public class RestauranteServiceImpl implements IRestauranteService {
                 });
     }
 
-    /**
-     * Actualiza los datos de un restaurante existente.
-     *
-     * @param restaurante datos actualizados del restaurante
-     * @return {@code true} si se actualizó correctamente, {@code false} si no existía
-     */
+
     @Override
     public Mono<Boolean> update(Restaurante restaurante) {
         RestauranteEntity entity = toEntity(restaurante);
@@ -167,13 +143,7 @@ public class RestauranteServiceImpl implements IRestauranteService {
                 ).defaultIfEmpty(false);
     }
 
-    /**
-     * Elimina un restaurante y todos sus platos y direcciones asociados.
-     * Los platos y direcciones se borran en paralelo antes de eliminar el restaurante.
-     *
-     * @param id identificador del restaurante a eliminar
-     * @return {@code true} si se eliminó correctamente, {@code false} si no existía
-     */
+
     @Override
     public Mono<Boolean> deleteRestauranteById(String id) {
         return this.repo.findById(id)
@@ -193,43 +163,22 @@ public class RestauranteServiceImpl implements IRestauranteService {
                 }).defaultIfEmpty(false);
     }
 
-    /**
-     * Busca restaurantes cuyo nombre coincida exactamente con el indicado.
-     *
-     * @param nombre nombre exacto a buscar
-     * @return Flux con los restaurantes que coinciden
-     */
+
     @Override
     public Flux<Restaurante> findByNombre(String nombre) {
         return this.repo.findByNombre(nombre).flatMap(this::enrich);
     }
-    /**
-     * Busca restaurantes cuyo nombre contenga el texto indicado, sin distinguir mayúsculas.
-     *
-     * @param nombre texto a buscar en el nombre del restaurante
-     * @return Flux con los restaurantes que coinciden
-     */
+
     @Override
     public Flux<Restaurante> findByNombreContaining(String nombre) {
         return this.repo.findByNombreContainingIgnoreCase(nombre).flatMap(this::enrich);
     }
 
-    /**
-     * Busca restaurantes cuya descripción contenga el texto indicado, sin distinguir mayúsculas.
-     *
-     * @param description texto a buscar en la descripción
-     * @return Flux con los restaurantes que coinciden
-     */
     @Override
     public Flux<Restaurante> findByDescriptionContaining(String description) {
         return this.repo.findByDescriptionContainingIgnoreCase(description).flatMap(this::enrich);
     }
-    /**
-     * Busca restaurantes que tengan asignado un tag concreto.
-     *
-     * @param tag etiqueta por la que filtrar
-     * @return Flux con los restaurantes que tienen ese tag
-     */
+
     @Override
     public Flux<Restaurante> findByTag(String tag) {
         return this.repo.findByTag(tag).flatMap(this::enrich);

@@ -88,23 +88,12 @@ public class PlatoServiceImpl implements IPlatoService {
         return this.repo.findById(id).map(this::toDTO);
     }
 
-    /**
-     * Devuelve todos los platos del sistema.
-     *
-     * @return Flux con todos los platos
-     */
+
     @Override
     public Flux<Plato> findAll() {
         return this.repo.findAll().map(this::toDTO);
     }
 
-    /**
-     * Registra un nuevo plato generando un ID único con el formato "T00001".
-     * En caso de error, lo registra en el log y devuelve un Mono vacío.
-     *
-     * @param plato datos del plato a registrar
-     * @return Mono con el plato creado, o vacío si hubo un error
-     */
     @Override
     public Mono<Plato> register(Plato plato) {
         PlatoEntity entity = toEntity(plato);
@@ -121,13 +110,7 @@ public class PlatoServiceImpl implements IPlatoService {
                 });
     }
 
-    /**
-     * Actualiza los datos de un plato existente.
-     * Conserva el ID de restaurante que tenía asignado previamente.
-     *
-     * @param plato datos actualizados del plato
-     * @return {@code true} si se actualizó correctamente, {@code false} si no existía
-     */
+
     @Override
     public Mono<Boolean> update(Plato plato) {
         PlatoEntity entity = toEntity(plato);
@@ -140,13 +123,7 @@ public class PlatoServiceImpl implements IPlatoService {
                 }).defaultIfEmpty(false);
     }
 
-    /**
-     * Elimina un plato por su IDr.
-     * Si el plato tiene pedidos asociados, los elimina antes de borrarlo.
-     *
-     * @param id identificador del plato a eliminar
-     * @return {@code true} si se eliminó correctamente, {@code false} si no existía
-     */
+
     @Override
     public Mono<Boolean> deletePlatoById(String id) {
         return this.repo.findById(id)
@@ -165,61 +142,31 @@ public class PlatoServiceImpl implements IPlatoService {
                 ).defaultIfEmpty(false);
     }
 
-    /**
-     * Devuelve todos los platos pertenecientes a un restaurante concreto.
-     * Recoge el id del restaurante y muestra los platos asoaciados.
-     *
-     * @param idRestaurante identificador del restaurante
-     * @return Flux con los platos de ese restaurante
-     */
+
     @Override
     public Flux<Plato> findByIdRestaurante(String idRestaurante) {
         return this.repo.findByIdRestaurante(idRestaurante).map(this::toDTO);
     }
 
-    /**
-     * Busca platos cuyo nombre contenga el texto indicado, sin distinguir mayúsculas.
-     *
-     * @param nombre texto a buscar en el nombre del plato
-     * @return Flux con los platos que coinciden
-     */
+
     @Override
     public Flux<Plato> findByNombreContaining(String nombre) {
         return this.repo.findByNombreContainingIgnoreCase(nombre).map(this::toDTO);
     }
 
-    /**
-     * Busca platos de un restaurante cuyo nombre contenga el texto indicado, sin distinguir mayúsculas.
-     *
-     * @param idRestaurante identificador del restaurante
-     * @param nombre        texto a buscar en el nombre del plato
-     * @return Flux con los platos que coinciden con ambos criterios
-     */
+
     @Override
     public Flux<Plato> findByIdRestauranteAndNombreContaining(String idRestaurante, String nombre) {
         return this.repo.findByIdRestauranteAndNombreContainingIgnoreCase(idRestaurante, nombre).map(this::toDTO);
     }
 
-    /**
-     * Busca platos que tengan asignado un tag concreto.
-     *
-     * @param tag etiqueta por la que filtrar
-     * @return Flux con los platos que tienen ese tag
-     */
+
     @Override
     public Flux<Plato> findByTag(String tag) {
         return this.repo.findByTag(tag).map(this::toDTO);
     }
 
-    /**
-     * Registra un nuevo plato asociándolo directamente a un restaurante por su ID.
-     * Genera un ID único con el formato "T00001".
-     * En caso de error, lo registra en el log y devuelve un Mono vacío.
-     *
-     * @param plato         datos del plato a registrar
-     * @param idRestaurante identificador del restaurante al que pertenece
-     * @return Mono con el plato creado, o vacío si hubo un error
-     */
+
     @Override
     public Mono<Plato> registerConRestaurante(Plato plato, String idRestaurante) {
         PlatoEntity entity = toEntity(plato);
