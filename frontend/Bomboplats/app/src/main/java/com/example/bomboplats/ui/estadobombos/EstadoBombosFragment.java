@@ -16,6 +16,8 @@ import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.EstadoPedido;
 import com.example.bomboplats.ui.historial.ListaPedidoHistorialFragment;
 
+import java.util.List;
+
 public class EstadoBombosFragment extends Fragment implements EstadoBombosAdapter.OnEstadoPedidoClickListener {
 
     private RecyclerView recyclerView;
@@ -37,16 +39,15 @@ public class EstadoBombosFragment extends Fragment implements EstadoBombosAdapte
 
         viewModel = new ViewModelProvider(requireActivity()).get(EstadoBombosViewModel.class);
 
-        viewModel.getPedidosEnEstado().observe(getViewLifecycleOwner(), pedidos -> {
-            if (pedidos == null || pedidos.isEmpty()) {
-                recyclerView.setVisibility(View.GONE);
-                tvVacio.setVisibility(View.VISIBLE);
-            } else {
-                recyclerView.setVisibility(View.VISIBLE);
-                tvVacio.setVisibility(View.GONE);
-                adapter.setLista(pedidos);
-            }
-        });
+        List<EstadoPedido> pedidos = this.viewModel.getPedidosEnEstado(getContext());
+        if (pedidos == null || pedidos.isEmpty()) {
+            recyclerView.setVisibility(View.GONE);
+            tvVacio.setVisibility(View.VISIBLE);
+        } else {
+            recyclerView.setVisibility(View.VISIBLE);
+            tvVacio.setVisibility(View.GONE);
+            adapter.setLista(pedidos);
+        }
 
         return view;
     }

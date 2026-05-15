@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
+import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.Restaurante;
 import java.util.List;
 
@@ -102,6 +103,20 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
                 }
             }
         });
+
+        List<Bombo> bombos = restaurante.getMenu();
+
+        double media = bombos.stream()
+                .mapToDouble(bombo -> Double.parseDouble(bombo.getPrecio()))
+                .average().orElse(0d);
+
+        if (media < 7.5) {
+            holder.tvPrecio.setText("€");
+        } else if (media >= 7.5 && media < 22) {
+            holder.tvPrecio.setText("€€");
+        } else {
+            holder.tvPrecio.setText("€€€");
+        }
     }
 
     @Override

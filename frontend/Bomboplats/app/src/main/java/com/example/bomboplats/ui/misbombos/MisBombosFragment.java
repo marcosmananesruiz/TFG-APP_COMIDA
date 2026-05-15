@@ -32,6 +32,8 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     private FoodRepository foodRepository;
     private TextView tvEmptyFavoritos;
 
+    private List<Bombo> bombosFavoritos = new ArrayList<>();
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -52,6 +54,9 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
     }
 
     private void actualizarListaFavoritos(List<Bombo> favoritos) {
+
+        this.bombosFavoritos = favoritos;
+
         if (favoritos.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyFavoritos.setVisibility(View.VISIBLE);
@@ -62,7 +67,7 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
             if (adapter == null) {
                 adapter = new BomboAdapter(favoritos, this, userViewModel);
             } else {
-                adapter.setFilteredList(favoritos);
+                adapter.setFilteredList(this.bombosFavoritos);
             }
             // Aseguramos que el adaptador esté siempre vinculado al RecyclerView actual (importante tras popBackStack)
             recyclerView.setAdapter(adapter);
@@ -101,7 +106,14 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
 
     public void filtrar(String texto) {
         // Implementar filtrado si es necesario para favoritos
-        if (adapter == null) return;
-        // ... lógica similar a BombosFragment si se desea filtrar en favoritos
+        if (adapter == null || this.bombosFavoritos == null) return;
+
+        List<Bombo> filteredBombos = this.bombosFavoritos.stream()
+                .filter(bombo -> bombo.getNombre().toLowerCase().contains(texto.toLowerCase()) || bombo.getEtiquetas().contains(texto.toLowerCase()))
+                .toList();
+
+        this.adapter.setFilteredList(filteredBombos);
     }
+
+
 }

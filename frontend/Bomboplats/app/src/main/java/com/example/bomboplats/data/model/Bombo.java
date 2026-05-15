@@ -63,12 +63,12 @@ public class Bombo {
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Bombo bombo)) return false;
-        return Objects.equals(id, bombo.id) && Objects.equals(restauranteId, bombo.restauranteId) && Objects.equals(nombre, bombo.nombre) && Objects.equals(descripcion, bombo.descripcion) && Objects.equals(precio, bombo.precio) && Objects.equals(etiquetas, bombo.etiquetas) && Objects.equals(fotos, bombo.fotos) && Objects.equals(ingredientes, bombo.ingredientes) && Objects.equals(alergenos, bombo.alergenos);
+        return this.id.equals(bombo.id);
     }
 
     // Metodo comprobar hashcode
     @Override
     public int hashCode() {
-        return Objects.hash(id, restauranteId, nombre, descripcion, precio, etiquetas, fotos, ingredientes, alergenos);
+        return Objects.hash(id);
     }
 }

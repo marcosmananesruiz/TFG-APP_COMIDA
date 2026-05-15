@@ -3,6 +3,7 @@ package com.example.bomboplats.data.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class StagedBombo {
@@ -18,10 +19,7 @@ public class StagedBombo {
         this.id = ID_COUNTER.incrementAndGet();
         this.bombo = bombo;
         this.cantidad = cantidad;
-        // IMPORTANTE: Creamos una copia nueva para romper la referencia de memoria.
-        // Esto evita que si se cambian las modificaciones en la pantalla de detalle, 
-        // afecten a los platos que ya están guardados en el carrito.
-        this.modificaciones = modificaciones != null ? new ArrayList<>(modificaciones) : new ArrayList<>();
+        this.modificaciones = modificaciones;
     }
 
     public Bombo getBombo() {
@@ -51,5 +49,16 @@ public class StagedBombo {
 
     public int getId() {
         return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof StagedBombo that)) return false;
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

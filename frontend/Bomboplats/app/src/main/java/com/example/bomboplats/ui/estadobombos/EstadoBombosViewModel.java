@@ -1,6 +1,8 @@
 package com.example.bomboplats.ui.estadobombos;
 
 import android.app.Application;
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -46,7 +48,13 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         return true;
     }
 
-    public LiveData<List<EstadoPedido>> getPedidosEnEstado() {
+    public List<EstadoPedido> getPedidosEnEstado(Context context) {
+
+        List<EstadoPedido> list = this.repository.getPedidosEnEstado();
+        if (list != null && list.isEmpty()) {
+            this.repository.cargarDesdeDisco(context);
+        }
+
         return repository.getPedidosEnEstado();
     }
 

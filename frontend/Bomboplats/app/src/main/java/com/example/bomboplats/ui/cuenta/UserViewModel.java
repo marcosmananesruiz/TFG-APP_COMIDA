@@ -350,12 +350,15 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
 
     public void toggleFavorito(Bombo bombo) {
         List<Bombo> favoritos = this.favoritos.getValue();
+        Log.e("", "esFavorito=" + esFavorito(bombo.getId()) + ", favoritos == null=" + (favoritos == null));
         if (esFavorito(bombo.getId())) {
-            favoritos.remove(bombo);
+            boolean borrao = favoritos.remove(bombo);
+            Log.e("", "BORRANDO FAVORITO" + borrao);
         } else {
             favoritos.add(bombo);
+            Log.w("", "AÑADIENDO VAORITOR");
         }
-        this.favoritos.setValue(favoritos);
+        this.favoritos.postValue(favoritos);
         this.loginRepository.setFavorites(favoritos);
     }
 
@@ -370,7 +373,7 @@ public class UserViewModel extends AndroidViewModel implements FavoritosProvider
     public boolean esFavorito(String bomboId) {
         List<Bombo> favoritos = this.favoritos.getValue();
         if (favoritos == null) return false;
-        return favoritos.stream().anyMatch(bombo -> bombo.getId().equalsIgnoreCase(bomboId));
+        return favoritos.stream().map(Bombo::getId).anyMatch(id -> id.equalsIgnoreCase(bomboId));
     }
 
     public void clearError() { error.setValue(null); }

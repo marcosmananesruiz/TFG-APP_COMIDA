@@ -14,6 +14,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.FoodRepository;
 import com.example.bomboplats.data.model.Bombo;
@@ -134,6 +136,11 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
             btnPedido.setOnClickListener(v -> {
                 carritoViewModel.agregarAlCarrito(bomboActual, cantidad, selectedModifications);
                 Toast.makeText(getContext(), getString(R.string.carrito_item_added, cantidad, bomboActual.getNombre()), Toast.LENGTH_SHORT).show();
+
+                if (getActivity() instanceof GeneralActivity generalActivity) {
+                    generalActivity.updateCartIcon(this);
+                }
+
             });
         }
     }

@@ -56,13 +56,13 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         foodRepository = FoodRepository.getInstance(requireContext());
 
-        adapter = new CarritoAdapter(new ArrayList<>(), this);
+        adapter = new CarritoAdapter(new ArrayList<>(), new HashSet<>(), this, this.userViewModel);
         recyclerView.setAdapter(adapter);
 
         // Observar cambios en el carrito
         carritoViewModel.getItemsCarrito().observe(getViewLifecycleOwner(), items -> {
             userViewModel.setCarritoUI(items);
-            actualizarUI();
+            actualizarUI(items);
         });
 
         // Observar cambios en favoritos
@@ -80,10 +80,12 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         return view;
     }
 
-    private void actualizarUI() {
-        List<StagedBombo> items = carritoViewModel.getItemsCarrito().getValue();
+    private void actualizarUI(List<StagedBombo> items) {
         List<Bombo> favoritosList = userViewModel.getFavoritos().getValue();
-        Set<Bombo> favoritosSet = favoritosList != null ? new HashSet<>(favoritosList) : new HashSet<>();
+        Set<Bombo> favoritosSet = new HashSet<>();
+        if (favoritosList != null) {
+            favoritosSet.addAll(favoritosList);
+        }
 
         if (items == null || items.isEmpty()) {
             mostrarCarritoVacio(true);
@@ -91,6 +93,10 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
             mostrarCarritoVacio(false);
             actualizarListaVisual(items, favoritosSet);
         }
+    }
+
+    private void actualizarUI() {
+        this.userViewModel.getCarrito().observe(getViewLifecycleOwner(), this::actualizarUI);
     }
 
     @Override
@@ -118,7 +124,8 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         float totalCompra = (float) carrito.stream()
                 .mapToDouble(stagedBombo -> stagedBombo.getCantidad() * Double.parseDouble(stagedBombo.getBombo().getPrecio()))
                 .sum();
-        
+
+
         adapter.actualizarLista(carrito, favoritos);
         tvTotalPrecio.setText(String.format(Locale.getDefault(), "%.2f€", totalCompra));
     }
@@ -152,5 +159,19 @@ public class CarritoFragment extends Fragment implements CarritoAdapter.OnCarrit
         return stagedBombos.stream().filter(stagedBombo -> stagedBombo.getBombo().equals(bombo)).findFirst().orElse(null);
     }
 
-    public void filtrar(String texto) {}
+    public void filtrar(String texto) {
+        List<StagedBombo> stagedBombos = this.carritoViewModel.getItemsCarrito().getValue();
+        if (stagedBombos == null || this.adapter == null) return;
+
+        List<StagedBombo> filteredBombos = stagedBombos.stream()
+                .filter(stagedBombo -> stagedBombo.getBombo().getNombre().toLowerCase().contains(texto.toLowerCase())
+                                                || stagedBombo.getBombo().getEtiquetas().contains(texto.toLowerCase()))
+                .toList();
+
+        this.adapter.actualizarLista(filteredBombos);
+    }
+
+    public List<StagedBombo> getCarrito() {
+        return this.carritoViewModel.getItemsCarrito().getValue();
+    }
 }

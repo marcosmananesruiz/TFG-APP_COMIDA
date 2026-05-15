@@ -14,6 +14,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -35,6 +36,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bomboplats.data.EstadoBombosRepository;
 import com.example.bomboplats.data.NotificationRepository;
+import com.example.bomboplats.data.model.StagedBombo;
 import com.example.bomboplats.ui.carrito.CarritoFragment;
 import com.example.bomboplats.ui.carrito.CarritoViewModel;
 import com.example.bomboplats.ui.carrito.RealizarEnvioFragment;
@@ -43,12 +45,15 @@ import com.example.bomboplats.ui.cuenta.CuentaFragment;
 import com.example.bomboplats.ui.estadobombos.EstadoBombosFragment;
 import com.example.bomboplats.ui.estadobombos.EstadoBombosViewModel;
 import com.example.bomboplats.ui.general.BombosFragment;
+import com.example.bomboplats.ui.general.DetalleBomboFragment;
 import com.example.bomboplats.ui.general.GeneralFragment;
 import com.example.bomboplats.ui.historial.HistorialFragment;
 import com.example.bomboplats.ui.login.LoginActivity;
 import com.example.bomboplats.ui.misbombos.MisBombosFragment;
 import com.example.bomboplats.ui.notificaciones.NotificacionesFragment;
 import com.google.android.material.navigation.NavigationView;
+
+import java.util.List;
 
 public class GeneralActivity extends AppCompatActivity {
 
@@ -58,6 +63,7 @@ public class GeneralActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private long backPressedTime;
     private Toast backToast;
+    private LinearLayout searchContainer;
     private EditText searchEditText;
     private ImageView searchIcon;
     private ImageView cartButton;
@@ -108,6 +114,7 @@ public class GeneralActivity extends AppCompatActivity {
                 navigationView.setCheckedItem(R.id.nav_home);
             }
         }
+
     }
 
     private void setupNetworkMonitoring() {
@@ -167,16 +174,20 @@ public class GeneralActivity extends AppCompatActivity {
         cartButton = findViewById(R.id.toolbar_shopping_cart);
         cartButton.setOnClickListener(v -> {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
-            if (currentFragment instanceof CarritoFragment) {
-                new AlertDialog.Builder(this)
-                        .setTitle(R.string.dialog_vaciar_carrito_titulo)
-                        .setMessage(R.string.dialog_vaciar_carrito_mensaje)
-                        .setPositiveButton(R.string.si, (dialog, which) -> {
-                            carritoViewModel.limpiarCarrito();
-                            Toast.makeText(this, getString(R.string.toast_carrito_vaciado), Toast.LENGTH_SHORT).show();
-                        })
-                        .setNegativeButton(R.string.no, null)
-                        .show();
+            if (currentFragment instanceof CarritoFragment fragment) {
+                if (fragment.getCarrito() == null || fragment.getCarrito().isEmpty()) {
+                    Toast.makeText(this, getString(R.string.carrito_vacio), Toast.LENGTH_SHORT).show();
+                } else {
+                    new AlertDialog.Builder(this)
+                            .setTitle(R.string.dialog_vaciar_carrito_titulo)
+                            .setMessage(R.string.dialog_vaciar_carrito_mensaje)
+                            .setPositiveButton(R.string.si, (dialog, which) -> {
+                                carritoViewModel.limpiarCarrito();
+                                Toast.makeText(this, getString(R.string.toast_carrito_vaciado), Toast.LENGTH_SHORT).show();
+                            })
+                            .setNegativeButton(R.string.no, null)
+                            .show();
+                }
             } else if (currentFragment instanceof RealizarEnvioFragment) {
                 getSupportFragmentManager().popBackStack();
             } else {
@@ -197,17 +208,12 @@ public class GeneralActivity extends AppCompatActivity {
                 if (s.length() > 0) searchIcon.setImageResource(R.drawable.ic_close);
                 else searchIcon.setImageResource(R.drawable.ic_search);
 
-                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
                 String query = s.toString();
-                
+
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
                 if (currentFragment instanceof GeneralFragment) ((GeneralFragment) currentFragment).filtrar(query);
                 else if (currentFragment instanceof BombosFragment) ((BombosFragment) currentFragment).filtrar(query);
                 else if (currentFragment instanceof MisBombosFragment) ((MisBombosFragment) currentFragment).filtrar(query);
-                else if (currentFragment instanceof CuentaFragment) ((CuentaFragment) currentFragment).filtrar(query);
-                else if (currentFragment instanceof HistorialFragment) ((HistorialFragment) currentFragment).filtrar(query);
-                else if (currentFragment instanceof NotificacionesFragment) ((NotificacionesFragment) currentFragment).filtrar(query);
-                else if (currentFragment instanceof ConfiguracionFragment) ((ConfiguracionFragment) currentFragment).filtrar(query);
-                else if (currentFragment instanceof EstadoBombosFragment) ((EstadoBombosFragment) currentFragment).filtrar(query);
                 else if (currentFragment instanceof CarritoFragment) ((CarritoFragment) currentFragment).filtrar(query);
             }
             @Override
@@ -218,6 +224,17 @@ public class GeneralActivity extends AppCompatActivity {
             if (searchEditText.getText().length() > 0) searchEditText.setText("");
             else searchEditText.requestFocus();
         });
+
+        this.searchContainer = findViewById(R.id.search_bar_container);
+
+        this.carritoViewModel.getItemsCarrito().observe(this, carrito -> {
+            if (carrito == null || carrito.isEmpty()) {
+                cartButton.setImageResource(R.drawable.ic_shopping_cart);
+            } else {
+                cartButton.setImageResource(R.drawable.ic_filled_cart);
+            }
+        });
+
     }
 
     private void setupNavigation() {
@@ -292,6 +309,17 @@ public class GeneralActivity extends AppCompatActivity {
         transaction.replace(R.id.container, fragment);
         transaction.commit();
         updateCartIcon(fragment);
+
+        if (fragment instanceof CuentaFragment
+                || fragment instanceof ConfiguracionFragment
+                || fragment instanceof NotificacionesFragment
+                || fragment instanceof HistorialFragment
+                || fragment instanceof EstadoBombosFragment
+                || fragment instanceof DetalleBomboFragment) {
+            searchContainer.setVisibility(View.INVISIBLE);
+        } else {
+            searchContainer.setVisibility(View.VISIBLE);
+        }
     }
 
     public void onRestauranteClickFromFragment(Fragment fragment) {
@@ -305,8 +333,16 @@ public class GeneralActivity extends AppCompatActivity {
 
     public void updateCartIcon(Fragment fragment) {
         if (cartButton == null) return;
-        if (fragment instanceof CarritoFragment) cartButton.setImageResource(R.drawable.ic_close);
-        else cartButton.setImageResource(R.drawable.ic_shopping_cart);
+        if (fragment instanceof CarritoFragment) {
+            cartButton.setImageResource(R.drawable.ic_close);
+        } else {
+            List<StagedBombo> carrito = this.carritoViewModel.getItemsCarrito().getValue();
+            if (carrito == null || carrito.isEmpty()) {
+                cartButton.setImageResource(R.drawable.ic_shopping_cart);
+            } else {
+                cartButton.setImageResource(R.drawable.ic_filled_cart);
+            }
+        }
     }
 
     private void updateCartIconBasedOnFragment() {

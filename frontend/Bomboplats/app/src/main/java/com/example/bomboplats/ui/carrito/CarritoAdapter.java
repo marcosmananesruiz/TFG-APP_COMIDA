@@ -1,5 +1,6 @@
 package com.example.bomboplats.ui.carrito;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,11 +9,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.StagedBombo;
+import com.example.bomboplats.ui.cuenta.UserViewModel;
 
 import java.util.List;
 import java.util.Set;
@@ -21,6 +24,7 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
 
     private List<StagedBombo> listaCarrito;
     private OnCarritoActionListener listener;
+    private UserViewModel userViewModel;
     private Set<Bombo> favoritos;
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
     private static final String DEFAULT_BOMBO_IMAGE = BASE_BUCKET + "platos/default.jpg";
@@ -31,13 +35,25 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         void onBomboClick(StagedBombo bombo);
     }
 
-    public CarritoAdapter(List<StagedBombo> listaCarrito, OnCarritoActionListener listener) {
+    public CarritoAdapter(List<StagedBombo> listaCarrito, Set<Bombo> favoritos, OnCarritoActionListener listener, UserViewModel userViewModel) {
         this.listaCarrito = listaCarrito;
+        this.favoritos = favoritos;
         this.listener = listener;
+
+        this.userViewModel = userViewModel;
     }
 
     public void actualizarLista(List<StagedBombo> nuevaLista, Set<Bombo> favoritos) {
+        this.actualizarLista(nuevaLista);
+        this.actualizarFavoritos(favoritos);
+    }
+
+    public void actualizarLista(List<StagedBombo> nuevaLista) {
         this.listaCarrito = nuevaLista;
+        notifyDataSetChanged();
+    }
+
+    public void actualizarFavoritos(Set<Bombo> favoritos) {
         this.favoritos = favoritos;
         notifyDataSetChanged();
     }
@@ -94,7 +110,10 @@ public class CarritoAdapter extends RecyclerView.Adapter<CarritoAdapter.CarritoV
         });
 
         // Configurar favorito usando la clave compuesta y aplicando color
-        boolean esFav = favoritos != null && favoritos.contains(bombo);
+        boolean esFav = this.userViewModel.esFavorito(bombo.getId());
+
+        Log.e("", "esFav=" + esFav);
+
         if (esFav) {
             holder.ivFavorito.setImageResource(R.drawable.ic_favorite_filled);
             holder.ivFavorito.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.favorite_red));

@@ -37,8 +37,8 @@ public class EstadoBombosRepository {
         return instance;
     }
 
-    public LiveData<List<EstadoPedido>> getPedidosEnEstado() {
-        return pedidosEnEstado;
+    public List<EstadoPedido> getPedidosEnEstado() {
+        return this.estadoPedidos;
     }
 
     private String getActiveEmail(Context context) {

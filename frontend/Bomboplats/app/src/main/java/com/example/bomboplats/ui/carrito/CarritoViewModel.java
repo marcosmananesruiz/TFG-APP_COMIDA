@@ -48,7 +48,7 @@ public class CarritoViewModel extends AndroidViewModel {
         return itemsCarrito;
     }
 
-    private void cargarDatosDesdeAPI() {
+    public void cargarDatosDesdeAPI() {
         LoggedInUser user = loginRepository.getUser();
         if (user != null) {
             List<StagedBombo> cartMap = user.getCartPlates();
@@ -126,7 +126,7 @@ public class CarritoViewModel extends AndroidViewModel {
     }
 
     public void limpiarCarrito() {
-        itemsCarrito.setValue(new ArrayList<>());
+        itemsCarrito.postValue(new ArrayList<>());
         sincronizarConAPI();
     }
 
