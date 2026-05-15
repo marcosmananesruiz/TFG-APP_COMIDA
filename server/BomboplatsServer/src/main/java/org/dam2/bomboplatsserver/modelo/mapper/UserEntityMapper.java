@@ -15,12 +15,26 @@ import reactor.core.publisher.Mono;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Mapper encargado de convertir entre {@link User} (modelo de API)
+ * y {@link UserEntity} (entidad de base de datos).
+ * Al construir el DTO, recupera de forma reactiva las direcciones
+ * y platos favoritos asociados al usuario.
+ */
 public class UserEntityMapper implements EntityMapper<UserEntity, User> {
 
     @Autowired private UserRepository repo;
     @Autowired private IDireccionService direccionService;
     @Autowired private IPlatoFavoritosService platoFavoritosService;
 
+    /**
+     * Convierte un {@link User} a su representación como entidad de base de datos.
+     * Recupera la contraseña almacenada en base de datos para no perderla,
+     * ya que el DTO no la expone.
+     *
+     * @param o Mono con el usuario a convertir
+     * @return Mono con la entidad resultante
+     */
     @Override
     public Mono<UserEntity> map(Mono<User> o) {
         return o.flatMap(user ->
@@ -37,6 +51,14 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
         );
     }
 
+    /**
+     * Convierte una {@link UserEntity} a su representación como modelo de API.
+     * Recupera en paralelo las direcciones y platos favoritos del usuario
+     * antes de construir el DTO final.
+     *
+     * @param o Mono con la entidad a convertir
+     * @return Mono con el usuario completo incluyendo direcciones y favoritos
+     */
     @Override
     public Mono<User> unmap(Mono<UserEntity> o) {
         return o.flatMap(userEntity -> {
@@ -57,6 +79,13 @@ public class UserEntityMapper implements EntityMapper<UserEntity, User> {
         });
     }
 
+    /**
+     * Convierte un flujo de entidades {@link UserEntity} a un flujo de objetos {@link User}.
+     * Para cada entidad, recupera en paralelo sus direcciones y platos favoritos.
+     *
+     * @param o Flux con las entidades a convertir
+     * @return Flux con los usuarios completos incluyendo direcciones y favoritos
+     */
     @Override
     public Flux<User> mapFlux(Flux<UserEntity> o) {
         return o.flatMap(userEntity -> {

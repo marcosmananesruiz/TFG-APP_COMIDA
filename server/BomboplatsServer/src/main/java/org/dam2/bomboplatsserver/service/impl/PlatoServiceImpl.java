@@ -17,11 +17,7 @@ import reactor.core.publisher.Mono;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Implementación del servicio de platos.
- * Gestiona las operaciones CRUD sobre platos, incluyendo
- * la conversión entre entidad y DTO, y la generación de IDs únicos.
- */
+
 @Service
 public class PlatoServiceImpl implements IPlatoService {
 
@@ -86,12 +82,7 @@ public class PlatoServiceImpl implements IPlatoService {
                 .build();
     }
 
-    /**
-     * Busca un plato por su ID.
-     *
-     * @param id identificador del plato
-     * @return Mono con el plato, o vacío si no existe
-     */
+
     @Override
     public Mono<Plato> findById(String id) {
         return this.repo.findById(id).map(this::toDTO);

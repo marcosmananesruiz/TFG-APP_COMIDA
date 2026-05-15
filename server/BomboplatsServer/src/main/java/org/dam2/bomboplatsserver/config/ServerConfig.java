@@ -9,6 +9,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
+/**
+ * Configuración general del servidor.
+ * Registra como beans de Spring todos los mappers de entidades,
+ * haciéndolos disponibles para inyección en el resto de la aplicación.
+ */
 @Configuration
 public class ServerConfig {
 
