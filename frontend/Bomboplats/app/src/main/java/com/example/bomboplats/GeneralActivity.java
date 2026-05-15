@@ -228,6 +228,10 @@ public class GeneralActivity extends AppCompatActivity {
         this.searchContainer = findViewById(R.id.search_bar_container);
 
         this.carritoViewModel.getItemsCarrito().observe(this, carrito -> {
+
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+            if (currentFragment instanceof CarritoFragment) return;
+
             if (carrito == null || carrito.isEmpty()) {
                 cartButton.setImageResource(R.drawable.ic_shopping_cart);
             } else {
