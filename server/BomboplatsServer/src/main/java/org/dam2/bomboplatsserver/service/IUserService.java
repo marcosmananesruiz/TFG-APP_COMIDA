@@ -25,24 +25,24 @@ public interface IUserService {
 
     /**
      * Registrar un usuario en la base de datos
-     * @param userEntity Usuario a registrar
+     * @param userRegister Usuario a registrar
      * @return {@link Mono}<{@link Boolean}> con {@code true} si se registro correctamente, o {@code false} si ese registro ya existe o se ha producido un error
      */
     Mono<User> register(UserRegister userRegister);
 
     /**
      * Actualiza un usuario de la base de datos
-     * @param userEntity Usuario a actualizar
+     * @param user Usuario a actualizar
      * @return {@link Mono}<{@link Boolean}> con {@code true} si se actualizo correctamente, o {@code false} si ese registro no existe o se ha producido un error
      */
     Mono<Boolean> update(User user);
 
     /**
      * Borra un usuario de la base de datos
-     * @param userEntity Usuario a borrar
+     * @param user Usuario a borrar
      * @return {@link Mono}<{@link Boolean}> con {@code true} si se elimino correctamente, o {@code false} si ese registro no existe o se ha producido un error
      */
-    Mono<Boolean> deleteUser(User User);
+    Mono<Boolean> deleteUser(User user);
 
     /**
      * Borra un usuario de la base de datos segun su Id

@@ -31,18 +31,18 @@ public interface IDireccionService {
 
     /**
      * Actualiza la información de un direccion en la base de datos
-     * @param direccionEntity Dirección a actualizar
+     * @param direccion Dirección a actualizar
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se actualizó correctamente, {@code false} si ya no existe ese registro o se produjo un error
      */
-    Mono<Boolean> update(Direccion Direccion);
+    Mono<Boolean> update(Direccion direccion);
 
     /**
      * Borra un direccion de la base de datos
-     * @param direccionEntity Dirección a borrar
+     * @param direccion Dirección a borrar
      * @see #deleteDireccionByID(String)
      * @return {@link Mono}<{@link Boolean}>: {@code true} si se borro correctamente, {@code false} si no existe ese registro o se produjo un error
      */
-    Mono<Boolean> deleteDireccion(Direccion Direccion);
+    Mono<Boolean> deleteDireccion(Direccion direccion);
 
     /**
      * Borra un direccion de la base de datos

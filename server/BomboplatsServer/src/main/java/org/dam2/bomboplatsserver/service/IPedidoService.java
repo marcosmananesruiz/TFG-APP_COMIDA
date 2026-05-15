@@ -22,17 +22,17 @@ public interface IPedidoService {
 
     /**
      * Registrar un pedido en la base de datos
-     * @param pedidoEntity el pedido a registrar
+     * @param pedido el pedido a registrar
      * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha registrado, o {@code false} si ya existe ese registro o se ha producido un error al registrarlo
      */
-    Mono<Pedido> register(Pedido Pedido);
+    Mono<Pedido> register(Pedido pedido);
 
     /**
      * Actualiza el pedido de la base de datos
-     * @param pedidoEntity el pedido a actualizar
+     * @param pedido el pedido a actualizar
      * @return {@link Mono}<{@link Boolean}> con {@code true} si se ha actualizado el registro, o {@code false} si ese registro no existe o se ha producido un error al actualizarlo
      */
-    Mono<Boolean> update(Pedido Pedido);
+    Mono<Boolean> update(Pedido pedido);
 
     /**
      * Borrar un pedido de la base de datos segun su Id
