@@ -22,6 +22,7 @@ public class Bombo {
     private List<String> ingredientes;
     private List<String> alergenos;
 
+    // Builder
     public Bombo(String id, String restauranteId, String nombre, String descripcion, String precio, List<String> etiquetas, List<String> fotos, List<String> ingredientes, List<String> alergenos) {
         this.id = id;
         this.restauranteId = restauranteId;
@@ -46,6 +47,7 @@ public class Bombo {
         this.alergenos = new ArrayList<>();
     }
 
+    // Getters y setters
     public String getId() { return id; }
     public String getRestauranteId() { return restauranteId; }
     public void setRestauranteId(String restauranteId) { this.restauranteId = restauranteId; }
@@ -57,12 +59,14 @@ public class Bombo {
     public List<String> getIngredientes() { return ingredientes; }
     public List<String> getAlergenos() { return alergenos; }
 
+    // Método equals
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Bombo bombo)) return false;
         return Objects.equals(id, bombo.id) && Objects.equals(restauranteId, bombo.restauranteId) && Objects.equals(nombre, bombo.nombre) && Objects.equals(descripcion, bombo.descripcion) && Objects.equals(precio, bombo.precio) && Objects.equals(etiquetas, bombo.etiquetas) && Objects.equals(fotos, bombo.fotos) && Objects.equals(ingredientes, bombo.ingredientes) && Objects.equals(alergenos, bombo.alergenos);
     }
 
+    // Metodo comprobar hashcode
     @Override
     public int hashCode() {
         return Objects.hash(id, restauranteId, nombre, descripcion, precio, etiquetas, fotos, ingredientes, alergenos);

@@ -17,8 +17,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Repository that manages food data (Restaurants and Dishes/Bombos).
- * Migrated to use REST API.
+ * Repositorio que gestiona datos sobre alimentos (restaurantes y platos/Bombos).
+ * Se ha migrado para utilizar la API REST.
  */
 public class FoodRepository {
     private static FoodRepository instance;
@@ -100,7 +100,7 @@ public class FoodRepository {
         }
         return new ArrayList<>();
     }
-
+    // Toma los bombos por id de restaurante y de bombo
     public Bombo getBomboPorId(String id) {
         if (id == null) return null;
         

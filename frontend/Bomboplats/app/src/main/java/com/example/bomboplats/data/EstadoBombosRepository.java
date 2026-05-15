@@ -29,6 +29,7 @@ public class EstadoBombosRepository {
 
     private EstadoBombosRepository() {}
 
+    // Singleton
     public static synchronized EstadoBombosRepository getInstance() {
         if (instance == null) {
             instance = new EstadoBombosRepository();
@@ -44,7 +45,7 @@ public class EstadoBombosRepository {
         SharedPreferences prefs = context.getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE);
         return prefs.getString(KEY_CURRENT_USER_EMAIL, null);
     }
-
+    // Cargar desde disco
     public void cargarDesdeDisco(Context context) {
         String email = getActiveEmail(context);
         if (email == null) return;
@@ -63,7 +64,7 @@ public class EstadoBombosRepository {
         }
         this.estadoPedidos = lista;;
     }
-
+    // Guardar en disco
     public void guardarEnDisco(Context context, List<EstadoPedido> lista) {
         String email = getActiveEmail(context);
         if (email == null) return;
@@ -73,18 +74,18 @@ public class EstadoBombosRepository {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString("estados_" + email, gson.toJson(lista)).apply();
     }
-
+    // Metodo para agregar un nuevo pedido
     public void agregarPedido(Context context, EstadoPedido nuevo) {
         cargarDesdeDisco(context);
         List<EstadoPedido> actual = new ArrayList<>(getListaActual());
         actual.add(0, nuevo);
         guardarEnDisco(context, actual);
     }
-
+    // Metodo para getter de la lista de pedidos
     public List<EstadoPedido> getListaActual() {
         List<EstadoPedido> actual = this.estadoPedidos;
         if (actual == null) {
-            Log.e("", "benja,min netanyahu deja nuestro proyecto porfgavor");
+            Log.e("", "No hay lista");
         } else {
             Log.w("", actual.toString());
         }

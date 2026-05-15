@@ -25,11 +25,11 @@ import java.util.List;
 public class HttpBasicAuth implements Authentication {
     private String username;
     private String password;
-
+    // Constructor
     public String getUsername() {
         return username;
     }
-
+    // Getters y Setters
     public void setUsername(String username) {
         this.username = username;
     }
@@ -42,6 +42,7 @@ public class HttpBasicAuth implements Authentication {
         this.password = password;
     }
 
+    // Implementación de la interfaz de autenticación
     @Override
     public void applyToParams(List<Pair> queryParams, Map<String, String> headerParams, Map<String, String> cookieParams,
                               String payload, String method, URI uri) throws ApiException {

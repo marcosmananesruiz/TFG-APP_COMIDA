@@ -41,7 +41,7 @@ public class HistorialRepository {
         SharedPreferences prefs = context.getSharedPreferences(USER_PREFS, Context.MODE_PRIVATE);
         return prefs.getString(KEY_CURRENT_USER_EMAIL, null);
     }
-
+    // Metodo para cargar del disco
     public void cargarDesdeDisco(Context context) {
         String email = getActiveEmail(context);
         if (email == null) return;
@@ -60,7 +60,7 @@ public class HistorialRepository {
         }
         pedidos.postValue(lista != null ? lista : new ArrayList<>());
     }
-
+    // Metodo para guardar pedido
     public void guardarPedido(Context context, Pedido pedido) {
         String email = getActiveEmail(context);
         if (email == null) return;

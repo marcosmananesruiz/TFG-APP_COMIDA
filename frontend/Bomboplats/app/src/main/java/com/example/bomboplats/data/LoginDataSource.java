@@ -55,7 +55,7 @@ public class LoginDataSource {
                 .putString(PREF_USER_EMAIL, email)
                 .apply();
     }
-
+    // Guarda el perfil offline
     private void saveProfileOffline(LoggedInUser user) {
         if (user == null || user.getEmail() == null) return;
         SharedPreferences prefs = context.getSharedPreferences(PREF_USER_DATA, Context.MODE_PRIVATE);
@@ -74,7 +74,7 @@ public class LoginDataSource {
         
         prefs.edit().putString("profile_" + user.getEmail(), gson.toJson(profileOnly)).apply();
     }
-
+    // Carga el perfil offline
     private LoggedInUser loadProfileOffline(String email) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_USER_DATA, Context.MODE_PRIVATE);
         String json = prefs.getString("profile_" + email, null);
@@ -87,7 +87,7 @@ public class LoginDataSource {
         }
         return null;
     }
-
+    // Autentica al usuario vía API y sincroniza su perfil localmente
     public Result<LoggedInUser> login(String email, String password) {
         try {
             LoginAttempt attempt = new LoginAttempt();
@@ -108,7 +108,7 @@ public class LoginDataSource {
             return new Result.Error(new IOException("Error de red: " + e.getMessage()));
         }
     }
-
+    // Registra un usuario
     public Result<LoggedInUser> register(LoggedInUser user) {
         try {
             UserRegister registerData = new UserRegister();
@@ -146,7 +146,7 @@ public class LoginDataSource {
         }
         return new Result.Error(new IOException(ERROR_USER_NOT_FOUND));
     }
-
+    // Guarda los datos del usuario para loguear mas facil luego
     public Result<LoggedInUser> saveUserInternal(LoggedInUser localUser) {
         saveProfileOffline(localUser);
         saveCartLocally(localUser.getEmail(), localUser.getCartPlates());
@@ -177,13 +177,13 @@ public class LoginDataSource {
         });
         return new Result.Success<>(localUser);
     }
-
+    // Guarda el carrito
     private void saveCartLocally(String email, List<StagedBombo> cart) {
         if (cart == null) return;
         SharedPreferences prefs = context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString("cart_" + email, gson.toJson(cart)).apply();
     }
-
+    // Carga el carrito
     private List<StagedBombo> loadCartLocally(String email) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_CART_NAME, Context.MODE_PRIVATE);
         String json = prefs.getString("cart_" + email, null);
@@ -193,7 +193,7 @@ public class LoginDataSource {
         }
         return new ArrayList<>();
     }
-
+    // Actualiza el nombre de usuario
     public Result<LoggedInUser> updateName(String email, String newName) {
         try {
             User apiUser = userControllerApi.getByEmail(email);
@@ -207,7 +207,7 @@ public class LoginDataSource {
         } catch (ApiException ignored) {}
         return new Result.Error(new IOException("Error al actualizar"));
     }
-
+    // Actualiza el email del usuario
     public Result<LoggedInUser> updateEmail(String oldEmail, String newEmail) {
         try {
             User apiUser = userControllerApi.getByEmail(oldEmail);
@@ -226,7 +226,7 @@ public class LoginDataSource {
         } catch (ApiException ignored) {}
         return new Result.Error(new IOException("Error al actualizar email"));
     }
-
+    // Actualiza la contraseña
     public Result<LoggedInUser> updatePassword(String email, String oldPassword, String newPassword) {
         try {
             LoginAttempt attempt = new LoginAttempt();
@@ -240,7 +240,7 @@ public class LoginDataSource {
         } catch (ApiException ignored) {}
         return new Result.Error(new IOException(ERROR_WRONG_PASSWORD));
     }
-
+    // Borra el usuario
     public void deleteUser(String email) {
         try {
             User apiUser = userControllerApi.getByEmail(email);
@@ -256,14 +256,14 @@ public class LoginDataSource {
         if (!root.exists()) root.mkdirs();
         return new File(root, email + ".jpg");
     }
-
+    // Cerrar sesion
     public void logout() {
         context.getSharedPreferences(PREF_USER_DATA, Context.MODE_PRIVATE)
                 .edit()
                 .remove(PREF_USER_EMAIL)
                 .apply();
     }
-
+    // Convierte a usuario logueado
     private LoggedInUser convertToLoggedInUser(User apiUser, String password) {
         List<Bombo> favs = new ArrayList<>();
 
