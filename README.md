@@ -1,26 +1,20 @@
-
 # Bomboplats
 
 Aplicación móvil Android destinada a la gestión de pedidos de comida.
 
-- [Autores](#Authors)
-- [Caracteristicas](#Caracteristicas)
+- [Autores](#Autores)
+- [Características](#Características)
 - [Instalación](#Instalación)
 - [Info](#Info)
-- [Tecnologias y Despliegue](#Tecnologias/Despliegue)
+- [Tecnologías y Despliegue](#Tecnologías-y-Despliegue)
 - [Disclaimer](#Disclaimer)
-
-
-
-
-
 
 ## Autores
 
-- **Backend Spring Boot**: Jose Caceres, Marcos Mañanes
-- **Frontend Android**: Alberto Catel, Jorge Peréz
+- **Backend Spring Boot**: José Cáceres, Marcos Mañanes
+- **Frontend Android**: Alberto Catel, Jorge Pérez
 
-## Caracteristicas
+## Características
 
 - Mostrar un listado de platos organizado por categorías.
 - Permitir consultar el detalle de un plato (precio, descripción e imagen).
@@ -34,43 +28,44 @@ Aplicación móvil Android destinada a la gestión de pedidos de comida.
 - Implementación de un pago simulado.
 - Panel de administración para la gestión de platos y pedidos. (Repositorio: [bomboplats-admin-panel](https://github.com/marcosmananesruiz/bomboplats-admin-panel))
 
-
 ## Instalación
 
-Descargar la ultima version disponible en el apartado [Releases]() del repositorio.
+Descargar la última versión disponible en el apartado [Releases]() del repositorio.
 
-Para ejecutar la aplicacion puede probar de dos forma:
+Para ejecutar la aplicación puede probar de dos formas:
 
-- Descargarlo en su propio dispositivo Android y ejecutar.
+- Descargarla en su propio dispositivo Android y ejecutar.
   - Si su dispositivo es muy reciente, es posible que sea necesario desactivar algún sistema de bloqueo para aplicaciones de origen desconocido incluido por el fabricante. Este procedimiento puede variar según la marca y el modelo del dispositivo, por lo que dependerá del móvil en el que se desee realizar la instalación.
 
-  - Por ejemplo, en algunos dispositivos de Samsung puede ser necesario desactivar temporalmente la función de Protección de aplicaciones para permitir la instalación correctamente.
-- Descargarlo en el ordenador y arratrar la APK a un dispositivo Android Emulado 
+  - Por ejemplo, en algunos dispositivos Samsung puede ser necesario desactivar temporalmente la función de Protección de aplicaciones para permitir la instalación correctamente.
 
-Para que la aplicacion funcione correctamente, debe poder conectarse al servidor en la nube. Requerira de acceso a internet y que el servidor se encuentre encendido (Revisar [Disclaimer](#Disclaimer) para mas información)
+- Descargarla en el ordenador y arrastrar la APK a un dispositivo Android emulado.
 
-**Credenciales de Acceso**:
+Para que la aplicación funcione correctamente, debe poder conectarse al servidor en la nube. Requerirá acceso a internet y que el servidor se encuentre encendido (revisar [Disclaimer](#Disclaimer) para más información).
+
+**Credenciales de acceso**:
 
 - **Email**: igm147@educa.madrid.org
 - **Contraseña**: Villablanca
+
 ## Info
 
-- El servidor de la aplicacion cuenta con un dominio: http://bomboplats.run.place
-- Desde este [enlace](http://bomboplats.run.place:4200/admin/) se puede contectar al Panel de Administracion
-## Tecnologias/Despliegue
+- El servidor de la aplicación cuenta con un dominio: http://bomboplats.run.place
+- Desde este [enlace](http://bomboplats.run.place:4200/admin/) se puede conectar al panel de administración.
 
-**Client:** 
-- Android (Disponible cualquier versión)
+## Tecnologías y Despliegue
+
+**Client:**
+- Android 7+ 
 - Angular 21.0 (Admin Panel)
 - OpenAPI Generator: 7.20.0
 
 **Server:**
-- SpringBoot 4.0.2
+- Spring Boot 4.0.2 con Java 25
 - AWS:
-  - **EC2**: Despliegue con Docker 
+  - **EC2**: Despliegue con Docker
   - **RDS**: PostgreSQL 17.0
-  - **S3**: Almacenamiento de imagenes
-
+  - **S3**: Almacenamiento de imágenes
 
 ## Disclaimer
 
