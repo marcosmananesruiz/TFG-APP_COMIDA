@@ -14,6 +14,9 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import java.util.ArrayList;
 
+/**
+ * Fragmento para mostrar el historial de pedidos.
+ */
 public class HistorialFragment extends Fragment implements HistorialAdapter.OnPedidoClickListener {
 
     private RecyclerView recyclerView;
@@ -34,6 +37,7 @@ public class HistorialFragment extends Fragment implements HistorialAdapter.OnPe
         adapter = new HistorialAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
+        // Observar los cambios en los pedidos
         historialViewModel.getPedidos().observe(getViewLifecycleOwner(), pedidos -> {
             if (pedidos == null || pedidos.isEmpty()) {
                 recyclerView.setVisibility(View.GONE);
@@ -56,7 +60,7 @@ public class HistorialFragment extends Fragment implements HistorialAdapter.OnPe
         }
     }
 
+    // Implementación de filtrar busqueda si fuera necesario
     public void filtrar(String texto) {
-        // Opcional: implementar filtrado por ID o fecha
     }
 }

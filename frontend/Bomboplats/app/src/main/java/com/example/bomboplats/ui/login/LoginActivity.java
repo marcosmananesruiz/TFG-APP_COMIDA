@@ -36,6 +36,9 @@ import com.example.bomboplats.databinding.ActivityLoginBinding;
 
 import java.util.Calendar;
 
+/**
+ * Activity para el login del usuario.
+ */
 public class LoginActivity extends AppCompatActivity {
 
     private LoginViewModel loginViewModel;
@@ -62,6 +65,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         // ----------------------------------------------
 
+        // --- COMPROBACIÓN DE PERMISOS (NOTIFICACIONES) ---
         boolean isFirstRun = prefs.getBoolean("is_first_run", true);
         if (isFirstRun) {
             // El permiso POST_NOTIFICATIONS solo es necesario desde Android 13 (API 33) en adelante
@@ -213,11 +217,13 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    // Toast con el nombre del usuario al iniciar sesion
     private void updateUiWithUser(LoggedInUserView model) {
         String welcome = getString(R.string.welcome, model.getDisplayName());
         Toast.makeText(LoginActivity.this, welcome, Toast.LENGTH_LONG).show();
     }
 
+    // Mostrar un mensaje de error en caso de que el inicio de sesión falle
     private void showLoginFailed(@StringRes Integer errorString) {
         Toast.makeText(LoginActivity.this, errorString, Toast.LENGTH_SHORT).show();
     }

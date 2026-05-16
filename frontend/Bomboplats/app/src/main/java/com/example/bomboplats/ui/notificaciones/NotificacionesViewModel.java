@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel;
 import com.example.bomboplats.data.NotificationRepository;
 import java.util.List;
 
+/**
+ * ViewModel para las notificaciones.
+ */
 public class NotificacionesViewModel extends ViewModel {
     private final NotificationRepository repository = NotificationRepository.getInstance();
 

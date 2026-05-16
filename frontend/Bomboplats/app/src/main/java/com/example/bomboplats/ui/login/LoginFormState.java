@@ -3,9 +3,9 @@ package com.example.bomboplats.ui.login;
 import androidx.annotation.Nullable;
 
 /**
- * Data validation state of the login form.
+ * Clase LoginFormState que comprueba que los datos sean válidos.
  */
-class LoginFormState { // Comprueba que los datos sean válidos.
+class LoginFormState {
     @Nullable
     private Integer usernameError;
     @Nullable

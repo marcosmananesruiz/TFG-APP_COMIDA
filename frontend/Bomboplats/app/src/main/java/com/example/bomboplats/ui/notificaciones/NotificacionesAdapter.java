@@ -9,14 +9,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import java.util.List;
 
+/**
+ * Adaptador para la lista de notificaciones.
+ */
 public class NotificacionesAdapter extends RecyclerView.Adapter<NotificacionesAdapter.NotiViewHolder> {
 
     private List<String> lista;
 
+    // Constructor
     public NotificacionesAdapter(List<String> lista) {
         this.lista = lista;
     }
 
+    // Actualiza la lista de notificaciones
     public void setLista(List<String> nuevaLista) {
         this.lista = nuevaLista;
         notifyDataSetChanged();
@@ -39,6 +44,7 @@ public class NotificacionesAdapter extends RecyclerView.Adapter<NotificacionesAd
         return lista.size();
     }
 
+    // ViewHolder para la notificación
     static class NotiViewHolder extends RecyclerView.ViewHolder {
         TextView tvMensaje;
         public NotiViewHolder(@NonNull View v) {

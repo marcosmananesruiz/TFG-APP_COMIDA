@@ -55,6 +55,9 @@ import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
 
+/**
+ * Actividad principal de la aplicación donde se muestra el menú lateral y el fragmento principal.
+ */
 public class GeneralActivity extends AppCompatActivity {
 
     private DrawerLayout drawerLayout;
@@ -69,7 +72,6 @@ public class GeneralActivity extends AppCompatActivity {
     private ImageView cartButton;
     private CarritoViewModel carritoViewModel;
     private EstadoBombosViewModel estadoBombosViewModel;
-    
     private CardView bannerNoInternet;
     private ConnectivityManager.NetworkCallback networkCallback;
 
@@ -82,18 +84,21 @@ public class GeneralActivity extends AppCompatActivity {
         
         setContentView(R.layout.activity_general);
 
+        // Cargar los datos de los repositorios
         EstadoBombosRepository.getInstance().cargarDesdeDisco(getApplicationContext());
         NotificationRepository.getInstance().cargarDesdeDisco(getApplicationContext());
 
         carritoViewModel = new ViewModelProvider(this).get(CarritoViewModel.class);
         estadoBombosViewModel = new ViewModelProvider(this).get(EstadoBombosViewModel.class);
 
+        // Banner de no internet
         bannerNoInternet = findViewById(R.id.banner_no_internet);
         ImageView btnCloseBanner = findViewById(R.id.btn_close_banner);
         if (btnCloseBanner != null) {
             btnCloseBanner.setOnClickListener(v -> bannerNoInternet.setVisibility(View.GONE));
         }
 
+        // Configurar la toolbar
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -105,6 +110,7 @@ public class GeneralActivity extends AppCompatActivity {
         setupNavigation();
         setupNetworkMonitoring();
 
+        // Cargar el fragmento principal
         if (savedInstanceState == null) {
             if (getIntent().getBooleanExtra("ir_a_estados", false)) {
                 loadFragment(new EstadoBombosFragment());
@@ -117,6 +123,7 @@ public class GeneralActivity extends AppCompatActivity {
 
     }
 
+    // Monitoreo constante de conexion a internet mientras se usa la app
     private void setupNetworkMonitoring() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         if (connectivityManager == null) return;
@@ -142,6 +149,7 @@ public class GeneralActivity extends AppCompatActivity {
         }
     }
 
+    // Comprobación de conexión a internet
     private boolean isNetworkAvailable(ConnectivityManager cm) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Network nw = cm.getActiveNetwork();
@@ -155,6 +163,7 @@ public class GeneralActivity extends AppCompatActivity {
         }
     }
 
+    // Configuración de la UI
     private void setupUI() {
         View mainContent = findViewById(R.id.main_content_container);
         View drawerContent = findViewById(R.id.drawer_content_container);
@@ -171,12 +180,16 @@ public class GeneralActivity extends AppCompatActivity {
             return windowInsets;
         });
 
+        // Botón de carrito
         cartButton = findViewById(R.id.toolbar_shopping_cart);
         cartButton.setOnClickListener(v -> {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
+            // Si el fragmento actual no es el carrito, lo cargamos
             if (currentFragment instanceof CarritoFragment fragment) {
+                // Si el carrito está vacío, mostramos un mensaje
                 if (fragment.getCarrito() == null || fragment.getCarrito().isEmpty()) {
                     Toast.makeText(this, getString(R.string.carrito_vacio), Toast.LENGTH_SHORT).show();
+                // Si el carrito no está vacío, lo vaciamos
                 } else {
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.dialog_vaciar_carrito_titulo)
@@ -188,6 +201,7 @@ public class GeneralActivity extends AppCompatActivity {
                             .setNegativeButton(R.string.no, null)
                             .show();
                 }
+            // Si el fragmento actual no es el carrito, lo cargamos
             } else if (currentFragment instanceof RealizarEnvioFragment) {
                 getSupportFragmentManager().popBackStack();
             } else {
@@ -200,11 +214,13 @@ public class GeneralActivity extends AppCompatActivity {
         searchEditText = findViewById(R.id.search_edit_text);
         searchIcon = findViewById(R.id.search_icon);
 
+        // Listener para el campo de búsqueda
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Actualizar el icono del botón de búsqueda
                 if (s.length() > 0) searchIcon.setImageResource(R.drawable.ic_close);
                 else searchIcon.setImageResource(R.drawable.ic_search);
 
@@ -220,6 +236,7 @@ public class GeneralActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
+        // Listener para el botón de búsqueda
         searchIcon.setOnClickListener(v -> {
             if (searchEditText.getText().length() > 0) searchEditText.setText("");
             else searchEditText.requestFocus();
@@ -232,6 +249,7 @@ public class GeneralActivity extends AppCompatActivity {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
             if (currentFragment instanceof CarritoFragment) return;
 
+            // Si el carrito está vacío, mostramos el icono de carrito, si no, el de carrito lleno
             if (carrito == null || carrito.isEmpty()) {
                 cartButton.setImageResource(R.drawable.ic_shopping_cart);
             } else {
@@ -241,6 +259,7 @@ public class GeneralActivity extends AppCompatActivity {
 
     }
 
+    // Configuración del menú lateral
     private void setupNavigation() {
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.navigation_view);
@@ -263,6 +282,7 @@ public class GeneralActivity extends AppCompatActivity {
             return true;
         });
 
+        // Listener para cerrar sesión
         navigationViewBottom.setNavigationItemSelectedListener(item -> {
             if (item.getItemId() == R.id.nav_cerrarSesion) {
                 SharedPreferences prefs = getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
@@ -306,6 +326,7 @@ public class GeneralActivity extends AppCompatActivity {
         }
     }
 
+    // Carga un fragmento en el contenedor
     private void loadFragment(Fragment fragment) {
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
@@ -326,6 +347,7 @@ public class GeneralActivity extends AppCompatActivity {
         }
     }
 
+    // Carga un Restaurante en el contenedor
     public void onRestauranteClickFromFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
@@ -335,6 +357,7 @@ public class GeneralActivity extends AppCompatActivity {
         updateCartIcon(fragment);
     }
 
+    // Actualiza el icono del carrito
     public void updateCartIcon(Fragment fragment) {
         if (cartButton == null) return;
         if (fragment instanceof CarritoFragment) {
@@ -349,6 +372,7 @@ public class GeneralActivity extends AppCompatActivity {
         }
     }
 
+    // Actualiza el icono del carrito según el fragmento actual
     private void updateCartIconBasedOnFragment() {
         getWindow().getDecorView().post(() -> {
             Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.container);
@@ -356,6 +380,7 @@ public class GeneralActivity extends AppCompatActivity {
         });
     }
 
+    // Destruye el listener de la conexión a internet
     @Override
     protected void onDestroy() {
         super.onDestroy();

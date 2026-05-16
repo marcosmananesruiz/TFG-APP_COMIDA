@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Adaptador para el RecyclerView de los pedidos en estado.
+ */
 public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapter.EstadoViewHolder> {
 
     private List<EstadoPedido> lista = new ArrayList<>();
@@ -53,7 +56,8 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
         
         String prefixId = context.getString(R.string.prefix_pedido_id);
         holder.tvNombre.setText(prefixId + item.getPedido().getId());
-        
+
+        // Construimos el resumen de los pedidos para mostraro el un formato más legible
         StringBuilder sb = new StringBuilder();
         if (item.getPedido().getItems() != null) {
             for (PedidoItem pi : item.getPedido().getItems()) {
@@ -63,11 +67,13 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
                 sb.append(pi.getCantidad()).append("x ").append(nombre).append(", ");
             }
         }
-        
+
+        // Se elimina el último ", "
         String resumen = sb.toString();
         if (resumen.length() > 2) resumen = resumen.substring(0, resumen.length() - 2);
         holder.tvDescripcion.setText(resumen);
-        
+
+        // Muestra el precio
         String prefixTotal = context.getString(R.string.label_total);
         holder.tvPrecio.setText(prefixTotal + String.format(Locale.getDefault(), "%.2f€", item.getPedido().getTotal()));
         
@@ -76,6 +82,7 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
         String estadoRaw = item.getEstado();
         String estadoTraducido = estadoRaw;
 
+        // Se cambia el color del texto según el estado
         if (EstadoPedido.ESTADO_ENTREGADO.equalsIgnoreCase(estadoRaw)) {
             estadoTraducido = context.getString(R.string.estado_entregado);
             holder.tvCantidad.setTextColor(Color.parseColor("#4CAF50"));
@@ -87,13 +94,14 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
             holder.tvCantidad.setTextColor(Color.GRAY);
         }
 
-        // Mostrar tiempo estimado de llegada (Hora actual + 10 min definida en la creación)
+        // Mostrar tiempo estimado de llegada en formato hh:mm
         long arrivalMillis = item.getTimestampEntrega();
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.setTimeInMillis(arrivalMillis);
         String arrivalTime = String.format(Locale.getDefault(), "%02d:%02d", 
                 cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE));
-        
+
+        // Mostrar estado y tiempo estimado de llegada
         String infoStatus = estadoTraducido + " • Llegada: " + arrivalTime;
         holder.tvCantidad.setText(infoStatus);
 
@@ -107,6 +115,7 @@ public class EstadoBombosAdapter extends RecyclerView.Adapter<EstadoBombosAdapte
         return lista.size();
     }
 
+    // Clase interna para el ViewHolder
     static class EstadoViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvDescripcion, tvPrecio, tvCantidad;
         public EstadoViewHolder(@NonNull View v) {

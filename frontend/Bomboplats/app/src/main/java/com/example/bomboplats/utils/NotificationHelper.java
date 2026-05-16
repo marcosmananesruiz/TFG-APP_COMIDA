@@ -12,21 +12,24 @@ import com.example.bomboplats.GeneralActivity;
 import com.example.bomboplats.R;
 import com.example.bomboplats.data.NotificationRepository;
 
+/**
+ * Clase para la gestión de notificaciones.
+ */
 public class NotificationHelper {
 
     private static final String CHANNEL_ID = "estado_bombos_channel";
     private static final String CHANNEL_NAME = "Estado de Bombos";
 
+    // Muestra una notificación con el título y mensaje dados.
     public static void showNotification(Context context, String titulo, String mensaje) {
         createNotificationChannel(context);
 
-        // Corregido: Pasamos el context como primer argumento
         NotificationRepository.getInstance().addNotification(context, mensaje);
 
         Intent intent = new Intent(context, GeneralActivity.class);
         intent.putExtra("ir_a_estados", true);
         intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        
+
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 context, 
                 (int) System.currentTimeMillis(),
@@ -50,6 +53,7 @@ public class NotificationHelper {
         }
     }
 
+    // Crea el canal de notificaciones si es necesario.
     private static void createNotificationChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);

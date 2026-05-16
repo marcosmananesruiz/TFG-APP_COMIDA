@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Fragmento para mostrar los restaurantes.
+ */
 public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRestauranteClickListener {
 
     private RecyclerView recyclerView;
@@ -51,7 +54,7 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
 
         foodRepository = FoodRepository.getInstance(requireContext());
         
-        // Configurar el refresco manual
+        // Configurar el refresh manual
         swipeRefreshLayout.setOnRefreshListener(() -> {
             foodRepository.refreshData();
         });
@@ -61,26 +64,27 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
             // Detener la animación de carga
             swipeRefreshLayout.setRefreshing(false);
 
+            // Actualizar la lista de restaurantes
             if (restaurantes != null && !restaurantes.isEmpty()) {
                 listaCompleta = restaurantes;
                 listaCompleta.sort(Comparator.comparing(Restaurante::getNombre));
                 adapter.setFilteredList(new ArrayList<>(listaCompleta));
                 recyclerView.setVisibility(View.VISIBLE);
                 tvEmptyError.setVisibility(View.GONE);
+            // Mostrar mensaje de error si no hay restaurantes
             } else {
                 recyclerView.setVisibility(View.GONE);
                 tvEmptyError.setVisibility(View.VISIBLE);
             }
         });
         
-        // Forzar un refresco al entrar por si acaso
+        // Forzar un refresh al entrar por si acaso
         foodRepository.refreshData();
-        
         cargarMapaEtiquetas();
-
         return view;
     }
 
+    // Cargar el mapa de etiquetas/tags
     private void cargarMapaEtiquetas() {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(requireContext().getAssets().open("etiquetas.txt")))) {
             String line;
@@ -111,6 +115,7 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
         }
     }
 
+    // Implementación de filtrar por busqueda
     public void filtrar(String texto) {
         if (listaCompleta == null || adapter == null) return;
         List<Restaurante> filtrados = new ArrayList<>();
@@ -152,9 +157,11 @@ public class GeneralFragment extends Fragment implements RestauranteAdapter.OnRe
             }
         }
 
+        // Ordenar por nombre
         if (filtrados.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyError.setVisibility(View.VISIBLE);
+        // Mostrar mensaje de error si no hay restaurantes filtrados
         } else {
             recyclerView.setVisibility(View.VISIBLE);
             tvEmptyError.setVisibility(View.GONE);

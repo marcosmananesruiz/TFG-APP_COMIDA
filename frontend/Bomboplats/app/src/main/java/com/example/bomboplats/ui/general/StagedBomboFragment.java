@@ -26,6 +26,9 @@ import com.example.bomboplats.ui.cuenta.UserViewModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragmento para mostrar los detalles de un plato.
+ */
 public class StagedBomboFragment extends Fragment {
 
     private CarritoViewModel carritoViewModel;
@@ -68,12 +71,14 @@ public class StagedBomboFragment extends Fragment {
             this.tvCantidad.setText(String.valueOf(this.cantidad));
         }
 
+        // Listener para aumentar la cantidad de un plato
         btnMas.setOnClickListener(v -> {
             cantidad++;
             tvCantidad.setText(String.valueOf(cantidad));
             this.stagedBombo.setCantidad(cantidad);
         });
 
+        // Listener para disminuir la cantidad de un plato
         btnMenos.setOnClickListener(v -> {
             if (cantidad > 1) {
                 cantidad--;
@@ -82,6 +87,7 @@ public class StagedBomboFragment extends Fragment {
             }
         });
 
+        // Listener para añadir o eliminar un pato de favoritos
         ivFavorito.setOnClickListener(v -> {
             if (bomboActual != null) {
                 userViewModel.toggleFavorito(bomboActual);
@@ -92,6 +98,7 @@ public class StagedBomboFragment extends Fragment {
             }
         });
 
+        // Listener para eliminar un plato del carrito
         btnEliminar.setOnClickListener(v -> {
             this.carritoViewModel.removerDelCarrito(this.stagedBombo);
             Toast.makeText(getContext(), getString(R.string.bombo_eliminado_del_carro), Toast.LENGTH_SHORT).show();
@@ -102,6 +109,7 @@ public class StagedBomboFragment extends Fragment {
         return view;
     }
 
+    // Cambia el icono de favorito
     private void actualizarIconoFavorito() {
         if (bomboActual != null && ivFavorito != null && userViewModel != null) {
             boolean esFav = userViewModel.esFavorito(bomboActual.getId());
@@ -109,10 +117,12 @@ public class StagedBomboFragment extends Fragment {
         }
     }
 
+    // Muestra la información básica del bombo como el nombre, el precio y la descripción
     private void mostrarInfoBombo() {
         if (bomboActual != null) {
             tvNombre.setText(bomboActual.getNombre());
 
+            // Formatear el precio
             String precio = bomboActual.getPrecio();
             if (precio != null && !precio.contains("€")) {
                 precio += "€";
@@ -121,11 +131,13 @@ public class StagedBomboFragment extends Fragment {
 
             tvDescription.setText(bomboActual.getDescripcion());
 
+            // Mostrar las fotos
             List<String> fotos = bomboActual.getFotos();
             FotoCarruselAdapter adapter = new FotoCarruselAdapter(fotos, DEFAULT_BOMBO_IMAGE);
             rvFotos.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
             rvFotos.setAdapter(adapter);
 
+            // Mostrar las modificaciones seleccionadas
             String modficaciones = this.stagedBombo.getModificaciones().stream()
                     .map(m -> "- " + m + "\n")
                     .reduce((m1, m2) -> m1+m2)

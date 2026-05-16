@@ -25,6 +25,9 @@ import com.google.android.material.chip.ChipGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragmento para mostrar los platos de un restaurante.
+ */
 public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClickListener {
 
     private RecyclerView recyclerViewBombos;
@@ -38,7 +41,6 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
     private SwipeRefreshLayout swipeRefreshLayout;
-    
     private ChipGroup cgCategories;
     private String categoriaSeleccionada = "TODO";
     private String queryActual = "";
@@ -69,6 +71,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         // Configuración de categorías
         setupCategories();
 
+        // Recuperamos los argumentos
         if (getArguments() != null) {
             restauranteId = getArguments().getString("restauranteId");
             tvNombre.setText(getArguments().getString("nombre"));
@@ -86,21 +89,25 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             foodRepository.refreshData();
         });
 
+        // Cargamos los platos
         if (restauranteId != null) {
             listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
             aplicarFiltros();
         }
 
+        // Observamos los cambios en la lista de restaurantes
         foodRepository.getRestaurantesLiveData().observe(getViewLifecycleOwner(), restaurantes -> {
             // Detener la animación de carga
             swipeRefreshLayout.setRefreshing(false);
-            
+
+            // Actualizamos la lista de platos
             if (restauranteId != null) {
                 listaBombosRestaurante = foodRepository.getBombosPorRestaurante(restauranteId);
                 aplicarFiltros();
             }
         });
 
+        // Observamos los cambios en la lista de favoritos
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), favs -> {
             if (adapter != null) adapter.notifyDataSetChanged();
         });
@@ -108,8 +115,9 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         return view;
     }
 
+    // Configuración de categorías
     private void setupCategories() {
-        // Seleccionamos "TODO" por defecto
+        // Seleccionamos la categoría "TODO" por defecto
         cgCategories.check(R.id.chip_todo);
         
         cgCategories.setOnCheckedStateChangeListener((group, checkedIds) -> {
@@ -155,18 +163,20 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
+    // Implementación de filtrar busqueda si fuera necesario
     public void filtrar(String texto) {
         this.queryActual = texto.toLowerCase().trim();
         aplicarFiltros();
     }
 
+    // Aplicar los filtros de los platos
     private void aplicarFiltros() {
         if (listaBombosRestaurante == null) return;
         
         List<Bombo> filtrados = new ArrayList<>();
         
         for (Bombo bombo : listaBombosRestaurante) {
-            // Filtro 1: Categoría
+            // Filtro 1: Filtra por la categoria seleccionad
             boolean coincideCategoria = false;
             
             if (categoriaSeleccionada.equals("TODO")) {
@@ -180,7 +190,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
             
             if (!coincideCategoria) continue;
 
-            // Filtro 2: Texto de búsqueda (si hay alguno)
+            // Filtro 2: Filtra por el texto de búsqueda (si hay alguno)
             if (queryActual.isEmpty()) {
                 filtrados.add(bombo);
             } else {
@@ -202,6 +212,7 @@ public class BombosFragment extends Fragment implements BomboAdapter.OnBomboClic
         updateUI(filtrados);
     }
 
+    // Actualiza la UI con la lista de platos
     private void updateUI(List<Bombo> lista) {
         if (lista == null || lista.isEmpty()) {
             recyclerViewBombos.setVisibility(View.GONE);

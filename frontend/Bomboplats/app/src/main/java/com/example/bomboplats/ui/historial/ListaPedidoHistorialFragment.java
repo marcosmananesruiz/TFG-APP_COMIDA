@@ -21,6 +21,9 @@ import com.example.bomboplats.ui.general.DetalleBomboFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragmento para mostrar el historial de pedidos.
+ */
 public class ListaPedidoHistorialFragment extends Fragment implements HistorialDetalleAdapter.OnItemClickListener {
 
     private TextView tvId, tvFecha;
@@ -30,6 +33,7 @@ public class ListaPedidoHistorialFragment extends Fragment implements HistorialD
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
 
+    // Constructor estático para crear una instancia del fragmento
     public static ListaPedidoHistorialFragment newInstance(Pedido pedido) {
         ListaPedidoHistorialFragment fragment = new ListaPedidoHistorialFragment();
         Bundle args = new Bundle();
@@ -55,11 +59,13 @@ public class ListaPedidoHistorialFragment extends Fragment implements HistorialD
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         foodRepository = FoodRepository.getInstance(requireContext());
 
+        // Actualizamos la UI con los datos del pedido
         if (pedido != null) {
             String prefixId = getString(R.string.prefix_pedido_id);
             tvId.setText(prefixId + pedido.getId());
             tvFecha.setText(pedido.getFecha());
 
+            // Cargamos los platos del pedido
             List<StagedBombo> itemsHistorial = new ArrayList<>();
             if (pedido.getItems() != null) {
                 for (PedidoItem item : pedido.getItems()) {
@@ -89,13 +95,14 @@ public class ListaPedidoHistorialFragment extends Fragment implements HistorialD
         Bundle args = new Bundle();
         args.putString("bomboId", b.getId());
         
-        // Pasamos los datos del pedido para el modo lectura
+        // Pasamos los datos del pedido para el modo lectura y no poder hacer modificaciones
         args.putBoolean("modoLectura", true);
         args.putInt("cantidad", stagedBombo.getCantidad());
         args.putStringArrayList("modificaciones", new ArrayList<>(stagedBombo.getModificaciones()));
 
         fragment.setArguments(args);
 
+        // Navegamos al detalle del bombo
         if (getActivity() instanceof GeneralActivity) {
             ((GeneralActivity) getActivity()).onRestauranteClickFromFragment(fragment);
         } else {

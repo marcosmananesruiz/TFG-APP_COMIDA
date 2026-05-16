@@ -9,13 +9,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.bomboplats.R;
 import java.util.List;
 
+/**
+ * Adaptador para el carrusel de fotos de un restaurante.
+ */
 public class RestauranteFotoAdapter extends RecyclerView.Adapter<RestauranteFotoAdapter.FotoViewHolder> {
 
     private List<Integer> fotos;
-
-    public RestauranteFotoAdapter(List<Integer> fotos) {
-        this.fotos = fotos;
-    }
 
     @NonNull
     @Override
@@ -34,12 +33,12 @@ public class RestauranteFotoAdapter extends RecyclerView.Adapter<RestauranteFoto
         return fotos.size();
     }
 
+    // Constructor que recibe la lista de fotos
     static class FotoViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
 
         public FotoViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Corregido: Usamos el ID real que está en item_restaurante_foto.xml
             imageView = itemView.findViewById(R.id.img_carrusel);
         }
     }

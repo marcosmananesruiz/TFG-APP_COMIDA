@@ -3,6 +3,9 @@ package com.example.bomboplats.ui.estadobombos;
 import com.example.bomboplats.data.model.Bombo;
 import java.io.Serializable;
 
+/**
+* Clase para representar el estado de un bombo.
+*/
 public class BomboEnEstado implements Serializable {
     public enum Estado {
         PREPARACION("En preparación"),
@@ -19,6 +22,7 @@ public class BomboEnEstado implements Serializable {
     private Estado estado;
     private long tiempoUltimoCambio;
 
+    // Constructor
     public BomboEnEstado(String id, Bombo bombo) {
         this.id = id;
         this.bombo = bombo;
@@ -26,6 +30,7 @@ public class BomboEnEstado implements Serializable {
         this.tiempoUltimoCambio = System.currentTimeMillis();
     }
 
+    // Getters y setEstado
     public String getId() { return id; }
     public Bombo getBombo() { return bombo; }
     public Estado getEstado() { return estado; }

@@ -9,8 +9,7 @@ import com.example.bomboplats.data.LoginDataSource;
 import com.example.bomboplats.data.LoginRepository;
 
 /**
- * ViewModel provider factory to instantiate LoginViewModel.
- * Required given LoginViewModel has a non-empty constructor
+ * Clase LoginViewModelFactory que crea una instancia de LoginViewModel.
  */
 public class LoginViewModelFactory implements ViewModelProvider.Factory {
 

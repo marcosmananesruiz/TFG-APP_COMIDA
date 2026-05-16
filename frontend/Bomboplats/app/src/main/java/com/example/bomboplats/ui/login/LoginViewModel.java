@@ -19,6 +19,9 @@ import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Clase LoginViewModel que se encarga de la lógica del inicio de sesión.
+ */
 public class LoginViewModel extends ViewModel {
 
     private MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
@@ -38,6 +41,7 @@ public class LoginViewModel extends ViewModel {
         return loginResult;
     }
 
+    // Funcion de login que se ejecuta en un hilo separado
     public void login(Cuenta cuenta) {
         executorService.execute(() -> {
             String emailLowerCase = cuenta.getEmail().toLowerCase().trim();
@@ -57,6 +61,7 @@ public class LoginViewModel extends ViewModel {
         });
     }
 
+    // Funcion de registro que se ejecuta en un hilo separado
     public void registerTestUser(String email, String password, String displayName) {
         executorService.execute(() -> {
             LoggedInUser newUser = new LoggedInUser(
@@ -83,6 +88,7 @@ public class LoginViewModel extends ViewModel {
         });
     }
 
+    // Comprueba que los datos sean validos
     public void loginDataChanged(String username, String password) {
         if (!isUserNameValid(username)) {
             loginFormState.setValue(new LoginFormState(R.string.invalid_username, null));
@@ -93,6 +99,7 @@ public class LoginViewModel extends ViewModel {
         }
     }
 
+    // Comprueba que el nombre de usuario sea valido
     private boolean isUserNameValid(String username) {
         if (username == null) {
             return false;
@@ -104,6 +111,7 @@ public class LoginViewModel extends ViewModel {
         }
     }
 
+    // Comprueba que la contraseña sea valida
     private boolean isPasswordValid(String password) {
         return password != null && password.trim().length() > 5;
     }

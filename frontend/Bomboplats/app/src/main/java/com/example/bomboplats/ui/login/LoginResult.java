@@ -3,7 +3,7 @@ package com.example.bomboplats.ui.login;
 import androidx.annotation.Nullable;
 
 /**
- * Authentication result : success (user details) or error message.
+ * Clase LoginResult que muestra el resultado del inicio de sesión.
  */
 class LoginResult {
     @Nullable

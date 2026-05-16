@@ -6,6 +6,9 @@ import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.os.LocaleListCompat;
 
+/**
+ * Clase principal de la aplicación donde se inicializan las preferencias y el modo oscuro.
+ */
 public class BomboplatsApp extends Application {
 
     private static final String PREFS_NAME = "app_settings";

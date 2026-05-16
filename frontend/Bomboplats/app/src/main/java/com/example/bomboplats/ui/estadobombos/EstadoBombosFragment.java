@@ -18,6 +18,9 @@ import com.example.bomboplats.ui.historial.ListaPedidoHistorialFragment;
 
 import java.util.List;
 
+/**
+ * Fragmento para mostrar los pedidos en estado.
+ */
 public class EstadoBombosFragment extends Fragment implements EstadoBombosAdapter.OnEstadoPedidoClickListener {
 
     private RecyclerView recyclerView;
@@ -39,6 +42,7 @@ public class EstadoBombosFragment extends Fragment implements EstadoBombosAdapte
 
         viewModel = new ViewModelProvider(requireActivity()).get(EstadoBombosViewModel.class);
 
+        // Cargamos los pedidos
         List<EstadoPedido> pedidos = this.viewModel.getPedidosEnEstado(getContext());
         if (pedidos == null || pedidos.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
@@ -60,5 +64,6 @@ public class EstadoBombosFragment extends Fragment implements EstadoBombosAdapte
         }
     }
 
+    // Implementación de filtrar busqueda si fuera necesario
     public void filtrar(String texto) {}
 }

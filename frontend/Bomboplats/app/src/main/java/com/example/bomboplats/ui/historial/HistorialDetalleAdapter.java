@@ -16,6 +16,9 @@ import com.example.bomboplats.ui.general.FavoritosProvider;
 
 import java.util.List;
 
+/**
+ * Adaptador para el detalle del historial de pedidos.
+ */
 public class HistorialDetalleAdapter extends RecyclerView.Adapter<HistorialDetalleAdapter.ViewHolder> {
 
     private List<StagedBombo> items;
@@ -29,6 +32,7 @@ public class HistorialDetalleAdapter extends RecyclerView.Adapter<HistorialDetal
         void onFavoritoClick(Bombo bombo);
     }
 
+    // Constructor que recibe la lista de platos y el listener
     public HistorialDetalleAdapter(List<StagedBombo> items, OnItemClickListener listener, FavoritosProvider favoritosProvider) {
         this.items = items;
         this.listener = listener;
@@ -60,7 +64,7 @@ public class HistorialDetalleAdapter extends RecyclerView.Adapter<HistorialDetal
         holder.tvCantidad.setVisibility(View.VISIBLE);
         holder.tvCantidad.setText("x" + stagedBombo.getCantidad());
 
-        // Manejo de modificaciones
+        // Mostrar modificaciones
         List<String> mods = stagedBombo.getModificaciones();
         if (mods != null && !mods.isEmpty()) {
             StringBuilder sb = new StringBuilder();
@@ -80,7 +84,7 @@ public class HistorialDetalleAdapter extends RecyclerView.Adapter<HistorialDetal
         holder.btnMasCarrito.setVisibility(View.GONE);
         holder.btnRestar.setVisibility(View.GONE);
 
-        // Configurar favorito
+        // Mostrar/ocultar favorito
         boolean esFav = favoritosProvider != null && favoritosProvider.esFavorito(bombo.getId());
         if (esFav) {
             holder.btnFav.setImageResource(R.drawable.ic_favorite_filled);
@@ -90,7 +94,7 @@ public class HistorialDetalleAdapter extends RecyclerView.Adapter<HistorialDetal
             holder.btnFav.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_color));
         }
 
-        // Carga de imagen
+        // Forma la ruta de la imagen con Glide desde S3
         String fotoUrl = DEFAULT_BOMBO_IMAGE;
         if (bombo.getFotos() != null && !bombo.getFotos().isEmpty()) {
             String fotoPath = bombo.getFotos().get(0);
@@ -103,6 +107,7 @@ public class HistorialDetalleAdapter extends RecyclerView.Adapter<HistorialDetal
             }
         }
 
+        // Cargar la imagen
         Glide.with(holder.itemView.getContext())
                 .load(fotoUrl)
                 .placeholder(R.drawable.ic_launcher_background)
@@ -124,6 +129,7 @@ public class HistorialDetalleAdapter extends RecyclerView.Adapter<HistorialDetal
         return items.size();
     }
 
+    // ViewHolder para el bombo
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvDescripcion, tvModificaciones, tvPrecio, tvCantidad;
         ImageView imgBombo, btnFav, btnMasCarrito;

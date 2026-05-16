@@ -17,6 +17,9 @@ import com.example.bomboplats.data.model.Bombo;
 import com.example.bomboplats.data.model.Restaurante;
 import java.util.List;
 
+/**
+ * Adaptador para la lista de restaurantes.
+ */
 public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.RestauranteViewHolder> {
 
     private List<Restaurante> listaRestaurantes;
@@ -28,16 +31,19 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
         void onRestauranteClick(Restaurante restaurante);
     }
 
+    // Constructor que recibe la lista de restaurantes y el listener
     public RestauranteAdapter(List<Restaurante> listaRestaurantes, OnRestauranteClickListener listener) {
         this.listaRestaurantes = listaRestaurantes;
         this.listener = listener;
     }
 
+    // Método para actualizar la lista de restaurantes filtrados
     public void setFilteredList(List<Restaurante> filteredList) {
         this.listaRestaurantes = filteredList;
         notifyDataSetChanged();
     }
 
+    // Método para verificar si hay conexión a internet
     private boolean isOnline(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
@@ -76,6 +82,7 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
             holder.tvEtiquetas.setVisibility(View.GONE);
         }
 
+        // Forma la ruta de la imagen con Glide desde S3
         String fotoUrl = DEFAULT_RESTAURANTE_IMAGE;
         if (restaurante.getFotos() != null && !restaurante.getFotos().isEmpty()) {
             String fotoPath = restaurante.getFotos().get(0);
@@ -88,12 +95,14 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
             }
         }
 
+        // Cargar la imagen
         Glide.with(holder.itemView.getContext())
                 .load(fotoUrl)
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(DEFAULT_RESTAURANTE_IMAGE)
                 .into(holder.imgRestaurante);
 
+        // Manejar el clic en el restaurante dependiendo de la conexion
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 if (isOnline(v.getContext())) {
@@ -106,6 +115,7 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
 
         List<Bombo> bombos = restaurante.getMenu();
 
+        // Calcular el precio medio de los platos
         double media = bombos.stream()
                 .mapToDouble(bombo -> Double.parseDouble(bombo.getPrecio()))
                 .average().orElse(0d);
@@ -124,6 +134,7 @@ public class RestauranteAdapter extends RecyclerView.Adapter<RestauranteAdapter.
         return listaRestaurantes.size();
     }
 
+    // ViewHolder para el restaurante
     public static class RestauranteViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvDireccion, tvDescripcion, tvEstrellas, tvPrecio, tvEtiquetas;
         ImageView imgRestaurante;

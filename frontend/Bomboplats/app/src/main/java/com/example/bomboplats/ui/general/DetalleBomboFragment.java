@@ -26,23 +26,23 @@ import com.example.bomboplats.utils.BomboUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragmento para mostrar los detalles de un plato.
+ */
 public class DetalleBomboFragment extends Fragment implements ModificacionesAdapter.OnModificacionClickListener {
 
     private CarritoViewModel carritoViewModel;
     private UserViewModel userViewModel;
     private FoodRepository foodRepository;
-    
     private TextView tvNombre, tvPrecio, tvDescription, tvCantidad, tvModificacionesResumen, tvLabelIngredientes;
     private ImageView ivFavorito;
     private RecyclerView rvFotos, rvModificaciones;
     private View layoutCantidad, btnMas, btnMenos;
     private Button btnPedido;
-
     private String bomboId;
     private Bombo bomboActual;
     private final List<String> selectedModifications = new ArrayList<>();
     private int cantidad = 1;
-
     private boolean modoLectura = false;
     private List<String> modificacionesHistorial;
 
@@ -77,6 +77,7 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
         return view;
     }
 
+    // Inicializa las vistas
     private void initViews(View view) {
         tvNombre = view.findViewById(R.id.tv_bombo_nombre);
         tvPrecio = view.findViewById(R.id.tv_bombo_precio);
@@ -93,15 +94,18 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
         btnPedido = view.findViewById(R.id.btn_realizar_pedido);
     }
 
+    // Inicializa los ViewModels
     private void initViewModels() {
         carritoViewModel = new ViewModelProvider(requireActivity()).get(CarritoViewModel.class);
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         foodRepository = FoodRepository.getInstance(requireContext());
     }
 
+    // Configura la UI según el modo de lectura
     private void setupUIByMode() {
         tvCantidad.setText(String.valueOf(cantidad));
 
+        // Si estamos en modo lectura, ocultamos la cantidad y el botón de pedido
         if (modoLectura) {
             layoutCantidad.setVisibility(View.GONE);
             btnPedido.setVisibility(View.GONE);
@@ -115,6 +119,7 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
                 tvModificacionesResumen.setText(getString(R.string.no_especificados));
             }
             tvModificacionesResumen.setVisibility(View.VISIBLE);
+        // Si estamos en modo escritura, mostramos la cantidad y el botón de pedido
         } else {
             tvModificacionesResumen.setVisibility(View.GONE);
             rvModificaciones.setVisibility(View.VISIBLE);
@@ -145,6 +150,7 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
         }
     }
 
+    // Muestra la información básica del bombo como el nombre, el precio y la descripción
     private void mostrarInfoBomboBasica() {
         tvNombre.setText(bomboActual.getNombre());
         tvPrecio.setText(BomboUtils.formatPrecio(bomboActual.getPrecio()));
@@ -154,6 +160,7 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
         rvFotos.setAdapter(new FotoCarruselAdapter(bomboActual.getFotos(), BomboUtils.DEFAULT_BOMBO_IMAGE));
     }
 
+    // Configuración del botón favorito
     private void setupFavoritoLogic() {
         actualizarIconoFavorito();
         ivFavorito.setOnClickListener(v -> {
@@ -167,6 +174,7 @@ public class DetalleBomboFragment extends Fragment implements ModificacionesAdap
         userViewModel.getFavoritos().observe(getViewLifecycleOwner(), ids -> actualizarIconoFavorito());
     }
 
+    // Actualiza el icono de favorito
     private void actualizarIconoFavorito() {
         if (bomboActual != null && ivFavorito != null) {
             boolean esFav = userViewModel.esFavorito(bomboActual.getId());

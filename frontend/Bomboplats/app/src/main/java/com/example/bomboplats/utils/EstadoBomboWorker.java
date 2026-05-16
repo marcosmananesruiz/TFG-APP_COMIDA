@@ -25,11 +25,15 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Worker para la comprobación del estado de los bombos.
+ */
 public class EstadoBomboWorker extends Worker {
 
     // Nombre único para evitar duplicados en cola
     public static final String WORK_NAME = "EstadoBomboWorker";
 
+    // Constructor
     public EstadoBomboWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
     }
@@ -47,12 +51,14 @@ public class EstadoBomboWorker extends Worker {
         boolean pendientes = false;
         long ahora = System.currentTimeMillis();
 
+        // Iterar sobre la lista de pedidos
         Iterator<EstadoPedido> iterator = listaActual.iterator();
         while (iterator.hasNext()) {
             EstadoPedido ep = iterator.next();
             long transcurrido = ahora - ep.getTimestampCreacion();
             String estadoAnterior = ep.getEstado();
 
+            // Si el pedido ha sido entregado se notifica y se elimina de la lista
             if (ahora >= ep.getTimestampEntrega()) {
                 String titulo = context.getString(R.string.noti_titulo_estado);
                 String msg = context.getString(R.string.noti_msg_entregado, ep.getPedido().getId());
@@ -64,11 +70,13 @@ public class EstadoBomboWorker extends Worker {
                 continue;
             }
 
+            // Si el pedido ha pasado de camino a preparación se notifica y se actualiza
             if (transcurrido >= 180000 && EstadoPedido.ESTADO_PREPARACION.equals(ep.getEstado())) {
                 ep.setEstado(EstadoPedido.ESTADO_CAMINO);
                 guardarEstado(ep);
             }
 
+            // Si el estado ha cambiado se notifica
             if (!estadoAnterior.equals(ep.getEstado())) {
                 huboCambios = true;
                 String titulo = context.getString(R.string.noti_titulo_estado);
@@ -88,6 +96,7 @@ public class EstadoBomboWorker extends Worker {
             repository.guardarEnDisco(context, listaActual);
         }
 
+        // Si hay pedidos pendientes se encola la siguiente ejecución
         if (pendientes) {
             Log.d("EstadoBomboWorker", "Encolando siguiente ejecución en 30s...");
             encolarSiguiente(context);
@@ -98,6 +107,7 @@ public class EstadoBomboWorker extends Worker {
         return Result.success();
     }
 
+    // Encola la siguiente ejecución
     public static void encolarSiguiente(Context context) {
         OneTimeWorkRequest nextWork = new OneTimeWorkRequest.Builder(EstadoBomboWorker.class)
                 .setInitialDelay(30, TimeUnit.SECONDS)
@@ -106,6 +116,7 @@ public class EstadoBomboWorker extends Worker {
         WorkManager.getInstance(context).enqueue(nextWork);
     }
 
+    // Actualiza el estado del pedido en un hilo separado
     private void guardarEstado(EstadoPedido ep) {
         Executors.newSingleThreadExecutor().execute(() -> {
             PedidoControllerApi pedidoApi = new PedidoControllerApi();
@@ -124,6 +135,7 @@ public class EstadoBomboWorker extends Worker {
         });
     }
 
+    // Convierte el estado del pedido a su valor correspondiente
     private Pedido.EstadoEnum convertEstado(String estado) {
         return switch (estado) {
             case EstadoPedido.ESTADO_CAMINO -> Pedido.EstadoEnum.DELIVERING;

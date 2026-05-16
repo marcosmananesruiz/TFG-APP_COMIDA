@@ -23,6 +23,9 @@ import com.example.bomboplats.ui.general.DetalleBomboFragment;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragmento para mostrar los bombos favoritos del usuario.
+ */
 public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboClickListener {
 
     private RecyclerView recyclerView;
@@ -53,19 +56,24 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         return view;
     }
 
+    // Actualiza la lista de favoritos
     private void actualizarListaFavoritos(List<Bombo> favoritos) {
 
         this.bombosFavoritos = favoritos;
 
+        // Si no hay favoritos, mostramos un mensaje
         if (favoritos.isEmpty()) {
             recyclerView.setVisibility(View.GONE);
             tvEmptyFavoritos.setVisibility(View.VISIBLE);
+        // Si hay favoritos, mostramos la lista
         } else {
             recyclerView.setVisibility(View.VISIBLE);
             tvEmptyFavoritos.setVisibility(View.GONE);
-            
+
+            // Si el adaptador no está creado, lo creamos
             if (adapter == null) {
                 adapter = new BomboAdapter(favoritos, this, userViewModel);
+            // Si el adaptador ya está creado, lo actualizamos
             } else {
                 adapter.setFilteredList(this.bombosFavoritos);
             }
@@ -104,8 +112,8 @@ public class MisBombosFragment extends Fragment implements BomboAdapter.OnBomboC
         Toast.makeText(getContext(), mensaje, Toast.LENGTH_SHORT).show();
     }
 
+    // Implementación de filtrar por busqueda
     public void filtrar(String texto) {
-        // Implementar filtrado si es necesario para favoritos
         if (adapter == null || this.bombosFavoritos == null) return;
 
         List<Bombo> filteredBombos = this.bombosFavoritos.stream()

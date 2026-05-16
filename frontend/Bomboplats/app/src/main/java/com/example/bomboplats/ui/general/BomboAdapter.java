@@ -14,6 +14,9 @@ import com.example.bomboplats.api.User;
 import com.example.bomboplats.data.model.Bombo;
 import java.util.List;
 
+/**
+ * Adaptador para el RecyclerView de los platos.
+ */
 public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHolder> {
 
     private List<Bombo> listaBombos;
@@ -28,12 +31,14 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         void onAgregarCarritoClick(Bombo b);
     }
 
+    // Constructor que recibe la lista de platos y el listener
     public BomboAdapter(List<Bombo> listaBombos, OnBomboClickListener listener, FavoritosProvider favoritosProvider) {
         this.listaBombos = listaBombos;
         this.listener = listener;
         this.favoritosProvider = favoritosProvider;
     }
 
+    // Método para actualizar la lista de platos
     public void setFilteredList(List<Bombo> filteredList) {
         this.listaBombos = filteredList;
         notifyDataSetChanged();
@@ -73,7 +78,7 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
             holder.btnFav.setColorFilter(ContextCompat.getColor(holder.itemView.getContext(), R.color.text_color));
         }
 
-        // Carga de imagen con Glide desde S3
+        // Forma la ruta de la imagen con Glide desde S3
         String fotoUrl = DEFAULT_BOMBO_IMAGE;
         if (bombo.getFotos() != null && !bombo.getFotos().isEmpty()) {
             String fotoPath = bombo.getFotos().get(0);
@@ -86,12 +91,14 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
             }
         }
 
+        // Carga la imagen
         Glide.with(holder.itemView.getContext())
                 .load(fotoUrl)
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(DEFAULT_BOMBO_IMAGE)
                 .into(holder.imgBombo);
 
+        // Listeners para los platos, favoritos y carrito
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onBomboClick(bombo);
         });
@@ -106,11 +113,13 @@ public class BomboAdapter extends RecyclerView.Adapter<BomboAdapter.BomboViewHol
         });
     }
 
+    // Método para obtener el número de elementos en la lista
     @Override
     public int getItemCount() {
         return listaBombos.size();
     }
 
+    // Clase interna para el ViewHolder
     public static class BomboViewHolder extends RecyclerView.ViewHolder {
         TextView tvNombre, tvDescripcion, tvPrecio, tvCantidad;
         ImageView imgBombo, btnFav, btnMasCarrito;

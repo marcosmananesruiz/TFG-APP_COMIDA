@@ -16,6 +16,9 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.bomboplats.R;
 
+/**
+ * Activity para el registro del usuario.
+ */
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText editTextName, editTextEmail, editTextPassword, editTextConfirmPassword;
@@ -70,23 +73,27 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    // Registro de usuario
     private void registerUser() {
         String name = editTextName.getText().toString().trim();
         String email = editTextEmail.getText().toString().trim().toLowerCase();
         String password = editTextPassword.getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getText().toString().trim();
 
+        // Validaciones de campos vacíos
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || 
             TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
             Toast.makeText(this, getString(R.string.toast_rellenar_campos), Toast.LENGTH_SHORT).show();
             return;
         }
+        // Validaciones de nombre
         if (name.length() > 32) {
             editTextName.setError(getString(R.string.error_nickname_largo));
             return;
         }
 
 
+        // Validaciones de correo y contraseñas
         // Validación de formato de email mediante Regex (Patterns.EMAIL_ADDRESS)
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             Toast.makeText(this, getString(R.string.invalid_username), Toast.LENGTH_SHORT).show();

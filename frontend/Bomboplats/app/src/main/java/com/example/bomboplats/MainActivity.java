@@ -12,6 +12,9 @@ import com.example.bomboplats.api.ApiClient;
 import com.example.bomboplats.api.ApiException;
 import com.example.bomboplats.api.UserControllerApi;
 
+/**
+ * Es el MainActivity que se encarga de iniciar la aplicación.
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override

@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * ViewModel para el fragmento de pedidos en estado.
+ */
 public class EstadoBombosViewModel extends AndroidViewModel {
     private final EstadoBombosRepository repository = EstadoBombosRepository.getInstance();
     private final WorkManager workManager;
@@ -58,6 +61,7 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         return repository.getPedidosEnEstado();
     }
 
+    // Añade un estado al pedido
     public void agregarPedidoAEstado(Pedido pedido) {
         List<EstadoPedido> listaActual = new ArrayList<>(repository.getListaActual());
         listaActual.add(new EstadoPedido(pedido, EstadoPedido.ESTADO_PREPARACION));
@@ -65,9 +69,7 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         lanzarWorkerDeEstado();
     }
 
-    /**
-     * Lanza el Worker que se encarga de actualizar los estados en segundo plano.
-     */
+    //Lanza el Worker que se encarga de actualizar los estados en segundo plano.
     public void lanzarWorkerDeEstado() {
         OneTimeWorkRequest workRequest = new OneTimeWorkRequest.Builder(EstadoBomboWorker.class)
                 .setInitialDelay(15, TimeUnit.SECONDS)
@@ -80,7 +82,7 @@ public class EstadoBombosViewModel extends AndroidViewModel {
         );
     }
 
+    // Implementación de filtrar busqueda si fuera necesario
     public void filtrar(String query) {
-        // Implementación de filtrado si fuera necesaria en el futuro
     }
 }

@@ -11,12 +11,16 @@ import com.example.bomboplats.R;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adaptador para el carrusel de fotos de un restaurante.
+ */
 public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapter.FotoViewHolder> {
 
     private List<String> listaFotos;
     private String defaultImageUrl;
     private static final String BASE_BUCKET = "https://bomboplats-imagestorage.s3.us-east-1.amazonaws.com/";
 
+    // Constructor que recibe la lista de fotos y la URL de la imagen por defecto
     public FotoCarruselAdapter(List<String> fotos, String defaultImageUrl) {
         this.listaFotos = (fotos != null && !fotos.isEmpty()) ? new ArrayList<>(fotos) : new ArrayList<>();
         this.defaultImageUrl = defaultImageUrl;
@@ -39,6 +43,7 @@ public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapte
         String fotoPath = listaFotos.get(position);
         String fotoUrl = defaultImageUrl;
 
+        // Forma la ruta de la imagen con Glide desde S3
         if (fotoPath != null && !fotoPath.isEmpty()) {
             if (fotoPath.startsWith("http")) {
                 fotoUrl = fotoPath;
@@ -47,6 +52,7 @@ public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapte
             }
         }
 
+        // Carga la imagen
         Glide.with(holder.itemView.getContext())
                 .load(fotoUrl)
                 .placeholder(R.drawable.ic_launcher_background)
@@ -59,6 +65,7 @@ public class FotoCarruselAdapter extends RecyclerView.Adapter<FotoCarruselAdapte
         return listaFotos.size();
     }
 
+    // ViewHolder para la foto
     public static class FotoViewHolder extends RecyclerView.ViewHolder {
         ImageView imgFoto;
         public FotoViewHolder(@NonNull View itemView) {

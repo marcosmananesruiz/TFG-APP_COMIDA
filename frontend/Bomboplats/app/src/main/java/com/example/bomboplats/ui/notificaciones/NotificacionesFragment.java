@@ -18,6 +18,9 @@ import com.example.bomboplats.data.NotificationRepository;
 import com.example.bomboplats.ui.estadobombos.EstadoBombosFragment;
 import java.util.ArrayList;
 
+/**
+ * Fragmento para mostrar las notificaciones.
+ */
 public class NotificacionesFragment extends Fragment {
 
     private RecyclerView recyclerView;
@@ -39,6 +42,7 @@ public class NotificacionesFragment extends Fragment {
         adapter = new NotificacionesAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
 
+        // Observar las notificaciones y actualizar la UI
         viewModel.getListaNotificaciones().observe(getViewLifecycleOwner(), notificaciones -> {
             if (notificaciones == null || notificaciones.isEmpty()) {
                 recyclerView.setVisibility(View.GONE);
@@ -69,7 +73,7 @@ public class NotificacionesFragment extends Fragment {
         return view;
     }
 
+    // Implementación de filtrar por busqueda en caso de que se necesite
     public void filtrar(String texto) {
-        // Lógica de filtrado opcional
     }
 }

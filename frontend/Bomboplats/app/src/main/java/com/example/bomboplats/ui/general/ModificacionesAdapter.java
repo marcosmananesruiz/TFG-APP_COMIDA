@@ -20,6 +20,7 @@ public class ModificacionesAdapter extends RecyclerView.Adapter<ModificacionesAd
     private final List<String> listaModificaciones;
     private final OnModificacionClickListener listener;
 
+    // Constructor que recibe la lista de modificaciones y el listener
     public ModificacionesAdapter(List<String> listaModificaciones, OnModificacionClickListener listener) {
         this.listaModificaciones = listaModificaciones;
         this.listener = listener;
@@ -37,7 +38,7 @@ public class ModificacionesAdapter extends RecyclerView.Adapter<ModificacionesAd
         String modificacion = listaModificaciones.get(position);
         holder.checkBox.setOnCheckedChangeListener(null);
         holder.checkBox.setText(modificacion);
-        holder.checkBox.setChecked(false); // Por defecto desmarcado al cargar
+        holder.checkBox.setChecked(false); // Checkbox desmarcado or defecto al cargar
         
         holder.checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (listener != null) listener.onModificacionClick(modificacion, isChecked);
@@ -53,6 +54,7 @@ public class ModificacionesAdapter extends RecyclerView.Adapter<ModificacionesAd
         return listaModificaciones != null ? listaModificaciones.size() : 0;
     }
 
+    // ViewHolder para la modificación
     public static class ModificacionesViewHolder extends RecyclerView.ViewHolder {
         final CheckBox checkBox;
 

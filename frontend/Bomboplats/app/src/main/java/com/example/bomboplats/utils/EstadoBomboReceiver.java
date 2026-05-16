@@ -11,6 +11,9 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.OutOfQuotaPolicy;
 import androidx.work.WorkManager;
 
+/**
+ * BroadcastReceiver para el estado de los bombos.
+ */
 public class EstadoBomboReceiver extends BroadcastReceiver {
 
     public static final String ACTION_CHECK = "com.example.bomboplats.CHECK_ESTADO";
@@ -32,6 +35,7 @@ public class EstadoBomboReceiver extends BroadcastReceiver {
         }
     }
 
+    // Programar la siguiente comprobación
     public static void programarSiguiente(Context context) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, EstadoBomboReceiver.class);
@@ -55,6 +59,7 @@ public class EstadoBomboReceiver extends BroadcastReceiver {
         }
     }
 
+    // Cancelar la programación de la comprobación para no ejecutarla cada 30s
     public static void cancelar(Context context) {
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, EstadoBomboReceiver.class);

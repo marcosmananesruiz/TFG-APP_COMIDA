@@ -7,9 +7,13 @@ import androidx.lifecycle.LiveData;
 import com.example.bomboplats.data.HistorialRepository;
 import java.util.List;
 
+/**
+ * ViewModel para el historial de pedidos.
+ */
 public class HistorialViewModel extends AndroidViewModel {
     private final HistorialRepository repository;
 
+    // Constructor que recibe el repositorio
     public HistorialViewModel(@NonNull Application application) {
         super(application);
         this.repository = HistorialRepository.getInstance();

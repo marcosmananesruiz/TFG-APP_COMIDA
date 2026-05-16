@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+/**
+ * Adaptador para la lista de pedidos.
+ */
 public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.PedidoViewHolder> {
 
     private List<Pedido> listaPedidos;
@@ -26,11 +29,13 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
         void onProductosClick(Pedido pedido);
     }
 
+    // Constructor que recibe la lista de pedidos y el listener
     public HistorialAdapter(List<Pedido> listaPedidos, OnPedidoClickListener listener) {
         this.listaPedidos = listaPedidos;
         this.listener = listener;
     }
 
+    // Método para actualizar la lista de pedidos
     public void setPedidos(List<Pedido> pedidos) {
         this.listaPedidos = pedidos;
         notifyDataSetChanged();
@@ -57,10 +62,10 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
         holder.tvTotal.setText(String.format(Locale.getDefault(), "%.2f€", pedido.getTotal()));
         holder.tvDireccion.setText(pedido.getDireccion());
 
+        // Formatear los platos del historial
         StringBuilder sb = new StringBuilder();
         if (pedido.getItems() != null) {
             for (PedidoItem item : pedido.getItems()) {
-                // Rehidratamos el nombre del bombo usando el repositorio
                 String itemKey = item.getRestauranteId() + ":" + item.getBomboId();
                 Bombo bombo = foodRepository.getBomboPorId(itemKey);
                 String nombre = (bombo != null) ? bombo.getNombre() : "Plato desconocido";
@@ -71,14 +76,16 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
         }
         holder.tvProductos.setText(sb.toString().trim());
 
+        // Mostrar/ocultar el detalle del pedido
         boolean isExpanded = expandidos.contains(position);
         holder.layoutDetalle.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
         holder.ivExpand.setRotation(isExpanded ? 180 : 0);
 
+        // Manejar el clic en el pedido
         holder.itemView.setOnClickListener(v -> {
             int currentPos = holder.getAdapterPosition();
             if (currentPos == RecyclerView.NO_POSITION) return;
-            
+
             if (expandidos.contains(currentPos)) {
                 expandidos.remove(currentPos);
             } else {
@@ -99,6 +106,7 @@ public class HistorialAdapter extends RecyclerView.Adapter<HistorialAdapter.Pedi
         return listaPedidos != null ? listaPedidos.size() : 0;
     }
 
+    // ViewHolder para el pedido
     static class PedidoViewHolder extends RecyclerView.ViewHolder {
         TextView tvId, tvFecha, tvTotal, tvProductos, tvDireccion;
         View layoutDetalle;
